@@ -1,0 +1,512 @@
+/* This is the file that (almost) every HTML page will use. */
+
+/* Google Fonts */
+
+@import url('https://fonts.googleapis.com/css2?family=Vend+Sans:ital,wght@0,300..700;1,300..700');
+
+/* General Styling */
+
+body, html {
+
+    margin: 0;
+    padding: 0;
+    width: 100vw;
+    height: 100vh;
+    font-family: "Vend Sans", "sans-serif";
+    background: linear-gradient(135deg, #4D55CC, #6C48C5);
+    overflow: hidden;
+
+}
+
+button, input, select, textarea {
+
+    font-family: "Vend Sans", "sans-serif";
+
+}
+
+/* Top And Bottom DIVs. */
+
+.top-div, .bottom-div {
+
+    position: absolute;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    background-color: rgba(47, 32, 102, 0.5);
+    transform: translateY(100%);
+    z-index: 1;
+
+}
+
+/* Top + Bottom DIV styling. */
+
+.top-div {
+
+    height: 6%;
+    top: 0;
+    animation: slideDown 1s ease-out forwards;
+    margin-bottom: 15px;
+
+}
+
+.bottom-div {
+
+    height: 7%;
+    bottom: 0;
+    animation: slideUp 1.2s ease-out forwards;
+    margin-top: 15px;
+
+}
+
+/* Bottom-DIV's elements styling. */
+
+.bottom-div .btn {
+
+  background: #5E5DF0;
+  border-radius: 999px;
+  box-shadow: #5E5DF0 0 10px 20px -10px;
+  box-sizing: border-box;
+  color: #FFFFFF;
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 24px;
+  opacity: 1;
+  outline: 0 solid transparent;
+  padding: 8px 18px;
+  margin: .5%;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  width: fit-content;
+  word-break: break-word;
+  border: 0;
+  transition: background .3s ease-in-out, box-shadow .3s ease-in-out;
+  text-decoration: none;
+
+}
+
+.bottom-div .btn:hover {
+
+    background: #8D5DF0;
+    box-shadow: #5D8BF0 0 10px 20px -10px;
+
+}
+
+.small-circle {
+
+    position: absolute;
+    right: 0;
+    bottom: 35px;
+    text-align: center;
+    color: white;
+    background-color: #BE5DF0;
+    padding: 5px;
+    font-size: 75%;
+    border-radius: 50%;
+    width: 15px;
+    height: 15px;
+    opacity: 0.8;
+
+}
+
+.bottom-div svg {
+
+    margin-left: auto;
+
+}
+
+/* User's profile picture styling. */
+
+.pfp-div {
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background-color: rgba(174, 177, 217, .4);
+    margin: 5px;
+    transition: .4s ease-in-out;
+
+}
+
+.pfp-div:hover {
+
+    transform: scale(1.1);
+    box-shadow: 1px 1px 15px black;
+    cursor: pointer;
+
+}
+
+#user-pfp {
+
+    display: block;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    opacity: 0.8;
+    margin: 10px;
+
+}
+
+/* Top DIV's elements styling. */
+
+/* Subsection: search bar. (Mobile-first approach here too! Actual design will be in the media query.) */
+
+form {
+
+    display: none;
+
+}
+
+.small-circle-search {
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 45px;
+    height: 45px;
+    background: white;
+    box-sizing: border-box;
+    border-radius: 4px;
+    border: 4px solid #F2F2F2;
+    padding: 5px;
+    margin: auto;
+    transition: .3s ease-in-out;
+
+}
+
+.small-circle-search:hover {
+
+    background-color: rgba(55, 99, 166, 0.5);
+    border: 4px solid rgba(55, 99, 166, .1);
+    transform: scale(1.05);
+
+}
+
+/* The rest of elements. */
+
+.small-circle-home {
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background-color: rgba(45, 83, 153, .7);
+    transition: .3s ease-in-out;
+
+}
+
+.small-circle-home:hover {
+
+    background-color: rgba(55, 90, 160, 1);
+    transform: scale(1.05);
+
+}
+
+.small-circle-upload-main {
+
+    display: none;
+
+}
+
+.small-circle-video-main {
+
+    display: none;
+
+}
+
+.small-circle-upload-mobile {
+
+    position: absolute;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    left: 37%;
+    bottom: 10%;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background-color: rgba(45, 83, 153, .7);
+    transition: .3s ease-in-out;
+
+}
+
+.small-circle-upload-mobile:hover {
+
+    background-color: rgba(55, 90, 160, 1);
+    transform: scale(1.05);
+
+}
+
+.small-circle-video-mobile {
+
+        position: absolute;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        left: 55%;
+        bottom: 10%;
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background-color: rgba(45, 83, 153, .7);
+        transition: .3s ease-in-out;
+
+}
+
+.small-circle-video-mobile:hover {
+
+        background-color: rgba(55, 90, 160, 1);
+        transform: scale(1.05);
+
+}
+
+#upload-svg-mobile, #video-svg {
+
+    display: block;
+    margin: auto;
+
+}
+
+#logo {
+
+    margin-left: .5%;
+
+}
+
+/* Animations for the DIVs. */
+
+@keyframes slideDown {
+
+    0% {
+     transform: translateY(-100%);
+     opacity: 0;
+     }
+
+     100% {
+     transform: translateY(0);
+     opacity: 1;
+     }
+
+}
+
+@keyframes slideUp {
+
+    0% {
+     transform: translateY(100%);
+     opacity: 0;
+     }
+
+     100% {
+     transform: translateY(0);
+     opacity: 1;
+     }
+
+}
+
+/* Just manually adjusting some of the bottom SVGs, because i've failed to center them using justify-content :( */
+
+@media (min-width: 321px and max-width: 375px) {
+
+    .small-circle-upload-mobile {
+
+        left: 39%;
+
+    }
+
+}
+
+@media (min-width: 376px and max-width: 425px) {
+
+    .small-circle-video-mobile {
+
+        left: 58%;
+
+    }
+
+    .small-circle-upload-mobile {
+
+        left: 37%;
+
+    }
+
+}
+
+@media (min-width: 426px) {
+
+    /* Mobile-only elements removal. */
+
+    .small-circle-search {
+
+        display: none;
+
+    }
+
+    .small-circle-upload-mobile {
+
+        display: none;
+
+    }
+
+    .small-circle-video-mobile {
+
+        display: none;
+
+    }
+
+    /* Top DIV circle-button styling. */
+
+    .small-circle-upload-main {
+
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background-color: rgba(45, 83, 153, .7);
+        transition: .3s ease-in-out;
+        margin-right: 1%;
+
+    }
+
+    .small-circle-upload-main:hover {
+
+        background-color: rgba(55, 90, 160, 1);
+        transform: scale(1.05);
+
+    }
+
+        .small-circle-home {
+
+        margin-right: auto;
+        margin-left: 1%;
+
+    }
+
+    .small-circle-video-main {
+
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background-color: rgba(45, 83, 153, .7);
+        transition: .3s ease-in-out;
+
+    }
+
+    .small-circle-video-main:hover {
+
+        background-color: rgba(55, 90, 160, 1);
+        transform: scale(1.05);
+
+    }
+
+    /* Search bar for big screens. */
+
+    #search-form {
+      display: block;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      transition: all 1s;
+      width: 50px;
+      height: 50px;
+      background: white;
+      box-sizing: border-box;
+      border-radius: 4px;
+      border: 4px solid white;
+      padding: 5px;
+    }
+
+    #search-bar-input {
+
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 0;
+      height: 42.5px;
+      line-height: 30px;
+      outline: 0;
+      border: 0;
+      font-size: 1em;
+      border-radius: 20px;
+      padding: 0 20px;
+    }
+
+    .fa {
+      box-sizing: border-box;
+      padding: 10px;
+      width: 42.5px;
+      height: 42.5px;
+      position: absolute;
+      top: 0;
+      right: 0;
+      border-radius: 4px;
+      color: #305E9C;
+      text-align: center;
+      font-size: 1.2em;
+      transition: all 1s;
+    }
+    #search-form:focus-within,
+    #search-form:hover,
+    #search-form:valid{
+      width: 25%;
+      cursor: pointer;
+    }
+
+    #search-form:hover input,
+    #search-form:focus-within input,
+    #search-form:valid input {
+      width: 100%;
+    }
+
+    #search-form:hover .fa,
+    #search-form:focus-within .fa,
+    #search-form:valid .fa {
+      background: #305E9C;
+      color: white;
+    }
+
+    /* Tags subsection. */
+
+    .all-tags {
+      display: none;
+      position: absolute;
+      top: 50px;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      font-size: 20px;
+      color: white;
+      padding: 4px;
+      min-height: max-content;
+      background: #303D9C;
+      outline: 0;
+      border: 1px solid #303030;
+      border-radius: 4px;
+      text-align: center;
+      width: 100%;
+      cursor: pointer;
+      animation: slowlyAppear .6s ease-out forwards;
+    }
+
+    form:valid .all-tags {
+      display: block;
+    }
+
+    .submit-button {
+
+        cursor: pointer;
+
+    }
+
+}

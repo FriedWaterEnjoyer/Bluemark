@@ -1,0 +1,710 @@
+/* Scrollbar Styling. (For Chrome and Safari) */
+
+::-webkit-scrollbar { /* Need to set this property before modifying the rest. */
+
+    background: transparent;
+    width: 10px;
+
+}
+
+::-webkit-scrollbar-track {
+
+    background-color: transparent;
+
+}
+
+::-webkit-scrollbar-thumb {
+
+    background-color: rgba(105, 120, 213);
+    height: 10px;
+    border-radius: 10px;
+
+}
+
+/* Animation for the DIVs to appear. */
+
+@keyframes slowlyAppear {
+
+    0% { opacity: 0; }
+
+
+    100% { opacity: 1; }
+
+}
+
+
+.mid-div-cluster-main { /* For the mobiles. */
+
+    display: none;
+
+}
+
+
+@media (min-width: 770px) { /* For anything above the tablet. */
+
+    /* Deleting everything related to the mobile part. */
+
+    .mid-div-cluster-mobile {
+
+        display: none;
+
+    }
+
+    .small-circle-liked-mobile {
+
+        display: none;
+
+    }
+
+    /* Middle DIV styling. */
+
+    .mid-div { /* A div, that will encompass every element in the middle. (Was made in order to place the items of mid-div... in the middle.) */
+
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        height: 100%;
+
+    }
+
+    .mid-div-cluster-main { /* Main content of the mid-div. */
+
+        display: grid;
+        position: relative;
+        height: 75%;
+        width: 98%;
+        grid-template-columns: .9fr 3fr;
+        gap: 25px;
+
+    }
+
+    .liked-cluster {
+
+        display: flex;
+        justify-content: space-around;
+        flex-wrap: wrap;
+        align-items: center;
+        flex-direction: row;
+        width: 400px;
+        height: 100%;
+        gap: 10px;
+        overflow-y: auto;
+        overflow-x: hidden;
+        background-color: rgba(105, 111, 199, .8);
+        border-radius: 10px;
+        animation: slowlyAppear 1.3s ease-out forwards;
+        box-shadow: 3px 3px 5px rgba(105, 111, 199, .5);
+
+    }
+
+    .all-products {
+
+        display: grid;
+        gap: 30px;
+        width: 100%;
+        height: 100%;
+        animation: slowlyAppear 1.3s ease-out forwards;
+        overflow: hidden;
+
+    }
+
+    .products-row {
+
+        display: flex;
+        overflow-x: auto;
+        overflow-y: hidden;
+        gap: 15px;
+        width: 98%;
+        height: 98%;
+        flex-direction: column;
+        flex-wrap: wrap;
+        background-color: rgba(105, 111, 199, .8);
+        box-shadow: 5px 5px 7px rgba(105, 111, 199, .5);
+        border-radius: 10px;
+
+    }
+
+    .products-row::-webkit-scrollbar {
+
+        height: 5px;
+
+    }
+
+    .category-item {
+
+        position: relative;
+        top: 23%;
+        left: 2%;
+        color: rgba(255, 255, 255, .8);
+        margin-right: 20px;
+        text-decoration: underline;
+
+    }
+
+    /* Targeting animations of the category texts. */
+
+    #animation-0 {
+
+        animation: slowlyAppear 1.5s ease-in-out forwards;
+
+    }
+
+    #animation-1 {
+
+        animation: slowlyAppear 2.5s ease-in-out forwards;
+
+    }
+
+    #animation-2 {
+
+        animation: slowlyAppear 3.5s ease-in-out forwards;
+
+    }
+
+
+    /* Liked Cluster - main styling */
+
+    .liked-item-card {
+
+        display: flex;
+        flex-direction: row;
+        position: relative;
+        background-color: rgba(245, 220, 250, .6);
+        width: 375px;
+        height: 190px;
+        margin: 15px;
+        border-radius: 15px;
+        box-shadow: 1px 1px 4px rgba(230, 215, 245, .4);
+        transition: all 0.4s ease-in-out;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+
+    }
+
+    .liked-item-card:hover {
+
+        transform: scale(1.02);
+        box-shadow: 2px 2px 30px 8px rgba(240, 225, 255, .4);
+
+    }
+
+    .liked-item-card img {
+
+        height: 100%;
+        border-radius: 15px 0 0 15px;
+
+    }
+
+    .liked-product-name-main {
+
+        margin: 5px;
+        text-align: center;
+
+    }
+
+    .full-text-liked-product h4, .full-text-liked-product a {
+
+        display: block;
+        position: relative;
+        color: black;
+        text-decoration: none;
+        top: 5px;
+        right: 3px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        max-width: 178px;
+        margin: 10px;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+
+    }
+
+    .full-text-liked-product h4:hover, .full-text-liked-product a:hover {
+
+        text-decoration: underline;
+
+    }
+
+    .liked-product-descr-main {
+
+        display: -webkit-box;
+        position: relative;
+        right: -3px;
+        text-overflow: ellipsis;
+        -webkit-line-clamp: 2;
+        line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        margin: 5px;
+        max-width: 175px;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+
+    }
+
+    .price-rating-details-liked {
+
+        display: flex;
+        flex-direction: row;
+        font-size: 13px;
+        height: 70px;
+
+    }
+
+    .price-rating-details-liked button {
+
+        position: relative;
+        bottom: -45px;
+        right: 15px;
+        background-color: #9CDBF0;
+        cursor: pointer;
+        border-radius: 60px;
+        border: none;
+        border-top: 1px solid rgba(255, 255, 255, .4);
+        border-left: 1px solid rgba(255, 255, 255, .4);
+        transition: .3s ease-in-out;
+        width: 80px;
+        height: 25px;
+
+    }
+
+    .price-rating-details-liked button:hover  {
+
+        background-color: #A7F5CC;
+
+    }
+
+    .liked-product-price {
+
+        position: relative;
+        bottom: -36px;
+        right: -25px;
+        height: 23px;
+
+    }
+
+    .liked-product-rating {
+
+        position: relative;
+        bottom: 5px;
+        right: -15px;
+        width: 60px;
+        height: 25px;
+
+    }
+
+    .heart-button-liked-main {
+
+        position: absolute !important;
+        top: 5px;
+        right: 5px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 30px;
+        height: 30px;
+        border: 2px solid black;
+        border-radius: 50%;
+        cursor: pointer;
+        transition: .2s ease-in-out;
+        z-index: 1;
+
+    }
+
+    .heart-button-liked-main:hover {
+
+        background-color: gray;
+
+    }
+
+    /* Horizontal Card - Main Cluster */
+
+    .product-card {
+
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+        position: relative;
+        background-color: rgba(255, 255, 255, .5);
+        width: 450px;
+        height: 95%;
+        margin: 6px;
+        border-radius: 15px;
+        border-right: 1px solid rgba(255, 255, 255, .3);
+        border-bottom: 1px solid rgba(255, 255, 255, .3);
+        transition: all 0.4s ease-in-out;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+
+    }
+
+    /* Internal card styling. */
+
+    .product-card:hover {
+
+        transform: scale(1.02);
+        box-shadow: 4px 4px 60px 8px rgba(0,0,0,0.2);
+
+    }
+
+    .product-card img {
+
+        border-radius: 15px 0 0 15px;
+        height: 100%;
+
+    }
+
+    .link-to-product {
+
+        text-decoration: none;
+        color: black;
+
+    }
+
+    .link-to-product:hover {
+
+        text-decoration: underline;
+
+    }
+
+    .product-text {
+
+        display: grid;
+        margin-top: 30px;
+        margin-left: 5px;
+        grid-template-rows: 1fr 1.4fr 1fr;
+        width: 70%;
+        height: 100%;
+
+    }
+
+    .product-descr {
+
+        margin-top: 0;
+        margin-bottom: 5px;
+
+    }
+
+    .heart-button, .heart-button-liked {
+
+        display: flex;
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        justify-content: center;
+        align-items: center;
+        width: 30px;
+        height: 30px;
+        border: 2px solid black;
+        border-radius: 50%;
+        cursor: pointer;
+        transition: all .2s ease-in-out;
+
+    }
+
+    .heart-button:hover, .heart-button-liked:hover {
+
+        background-color: gray;
+
+    }
+
+    .product-price-details {
+
+        display: flex;
+        justify-content: space-between;
+
+    }
+
+    .details-link, .details-link button {
+
+        position: relative;
+        width: 81px;
+        bottom: -7px;
+        right: .5px;
+
+    }
+
+    .details-link button {
+
+        background-color: #9CDBF0;
+        cursor: pointer;
+        border-radius: 60px;
+        border: none;
+        border-top: 1px solid rgba(255, 255, 255, .4);
+        border-left: 1px solid rgba(255, 255, 255, .4);
+        transition: .3s ease-in-out;
+
+    }
+
+    .details-link button:hover {
+
+        background-color: #A7F5CC;
+
+    }
+
+    /* Overflow-prevent. */
+
+    .product-text h3, .product-text a {
+
+        display: block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        max-width: 100%;
+
+    }
+
+    .product-descr {
+
+      display: -webkit-box;
+      text-overflow: ellipsis;
+      -webkit-line-clamp: 2;
+      line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      max-height: 45px;
+      max-width: 249px;
+
+    }
+
+}
+
+@media (min-width: 2560px) { /* Media query for 4K, since otherwise the image is broken as heck dayo. */
+
+    .product-card img {
+
+        height:; /* That... actually fixes the problem :D */
+
+    }
+
+}
+
+@media (max-width: 769px) { /* For all the small gadgets. (+Tablet) */
+
+    /* General Styling. */
+
+    ::-webkit-scrollbar {
+
+        height: 7px !important;
+
+    }
+
+    .mid-div-cluster-mobile {
+
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100vw;
+        height: 100vh;
+        animation: slowlyAppear 1.3s ease-out forwards;
+
+    }
+
+    .mid-div-cluster-mobile-main-content {
+
+        display: grid;
+        position: relative;
+        height: 86%;
+        width: 100%;
+        grid-template-rows: repeat(3, .1fr 1fr);
+        gap: 5px;
+
+    }
+
+    .mid-div-cluster-mobile-main-content h2 {
+
+        margin: 5px;
+        color: white;
+
+    }
+
+    .category-item {
+
+        width: fit-content;
+        color: white;
+
+    }
+
+    /* Rows of products styling. */
+
+    .liked-items-cluster-mobile, .full-product-mobile { /* For clusters of individual items. */
+
+        display: flex;
+        flex-direction: row;
+        overflow-x: auto;
+        overflow-y: hidden;
+        gap: 15px;
+        min-height: 190px;
+        max-height: 190px;
+
+    }
+
+    .product-item-mobile, .liked-item-mobile { /* For individual items. */
+
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        flex-direction: column;
+        position: relative;
+        background-color: rgba(255, 255, 255, .6);
+        border-radius: 15px;
+        min-width: 140px; /* PLS PLS PLS PLS Specify MIN height when applying overflow-x to the parent div. */
+        min-height: 170px;
+        max-width: 140px;
+        max-height: 170px;
+        margin: 0;
+        transition: all 0.4s ease-in-out;
+
+    }
+
+    .liked-item-mobile {
+
+        background-color: rgba(240, 220, 250, .6);
+
+    }
+
+    .liked-items-cluster-mobile, .full-product-mobile {
+
+        margin-left: 5px;
+        margin-right: 5px;
+
+    }
+
+    /* Heart button. */
+
+    .heart-button-mobile {
+
+        display: flex;
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        justify-content: center;
+        align-items: center;
+        width: 30px;
+        height: 30px;
+        border: 2px solid black;
+        border-radius: 50%;
+        z-index: 1;
+        transition: all .2s ease-in-out;
+
+    }
+
+    .heart-button-mobile:hover {
+
+        background-color: gray;
+
+    }
+
+    /* Top image. */
+
+    .product-image-mobile {
+
+        position: relative;
+        left: 20%;
+        width: fit-content;
+        border-radius: 15px;
+        height: 50%;
+        margin-top: 3px;
+
+    }
+
+    /* Product's name and a link to it. */
+
+    .product-name-mobile, .link-to-product-mobile {
+
+        display: block;
+        position: relative;
+        top: -4px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        max-width: 130px;
+        margin: 5px;
+
+    }
+
+    .link-to-product-mobile {
+
+        text-decoration: none;
+        color: black;
+        max-height: 19px;
+
+    }
+
+    /* Price + Rating */
+
+    .product-price-mobile, .product-rating-mobile {
+
+        margin: 0;
+        font-size: 13px;
+
+    }
+
+    .product-price-mobile {
+
+        position: relative;
+        bottom: -16px;
+        left: 3px;
+
+    }
+
+    .product-rating-mobile {
+
+        position: absolute;
+        right: 28%;
+        top: 115px;
+
+    }
+
+    /* "See Details" button. */
+
+    .details-button-mobile {
+
+        position: relative;
+        right: -57px;
+        bottom: 5px;
+        padding: 0;
+        width: 80px;
+        font-size: 14px;
+        background-color: #9CDBF0;
+        cursor: pointer;
+        border-radius: 60px;
+        border: none;
+        border-top: 1px solid rgba(255, 255, 255, .4);
+        border-left: 1px solid rgba(255, 255, 255, .4);
+        transition: .3s ease-in-out;
+
+    }
+
+    .details-button-mobile:hover {
+
+        background-color: #A7F5CC;
+
+    }
+
+    /* All the animations for the h2 texts. */
+
+    #animation-mobile-0 {
+
+        animation: slowlyAppear 1.5s ease-in-out forwards;
+
+    }
+
+    #animation-mobile-1 {
+
+        animation: slowlyAppear 2.5s ease-in-out forwards;
+
+    }
+
+    #animation-mobile-liked {
+
+        animation: slowlyAppear 3.5s ease-in-out forwards;
+
+    }
+
+    .product-item-mobile:hover, .liked-item-mobile:hover {
+
+        transform: scale(1.02);
+        box-shadow: 4px 4px 60px 8px rgba(0,0,0,0.2);
+
+    }
+
+}
