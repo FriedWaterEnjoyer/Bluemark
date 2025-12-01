@@ -278,6 +278,14 @@ form {
 
 }
 
+.upload-item-top a {
+
+    width: 20px;
+    height: 20px;
+    margin: 0;
+
+}
+
 /* Animations for the DIVs. */
 
 @keyframes slideDown {
@@ -375,6 +383,19 @@ form {
 
     }
 
+    .small-circle-upload-main svg, .small-circle-video-main svg {
+
+        position: relative;
+        left: 1px;
+
+    }
+
+    .small-circle-video-main svg {
+
+        top: 1px;
+
+    }
+
     .small-circle-upload-main:hover {
 
         background-color: rgba(55, 90, 160, 1);
@@ -382,7 +403,7 @@ form {
 
     }
 
-        .small-circle-home {
+    .small-circle-home {
 
         margin-right: auto;
         margin-left: 1%;

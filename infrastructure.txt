@@ -1,9 +1,5 @@
 (Btw, btw, whenever the user clicks on his/her profile picture - then show them an option to logout).
 
-
-For mobile - switch overflow-y to auto and let the user scroll - For every category show 2/4 (prolly 4) items.
-
-
 Sidequest - TODO: implement 2-factor-authentication (2FA) (+ possibly Email verification). I'll do it probably after the main part of the project's already done.
 (Mark it with an exclamation mark if it's not set up).
 
@@ -14,3 +10,5 @@ Also, also, also, implement night-dark mode in user's profile page.
 Man this is fun :D :D :D
 
 <3
+
+:3

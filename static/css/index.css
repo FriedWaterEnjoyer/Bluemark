@@ -142,26 +142,25 @@
 
     }
 
-    /* Targeting animations of the category texts. */
+    /* Animation for every product row. */
 
-    #animation-0 {
+    #product-row-animation-0 {
+
+        animation: slowlyAppear .5s ease-in-out forwards;
+
+    }
+
+    #product-row-animation-1 {
 
         animation: slowlyAppear 1.5s ease-in-out forwards;
 
     }
 
-    #animation-1 {
+    #product-row-animation-2 {
 
         animation: slowlyAppear 2.5s ease-in-out forwards;
 
     }
-
-    #animation-2 {
-
-        animation: slowlyAppear 3.5s ease-in-out forwards;
-
-    }
-
 
     /* Liked Cluster - main styling */
 
@@ -418,7 +417,7 @@
         position: relative;
         width: 81px;
         bottom: -7px;
-        right: .5px;
+        right: .2px;
 
     }
 
@@ -504,7 +503,7 @@
         position: relative;
         height: 86%;
         width: 100%;
-        grid-template-rows: repeat(3, .1fr 1fr);
+        grid-template-rows: 1fr 1fr .1fr 1fr;
         gap: 5px;
 
     }
@@ -680,23 +679,9 @@
 
     }
 
-    /* All the animations for the h2 texts. */
-
-    #animation-mobile-0 {
-
-        animation: slowlyAppear 1.5s ease-in-out forwards;
-
-    }
-
-    #animation-mobile-1 {
-
-        animation: slowlyAppear 2.5s ease-in-out forwards;
-
-    }
-
     #animation-mobile-liked {
 
-        animation: slowlyAppear 3.5s ease-in-out forwards;
+        animation: slowlyAppear 2.5s ease-in-out forwards;
 
     }
 
