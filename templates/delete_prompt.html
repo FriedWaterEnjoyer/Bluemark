@@ -2,22 +2,22 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <link rel="stylesheet" href="../static/css/general.css" type="text/css">
 
-    <link rel="stylesheet" href="../static/css/loginSignup.css" type="text/css">
+    <link rel="stylesheet" href="../static/css/stripepromt.css" type="text/css">
+
+    <link rel="stylesheet" href="../static/css/user.css" type="text/css">
 
     <link rel="shortcut icon" href="../static/images/BluecheckmarkIcon.png" type="image/x-icon">
 
     <title>Bluemark</title>
+
 </head>
 <body>
 
-<!-- For this part - bottom DIV is deleted, since it's not really necessary + it won't look good. -->
-
-<div class="top-div">
+    <div class="top-div">
 
         <svg xmlns="http://www.w3.org/2000/svg" width="50px" id="logo" viewBox="0 0 48 48"><defs><style>.cls-1{fill:#82bcf4}.cls-2{fill:#6fabe6}</style></defs><g id="Verification"><path class="cls-1" d="m42.52 29 1.4 6.54-6.37 2-2 6.37L29 42.52 24 47l-5-4.48-6.54 1.4-2.05-6.37-6.37-2L5.48 29 1 24l4.48-5-1.4-6.5c7.29-2.35 6.32-1.88 6.5-2.46l1.92-6L19 5.48 24 1l5 4.48 6.54-1.4 2 6.37 6.37 2.05-1.39 6.5L47 24z"/><path class="cls-2" d="M39 37c0 .11.21 0-1.45.55l-2 6.37-6.55-1.4L24 47l-5-4.48-6.54 1.4-2.05-6.37-6.37-2L5.48 29 1 24l4.48-5-1.4-6.5c7.29-2.35 6.32-1.88 6.5-2.46A27 27 0 0 1 39 37z"/><path d="M39 24a15 15 0 1 1-27.42-8.42C19.91 3.38 39 9.28 39 24z" style="fill:#edebf2"/><path d="M35 28a15 15 0 0 1-2.58 8.42 15 15 0 0 1-20.84-20.84A15 15 0 0 1 35 28z" style="fill:#dad7e5"/><path class="cls-1" d="m32.5 20.68-9.38 9.38a3 3 0 0 1-4.24 0l-3.38-3.38a2.12 2.12 0 0 1 3-3l2.5 2.5c11.37-11.37 7.75-7.74 8.5-8.5a2.12 2.12 0 0 1 3 3z"/><path class="cls-2" d="m31.5 21.68-8.38 8.38a3 3 0 0 1-4.24 0l-3.38-3.38a2.11 2.11 0 0 1-.41-2.41 2.11 2.11 0 0 1 2.41.41l2.5 2.5c11.82-11.82 7.8-7.79 8.66-8.65a2.12 2.12 0 0 1 2.84 3.15z"/></g></svg>
 
@@ -50,7 +50,6 @@
                     </a>
 
             </div>
-
 
     <form action="" id="search-form">
 
@@ -86,58 +85,45 @@
 
         <!-- Upload item SVG. -->
 
-        <!-- Add clas "hidden" if the user's not logged in (only mobile - in order to save space :( ) -->
-
         <div class="small-circle-upload-main">
 
-            <svg width="35px" height="35px" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" fill="#000000" id="upload-svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"><path fill="#000000" d="M704 288h131.072a32 32 0 0 1 31.808 28.8L886.4 512h-64.384l-16-160H704v96a32 32 0 1 1-64 0v-96H384v96a32 32 0 0 1-64 0v-96H217.92l-51.2 512H512v64H131.328a32 32 0 0 1-31.808-35.2l57.6-576a32 32 0 0 1 31.808-28.8H320v-22.336C320 154.688 405.504 64 512 64s192 90.688 192 201.664v22.4zm-64 0v-22.336C640 189.248 582.272 128 512 128c-70.272 0-128 61.248-128 137.664v22.4h256zm201.408 483.84L768 698.496V928a32 32 0 1 1-64 0V698.496l-73.344 73.344a32 32 0 1 1-45.248-45.248l128-128a32 32 0 0 1 45.248 0l128 128a32 32 0 1 1-45.248 45.248z"></path></g></svg>
+            <a href="{{ url_for('upload_item') }}" class="upload-item-top"><svg width="35px" height="35px" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" fill="#000000" id="upload-svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"><path fill="#000000" d="M704 288h131.072a32 32 0 0 1 31.808 28.8L886.4 512h-64.384l-16-160H704v96a32 32 0 1 1-64 0v-96H384v96a32 32 0 0 1-64 0v-96H217.92l-51.2 512H512v64H131.328a32 32 0 0 1-31.808-35.2l57.6-576a32 32 0 0 1 31.808-28.8H320v-22.336C320 154.688 405.504 64 512 64s192 90.688 192 201.664v22.4zm-64 0v-22.336C640 189.248 582.272 128 512 128c-70.272 0-128 61.248-128 137.664v22.4h256zm201.408 483.84L768 698.496V928a32 32 0 1 1-64 0V698.496l-73.344 73.344a32 32 0 1 1-45.248-45.248l128-128a32 32 0 0 1 45.248 0l128 128a32 32 0 1 1-45.248 45.248z"></path></g></svg></a>
 
         </div>
+
+        <!-- Upload video SVG. -->
 
         <div class="small-circle-video-main">
 
-            <svg fill="#000000" height="35px" width="35px" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 472.615 472.615" xml:space="preserve"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <g> <g> <path d="M345.12,173.904v-37.506c0-26.472-21.463-47.934-47.934-47.934H47.933C21.462,88.464,0,109.926,0,136.398v199.82 c0,26.472,21.462,47.933,47.933,47.933h249.252c26.471,0,47.934-21.461,47.934-47.933V298.71l63.153,31.242V142.661 L345.12,173.904z M139.613,289.582V183.035l83.88,53.274L139.613,289.582z"></path> </g> </g> <g> <g> <polygon points="427.965,132.919 427.965,339.694 472.615,361.782 472.615,110.83 "></polygon> </g> </g> </g></svg>
+            <a href="#"><svg fill="#000000" height="35px" width="35px" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 472.615 472.615" xml:space="preserve"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <g> <g> <path d="M345.12,173.904v-37.506c0-26.472-21.463-47.934-47.934-47.934H47.933C21.462,88.464,0,109.926,0,136.398v199.82 c0,26.472,21.462,47.933,47.933,47.933h249.252c26.471,0,47.934-21.461,47.934-47.933V298.71l63.153,31.242V142.661 L345.12,173.904z M139.613,289.582V183.035l83.88,53.274L139.613,289.582z"></path> </g> </g> <g> <g> <polygon points="427.965,132.919 427.965,339.694 472.615,361.782 472.615,110.83 "></polygon> </g> </g> </g></svg></a>
 
         </div>
 
     </div>
 
+    <!-- Main Prompt. -->
 
-    <!-- Main Form. -->
+    <div class="prompt">
 
-    <div class="sign-in-form">
+        <div class="main-div">
 
-        {% if error: %} <!-- Triggers if the user's trying to register with an email that's already present in the database. -->
+            <h2>Are you sure you want to delete your account?</h2>
 
-                <p id="error-message">This email already exists</p>
+            <form action="{{ url_for('delete_account') }}" method="post" id="delete-form">
 
-        {% endif %}
+                <input class="log-out-button" type="submit" value="Delete Account" onclick="document.getElementById('delete-form').submit(); this.disabled=true;">
 
-        <h2>Sonic kissing shadow in the lips uWu</h2>
+            </form>
 
-        <form action="{{ url_for('sign_up_page') }}" method="post" id="register-form">
-
-            <input class="register-input" type="text" placeholder="First Name" name="fname-field-register" required>
-
-            <input class="register-input" type="text" placeholder="Last Name" name="lname-field-register" required>
-
-            <input class="register-input" type="email" placeholder="Email" name="email-field-register" required>
-
-            <input class="register-input" type="password" placeholder="Password (Minimum 8 characters)" minlength="8" name="password-field-register" required>
-
-            <input type="submit" value="Sign Up" id="sign-submit">
-
-        </form>
+        </div>
 
     </div>
 
-    <div class="google-register">
+{% if night_mode: %} <!-- Importing JavaScript if the user has night_mode turned on. -->
 
-        <h3>Or...</h3>
+    <script src="../static/JS%20Scripts/dark_light_mode.js"></script>
 
-        <a href="{{ url_for('register_google') }}"><svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" class="social-icon" focusable="false"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"></path><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"></path><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"></path><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"></path><path d="M1 1h22v22H1z" fill="none"></path></svg>Sign up with Google</a>
-
-    </div>
+{% endif %}
 
 </body>
 </html>

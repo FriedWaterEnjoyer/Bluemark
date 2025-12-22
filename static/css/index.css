@@ -1,3 +1,55 @@
+/* Dark Mode styling. */
+
+body.dark {
+
+    .product-card, .product-item-mobile {
+
+        background-color: rgba(0, 0, 0, .5);
+        color: #FFFFFF;
+
+    }
+
+    .link-to-product h3, .link-to-product-mobile, .liked-cluster h2 {
+
+        color: #FFFFFF;
+
+    }
+
+    .details-link button, .see-details-liked, .details-button-mobile {
+
+        background-color: #156c8a;
+        color: #FFFFFF
+
+    }
+
+    .details-link button:hover, .see-details-liked:hover, .details-button-mobile:hover {
+
+        background-color: #11944f;
+
+    }
+
+    .products-row, .liked-cluster {
+
+        background-color: #20255d;
+        box-shadow: #1b1d33;
+
+    }
+
+    .liked-item-card, .liked-item-mobile {
+
+        background-color: #7F428C;
+
+    }
+
+    .liked-product-name-main h4, .liked-product-descr-main, .liked-product-price, .liked-product-rating, .see-details-liked, .product-price-mobile, .product-rating-mobile, .details-button-mobile {
+
+        color: #FFFFFF;
+
+    }
+
+}
+
+
 /* Scrollbar Styling. (For Chrome and Safari) */
 
 ::-webkit-scrollbar { /* Need to set this property before modifying the rest. */

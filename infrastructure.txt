@@ -1,14 +1,36 @@
-(Btw, btw, whenever the user clicks on his/her profile picture - then show them an option to logout).
-
-Sidequest - TODO: implement 2-factor-authentication (2FA) (+ possibly Email verification). I'll do it probably after the main part of the project's already done.
-(Mark it with an exclamation mark if it's not set up).
-
-Also, also, implement "forgot password" in login.
-
-Also, also, also, implement night-dark mode in user's profile page.
-
 Man this is fun :D :D :D
 
 <3
 
 :3
+
+TODO: Implement these features: let the user delete their account.
+
+After doing everything above - Git commit.
+
+
+
+Next step - pls implement product pages,
+
+after that - cart and payment functionalities,
+
+then the search function,
+
+after that - let the user see what products and videos they've uploaded, as well as their purchase history,
+
+and the last - video functionality.
+
+
+
+And after that - I think my mega project will be done :D
+
+
+Ooooooh boy, I have a lot of work to do :D
+
+Can't complain though, it's really fun :3
+
+Agreed :3
+
+Agreed x2 :3
+
+Did a lot of important backend stuff today, went pretty well. It's honestly really fun through and through :d

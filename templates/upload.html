@@ -175,5 +175,11 @@
 
 <script src="../static/JS%20Scripts/upload_script.js"></script>
 
+{% if night_mode: %} <!-- Importing JavaScript if the user has night_mode turned on. -->
+
+    <script src="../static/JS%20Scripts/dark_light_mode.js"></script>
+
+{% endif %}
+
 </body>
 </html>

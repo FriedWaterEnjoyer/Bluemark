@@ -1,0 +1,507 @@
+/* Dark Mode Styling */
+
+body.dark {
+
+    .profile-subdiv-mid {
+
+        background-color: #20255d;
+        color: #FFFFFF;
+
+    }
+
+    .pfp-update-submit, .file-size-message, .pfp-hint, .two-fa-warning, .qr-code-button, .reauth {
+
+        color: #FFFFFF;
+
+    }
+
+    .pfp-update-submit, .qr-code-button, .reauth {
+
+        background-color: #272D73;
+
+    }
+
+    .pfp-update-submit:hover, .qr-code-button:hover, .reauth:hover {
+
+            box-shadow: 1px 1px 8px 2px rgba(255,255,255,0.2);
+            text-shadow: 2px 2px 5px rgba(255,255,255,0.2);
+
+    }
+
+    .log-out-button {
+
+        background: #800300;
+        border: 1px solid #800300;
+
+    }
+
+}
+
+/* Animations */
+
+/* For the Day-Night modes switcher. */
+
+@keyframes rotate {
+
+  0% {
+    transform: rotate(0);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* .switch:hover */.moon svg {
+  animation: tilt 5s linear infinite;
+}
+
+@keyframes tilt {
+
+  0% {
+    transform: rotate(0deg);
+  }
+
+  25% {
+    transform: rotate(-10deg);
+  }
+
+  75% {
+    transform: rotate(10deg);
+  }
+
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
+/* Container Styling. */
+
+.full-container {
+
+    display: flex;
+    width: 100vw;
+    height: 100vh;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    overflow-x: auto
+
+}
+
+/* For all the elements */
+
+@keyframes slowlyAppear {
+
+    0% { opacity: 0; }
+
+
+    100% { opacity: 1; }
+
+}
+
+/* Specialized DIV stuff */
+
+.profile-subdiv-mid:nth-child(1) {
+
+    margin-left: 5px;
+
+}
+
+.profile-subdiv-mid:nth-child(1) {
+
+    animation: slowlyAppear .5s ease-in-out;
+
+}
+
+.profile-subdiv-mid:nth-child(2) {
+
+    animation: slowlyAppear 1s ease-in-out;
+
+}
+
+.profile-subdiv-mid:nth-child(3) {
+
+    animation: slowlyAppear 1.5s ease-in-out;
+
+}
+
+.profile-subdiv-mid:nth-child(4) {
+
+    animation: slowlyAppear 1.5s ease-in-out;
+
+}
+
+.mid-div {
+
+    display: flex;
+    justify-content: space-evenly;
+    flex-direction: row;
+    height: 35%;
+    min-width: 100%;
+    gap: 15px;
+    flex-shrink: 0;
+
+}
+
+.profile-subdiv-mid { /* In general for every individual cell. */
+
+    width: 350px;
+    height: 330px;
+    background-color: rgba(255, 255, 255, .5);
+    border: 1px solid rgba(255, 255, 255, .7);
+    border-radius: 10px;
+    transition: .4s ease-in-out;
+    box-shadow: 4px 4px 20px 2px rgba(0,0,0,0.2);
+    text-shadow: 2px 2px 5px rgba(0,0,0,0.2);
+
+}
+
+/* User PFP Styling. */
+
+.profile-pic{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    height: 120px;
+    width: 120px;
+    padding: 10px;
+    margin-bottom: 15px;
+}
+.profile-pic img{
+    flex-shrink: 0;
+    border-radius: 50%;
+    box-shadow: 0px 0px 5px 0px #c1c1c1;
+    cursor: pointer;
+    width: 100px;
+    height: 100px;
+}
+
+.file-size-message {
+
+    font-size: 14px;
+
+}
+
+.pfp-hint {
+
+    font-size: 13px;
+
+}
+
+.file-error {
+
+    font-size: 15px;
+    color: #E60400;
+    animation: slowlyAppear .4s ease-in-out;
+
+}
+
+#profile-image1 {
+
+    border-radius: 50%;
+    border: 2px solid black;
+    margin: 20px;
+
+}
+
+.user-pfp-form {
+
+    display: flex;
+    min-height: 100%;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+
+}
+
+.pfp-update-submit, .qr-code-button, .reauth {
+
+    background: rgba(255, 255, 255, .5);
+    padding: .3em;
+    border: none;
+    border-left: 1px solid rgba(255, 255, 255, .5);
+    border-top: 1px solid rgba(255, 255, 255, .5);
+    border-radius: 5000px;
+    backdrop-filter: blur(5px);
+    box-shadow: 4px 4px 60px rgba(0,0,0,0.2);
+    color: #000;
+    transition: all 0.2s ease-in-out;
+    text-shadow: 1px 1px 4px rgba(0,0,0,0.2);
+    outline: none;
+    cursor: pointer;
+
+}
+
+.qr-code-button {
+
+    font-size: 15px;
+
+}
+
+.pfp-update-submit:hover, .qr-code-button:hover, .reauth:hover {
+
+    box-shadow: 4px 4px 60px 8px rgba(0,0,0,0.2);
+    text-shadow: 2px 2px 5px rgba(0,0,0,0.2);
+
+}
+
+.pfp-update-submit:focus, .qr-code-button:focus, .reauth:focus {
+
+    box-shadow: 5px 5px 60px 9px rgba(0,0,0,0.2);
+
+}
+
+.pfp-message {
+
+    text-align: center;
+
+}
+
+/* Light-Dark Mode Switcher. */
+
+.switch {
+  font-size: 17px;
+  position: relative;
+  display: inline-block;
+  width: 64px;
+  height: 34px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.switch-div {
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #73C0FC;
+  transition: .4s;
+  border-radius: 30px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 30px;
+  width: 30px;
+  border-radius: 20px;
+  left: 2px;
+  bottom: 2px;
+  z-index: 2;
+  background-color: #e8e8e8;
+  transition: .4s;
+}
+
+.sun svg {
+  position: absolute;
+  top: 6px;
+  left: 36px;
+  z-index: 1;
+  width: 24px;
+  height: 24px;
+}
+
+.moon svg {
+  fill: #73C0FC;
+  position: absolute;
+  top: 5px;
+  left: 5px;
+  z-index: 1;
+  width: 24px;
+  height: 24px;
+}
+
+/* .switch:hover */.sun svg {
+  animation: rotate 15s linear infinite;
+}
+
+.mode-input:checked + .slider {
+  background-color: #183153;
+}
+
+.mode-input:focus + .slider {
+  box-shadow: 0 0 1px #183153;
+}
+
+.mode-input:checked + .slider:before {
+  transform: translateX(30px);
+}
+
+.log-out-button {
+  background: #FF4742;
+  border: 1px solid #FF4742;
+  border-radius: 6px;
+  box-shadow: rgba(0, 0, 0, 0.1) 1px 2px 4px;
+  box-sizing: border-box;
+  color: #FFFFFF;
+  cursor: pointer;
+  display: inline-block;
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 16px;
+  min-height: 40px;
+  outline: 0;
+  padding: 12px 14px;
+  text-align: center;
+  text-rendering: geometricprecision;
+  text-transform: none;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  vertical-align: middle;
+  transition: .4s ease-in-out;
+}
+
+.log-out-button:hover,
+.log-out-button:active {
+
+    text-shadow: 1px 1px 1px #FFFFFF;
+
+}
+
+
+.pfp-mode-edit {
+
+    display: grid;
+    grid-template-rows: .3fr 1fr .2fr;
+    min-width: 100%;
+    min-height: 100%;
+
+}
+
+.two-fa-div {
+
+    width: 100%;
+    height: 100%;
+    display: grid;
+    grid-template-rows: .5fr 1.5fr;
+    position: relative;
+
+}
+
+.header-two-fa {
+
+    width: 100%;
+    height: 100%;
+    display: flex;
+    text-align: center;
+    justify-content: center;
+    align-items: center;
+
+}
+
+.two-fa-methods {
+
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+
+}
+
+.two-fa-subdiv {
+
+    display: flex;
+    flex-direction: column;
+
+}
+
+.icon, .cog-icon, .log-out-svg {
+
+    margin: 10px;
+
+}
+
+.icon {
+
+    margin-bottom: 20px;
+
+}
+
+.Excl-mark-div {
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 5px;
+
+}
+
+.details-change-main {
+
+    display: grid;
+    grid-template-rows: .5fr 1.5fr;
+
+}
+
+.details-change-header {
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 5px;
+
+}
+
+.reauth-button {
+
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+
+}
+
+.logout-subdivision {
+
+    display: grid;
+    grid-template-rows: .5fr 1.5fr;
+    position: relative;
+
+}
+
+.logout-header {
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+}
+
+.logout-main-button {
+
+    display: flex;
+    justify-content: start;
+    align-items: center;
+    flex-direction: column;
+
+}
+
+.log-out-svg {
+
+    margin-bottom: 23px;
+    margin-right: 20px;
+
+}
+
+
+.hidden {
+
+    display: none;
+
+}

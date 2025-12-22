@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/html">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
+
+    <link rel="stylesheet" href="../static/css/general.css" type="text/css">
+
+    <link rel="stylesheet" href="../static/css/user.css" type="text/css">
+
+    <link rel="shortcut icon" href="../static/images/BluecheckmarkIcon.png" type="image/x-icon">
+
+    <title>Bluemark</title>
+</head>
+<body>
+
+    <div class="top-div">
+
+        <svg xmlns="http://www.w3.org/2000/svg" width="50px" id="logo" viewBox="0 0 48 48"><defs><style>.cls-1{fill:#82bcf4}.cls-2{fill:#6fabe6}</style></defs><g id="Verification"><path class="cls-1" d="m42.52 29 1.4 6.54-6.37 2-2 6.37L29 42.52 24 47l-5-4.48-6.54 1.4-2.05-6.37-6.37-2L5.48 29 1 24l4.48-5-1.4-6.5c7.29-2.35 6.32-1.88 6.5-2.46l1.92-6L19 5.48 24 1l5 4.48 6.54-1.4 2 6.37 6.37 2.05-1.39 6.5L47 24z"/><path class="cls-2" d="M39 37c0 .11.21 0-1.45.55l-2 6.37-6.55-1.4L24 47l-5-4.48-6.54 1.4-2.05-6.37-6.37-2L5.48 29 1 24l4.48-5-1.4-6.5c7.29-2.35 6.32-1.88 6.5-2.46A27 27 0 0 1 39 37z"/><path d="M39 24a15 15 0 1 1-27.42-8.42C19.91 3.38 39 9.28 39 24z" style="fill:#edebf2"/><path d="M35 28a15 15 0 0 1-2.58 8.42 15 15 0 0 1-20.84-20.84A15 15 0 0 1 35 28z" style="fill:#dad7e5"/><path class="cls-1" d="m32.5 20.68-9.38 9.38a3 3 0 0 1-4.24 0l-3.38-3.38a2.12 2.12 0 0 1 3-3l2.5 2.5c11.37-11.37 7.75-7.74 8.5-8.5a2.12 2.12 0 0 1 3 3z"/><path class="cls-2" d="m31.5 21.68-8.38 8.38a3 3 0 0 1-4.24 0l-3.38-3.38a2.11 2.11 0 0 1-.41-2.41 2.11 2.11 0 0 1 2.41.41l2.5 2.5c11.82-11.82 7.8-7.79 8.66-8.65a2.12 2.12 0 0 1 2.84 3.15z"/></g></svg>
+
+   <!-- This part is only for mobile -->
+
+    <div class="small-circle-search">
+
+        <a id="mobile-only-search" href="#">
+
+            <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="20px" height="20px" viewBox="0 0 50 50">
+
+                <path d="M 21 3 C 11.622998 3 4 10.623005 4 20 C 4 29.376995 11.622998 37 21 37 C 24.712383 37 28.139151 35.791079 30.9375 33.765625 L 44.085938 46.914062 L 46.914062 44.085938 L 33.886719 31.058594 C 36.443536 28.083 38 24.223631 38 20 C 38 10.623005 30.377002 3 21 3 z M 21 5 C 29.296122 5 36 11.703883 36 20 C 36 28.296117 29.296122 35 21 35 C 12.703878 35 6 28.296117 6 20 C 6 11.703883 12.703878 5 21 5 z"></path>
+
+            </svg>
+
+        </a>
+
+    </div>
+
+    <!-- This one is for the rest of gadgets. -->
+
+
+                <div class="small-circle-home"> <!-- Decorative circle right around the SVG. -->
+
+                    <a href="{{ url_for('main_page') }}" id="home-link">
+
+                    <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="35px" height="35px" viewBox="0 0 48 48" id="home-svg">
+            <path d="M 23.951172 4 A 1.50015 1.50015 0 0 0 23.070312 4.3222656 L 8.8730469 15.521484 C 7.0935305 16.919676 6 19.100391 6 21.400391 L 6 40.5 C 6 41.133333 6.2367979 41.80711 6.7148438 42.285156 C 7.1928895 42.763202 7.8666667 43 8.5 43 L 18.5 43 C 19.133333 43 19.80711 42.763202 20.285156 42.285156 C 20.763202 41.80711 21 41.133333 21 40.5 L 21 30.5 C 21 30.218182 21.218182 30 21.5 30 L 26.5 30 C 26.781818 30 27 30.218182 27 30.5 L 27 40.5 C 27 41.133333 27.236798 41.80711 27.714844 42.285156 C 28.19289 42.763202 28.866667 43 29.5 43 L 39.5 43 C 40.133333 43 40.80711 42.763202 41.285156 42.285156 C 41.763202 41.80711 42 41.133333 42 40.5 L 42 21.400391 C 42 19.155946 41.012069 16.901298 39.087891 15.490234 L 24.929688 4.3222656 A 1.50015 1.50015 0 0 0 23.951172 4 z M 24 7.4101562 L 37.271484 17.876953 A 1.50015 1.50015 0 0 0 37.3125 17.910156 C 38.388318 18.699095 39 20.044835 39 21.400391 L 39 40 L 30 40 L 30 30.5 C 30 28.581818 28.418182 27 26.5 27 L 21.5 27 C 19.581818 27 18 28.581818 18 30.5 L 18 40 L 9 40 L 9 21.400391 C 9 20.100391 9.7060794 18.680715 10.726562 17.878906 A 1.50015 1.50015 0 0 0 10.728516 17.876953 L 24 7.4101562 z"></path>
+            </svg>
+                    </a>
+
+            </div>
+
+    <form action="" id="search-form">
+
+      <input type="search" id="search-bar-input" autofocus required>
+        <button type="submit" class="submit-button">
+
+            <i class="fa fa-search">
+
+                <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="20" height="20" viewBox="0 0 50 50">
+
+                    <path d="M 21 3 C 11.622998 3 4 10.623005 4 20 C 4 29.376995 11.622998 37 21 37 C 24.712383 37 28.139151 35.791079 30.9375 33.765625 L 44.085938 46.914062 L 46.914062 44.085938 L 33.886719 31.058594 C 36.443536 28.083 38 24.223631 38 20 C 38 10.623005 30.377002 3 21 3 z M 21 5 C 29.296122 5 36 11.703883 36 20 C 36 28.296117 29.296122 35 21 35 C 12.703878 35 6 28.296117 6 20 C 6 11.703883 12.703878 5 21 5 z"></path>
+
+                </svg>
+
+            </i>
+
+        </button>
+        <select class="all-tags" name="tags">
+
+            <option value="All">All Categories</option>
+            <option value="Books">Books</option>
+            <option value="Art">Art</option>
+            <option value="Music">Music</option>
+            <option value="Console">Consoles &amp; Video Games</option>
+            <option value="Anime">Anime</option>
+            <option value="Estate">Real Estate</option>
+            <option value="Plush">Plushies</option>
+            <option value="Else">Everything Else</option>
+
+        </select>
+
+    </form>
+
+        <!-- Upload item SVG. -->
+
+        <div class="small-circle-upload-main">
+
+            <a href="{{ url_for('upload_item') }}" class="upload-item-top"><svg width="35px" height="35px" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" fill="#000000" id="upload-svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"><path fill="#000000" d="M704 288h131.072a32 32 0 0 1 31.808 28.8L886.4 512h-64.384l-16-160H704v96a32 32 0 1 1-64 0v-96H384v96a32 32 0 0 1-64 0v-96H217.92l-51.2 512H512v64H131.328a32 32 0 0 1-31.808-35.2l57.6-576a32 32 0 0 1 31.808-28.8H320v-22.336C320 154.688 405.504 64 512 64s192 90.688 192 201.664v22.4zm-64 0v-22.336C640 189.248 582.272 128 512 128c-70.272 0-128 61.248-128 137.664v22.4h256zm201.408 483.84L768 698.496V928a32 32 0 1 1-64 0V698.496l-73.344 73.344a32 32 0 1 1-45.248-45.248l128-128a32 32 0 0 1 45.248 0l128 128a32 32 0 1 1-45.248 45.248z"></path></g></svg></a>
+
+        </div>
+
+        <!-- Upload video SVG. -->
+
+        <div class="small-circle-video-main">
+
+            <a href="#"><svg fill="#000000" height="35px" width="35px" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 472.615 472.615" xml:space="preserve"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <g> <g> <path d="M345.12,173.904v-37.506c0-26.472-21.463-47.934-47.934-47.934H47.933C21.462,88.464,0,109.926,0,136.398v199.82 c0,26.472,21.462,47.933,47.933,47.933h249.252c26.471,0,47.934-21.461,47.934-47.933V298.71l63.153,31.242V142.661 L345.12,173.904z M139.613,289.582V183.035l83.88,53.274L139.613,289.582z"></path> </g> </g> <g> <g> <polygon points="427.965,132.919 427.965,339.694 472.615,361.782 472.615,110.83 "></polygon> </g> </g> </g></svg></a>
+
+        </div>
+
+    </div>
+
+
+    <div class="full-container">
+
+        <div class="mid-div">
+
+            <div class="profile-subdiv-mid">
+
+                <!-- Profile picture suggestion -->
+
+                    <div class="pfp-mode-edit">
+
+                        <div class="switch-div">
+
+                            <label class="switch">
+                              <span class="sun"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g fill="#ffd43b"><circle r="5" cy="12" cx="12"></circle><path d="m21 13h-1a1 1 0 0 1 0-2h1a1 1 0 0 1 0 2zm-17 0h-1a1 1 0 0 1 0-2h1a1 1 0 0 1 0 2zm13.66-5.66a1 1 0 0 1 -.66-.29 1 1 0 0 1 0-1.41l.71-.71a1 1 0 1 1 1.41 1.41l-.71.71a1 1 0 0 1 -.75.29zm-12.02 12.02a1 1 0 0 1 -.71-.29 1 1 0 0 1 0-1.41l.71-.66a1 1 0 0 1 1.41 1.41l-.71.71a1 1 0 0 1 -.7.24zm6.36-14.36a1 1 0 0 1 -1-1v-1a1 1 0 0 1 2 0v1a1 1 0 0 1 -1 1zm0 17a1 1 0 0 1 -1-1v-1a1 1 0 0 1 2 0v1a1 1 0 0 1 -1 1zm-5.66-14.66a1 1 0 0 1 -.7-.29l-.71-.71a1 1 0 0 1 1.41-1.41l.71.71a1 1 0 0 1 0 1.41 1 1 0 0 1 -.71.29zm12.02 12.02a1 1 0 0 1 -.7-.29l-.66-.71a1 1 0 0 1 1.36-1.36l.71.71a1 1 0 0 1 0 1.41 1 1 0 0 1 -.71.24z"></path></g></svg></span>
+                              <span class="moon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path d="m223.5 32c-123.5 0-223.5 100.3-223.5 224s100 224 223.5 224c60.6 0 115.5-24.2 155.8-63.4 5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6-96.9 0-175.5-78.8-175.5-176 0-65.8 36-123.1 89.3-153.3 6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path></svg></span>
+                              <input type="checkbox" class="mode-input">
+                              <span class="slider"></span>
+                            </label>
+
+                        </div>
+
+                        <form action="{{ url_for('user_profile') }}" method="post" class="user-pfp-form" enctype="multipart/form-data">
+
+                            <div class="profile-pic">
+
+                                <img alt="User Pic" src="{{ user_curr_pfp }}" id="profile-image1">
+                                <input id="profile-image-upload" class="hidden" type="file" name="new-pfp-user" accept="image/png, image/jpeg, image/jpg" onchange="previewFile();"> <!-- In order to let the user submit new pfp and preview how a new image would look like. -->
+
+                                <input type="submit" value="Submit New Picture" class="pfp-update-submit">
+
+                            </div>
+
+                        </form>
+
+                        <div class="pfp-message">
+
+                            <p class="file-error hidden">File was not selected or the image exceeded 1.5 Mb</p>
+
+                            <p class="file-size-message">(Maximum size of the image is 1.5 Mb)</p>
+
+                            <p class="pfp-hint">(Click on the circle to edit your profile picture)</p>
+
+                        </div>
+
+
+
+                    </div>
+
+
+                </div>
+
+                <!-- 2FA -->
+
+            <div class="profile-subdiv-mid two-fa-subdiv">
+
+                <!-- SVGs for the 2FA -->
+
+            {% if not has_2fa: %}
+
+                <div class="Excl-mark-div">
+
+                    <svg fill="#000000" height="40px" width="40px" class="Excl-mark-pfp" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 27.963 27.963" xml:space="preserve"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <g> <g id="c129_exclamation"> <path d="M13.983,0C6.261,0,0.001,6.259,0.001,13.979c0,7.724,6.26,13.984,13.982,13.984s13.98-6.261,13.98-13.984 C27.963,6.259,21.705,0,13.983,0z M13.983,26.531c-6.933,0-12.55-5.62-12.55-12.553c0-6.93,5.617-12.548,12.55-12.548 c6.931,0,12.549,5.618,12.549,12.548C26.531,20.911,20.913,26.531,13.983,26.531z"></path> <polygon points="15.579,17.158 16.191,4.579 11.804,4.579 12.414,17.158 "></polygon> <path d="M13.998,18.546c-1.471,0-2.5,1.029-2.5,2.526c0,1.443,0.999,2.528,2.444,2.528h0.056c1.499,0,2.469-1.085,2.469-2.528 C16.441,19.575,15.468,18.546,13.998,18.546z"></path> </g> <g id="Capa_1_207_"> </g> </g> </g></svg>
+
+                </div>
+            {% endif %}
+
+                <div class="two-fa-div">
+
+                    {% if not has_2fa: %}
+
+                        <div class="header-two-fa">
+
+                            <h3 class="two-fa-warning">Two-Factor-Authentication is not activated!</h3>
+
+                        </div>
+
+                        <div class="two-fa-methods">
+
+                            <svg fill="#000000" width="45px" height="45px" viewBox="0 0 32 32" class="icon" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <defs> <style> .cls-1 { fill: none; } </style> </defs> <polygon points="11 23.18 9 21.179 7.589 22.589 11 26 17 20 15.59 18.59 11 23.18"></polygon> <path d="M28,30H24V28h4V16H24V8a4.0045,4.0045,0,0,0-4-4V2a6.0067,6.0067,0,0,1,6,6v6h2a2.0021,2.0021,0,0,1,2,2V28A2.0021,2.0021,0,0,1,28,30Z" transform="translate(0 0)"></path> <path d="M20,14H18V8A6,6,0,0,0,6,8v6H4a2,2,0,0,0-2,2V28a2,2,0,0,0,2,2H20a2,2,0,0,0,2-2V16A2,2,0,0,0,20,14ZM8,8a4,4,0,0,1,8,0v6H8ZM20,28H4V16H20Z" transform="translate(0 0)"></path> <rect id="_Transparent_Rectangle_" data-name="&lt;Transparent Rectangle&gt;" class="cls-1" width="32" height="32"></rect> </g></svg>
+
+                            <a href="{{ url_for('generate_2fa') }}"><button class="qr-code-button" role="button">Use an Authenticator App</button></a>
+
+                        </div>
+
+                    {% else: %}
+
+                    <div class="header-two-fa">
+
+                            <h3>Two-Factor-Authentication is activated!</h3>
+
+                    </div>
+
+                    <div class="two-fa-methods">
+
+                            <svg fill="#000000" width="45px" height="45px" viewBox="0 0 32 32" class="icon" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <defs> <style> .cls-1 { fill: none; } </style> </defs> <polygon points="11 23.18 9 21.179 7.589 22.589 11 26 17 20 15.59 18.59 11 23.18"></polygon> <path d="M28,30H24V28h4V16H24V8a4.0045,4.0045,0,0,0-4-4V2a6.0067,6.0067,0,0,1,6,6v6h2a2.0021,2.0021,0,0,1,2,2V28A2.0021,2.0021,0,0,1,28,30Z" transform="translate(0 0)"></path> <path d="M20,14H18V8A6,6,0,0,0,6,8v6H4a2,2,0,0,0-2,2V28a2,2,0,0,0,2,2H20a2,2,0,0,0,2-2V16A2,2,0,0,0,20,14ZM8,8a4,4,0,0,1,8,0v6H8ZM20,28H4V16H20Z" transform="translate(0 0)"></path> <rect id="_Transparent_Rectangle_" data-name="&lt;Transparent Rectangle&gt;" class="cls-1" width="32" height="32"></rect> </g></svg>
+
+                            <h4>Lost authenticator device?</h4>
+
+                            <a href="{{ url_for('reset_2fa', from_login=False) }}"><button class="qr-code-button" role="button">Reset Authenticator</button></a>
+
+                    </div>
+
+                    {% endif %}
+                    
+
+                </div>
+
+            </div>
+
+            <!-- Details Change -->
+
+            <div class="profile-subdiv-mid details-change-main">
+
+                <div class="details-change-header">
+
+                    <h3>Change your account details</h3>
+
+                </div>
+
+                <div class="reauth-button">
+
+                    <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="45px" height="45px" class="cog-icon" viewBox="0 0 50 50">
+    <path d="M47.16,21.221l-5.91-0.966c-0.346-1.186-0.819-2.326-1.411-3.405l3.45-4.917c0.279-0.397,0.231-0.938-0.112-1.282 l-3.889-3.887c-0.347-0.346-0.893-0.391-1.291-0.104l-4.843,3.481c-1.089-0.602-2.239-1.08-3.432-1.427l-1.031-5.886 C28.607,2.35,28.192,2,27.706,2h-5.5c-0.49,0-0.908,0.355-0.987,0.839l-0.956,5.854c-1.2,0.345-2.352,0.818-3.437,1.412l-4.83-3.45 c-0.399-0.285-0.942-0.239-1.289,0.106L6.82,10.648c-0.343,0.343-0.391,0.883-0.112,1.28l3.399,4.863 c-0.605,1.095-1.087,2.254-1.438,3.46l-5.831,0.971c-0.482,0.08-0.836,0.498-0.836,0.986v5.5c0,0.485,0.348,0.9,0.825,0.985 l5.831,1.034c0.349,1.203,0.831,2.362,1.438,3.46l-3.441,4.813c-0.284,0.397-0.239,0.942,0.106,1.289l3.888,3.891 c0.343,0.343,0.884,0.391,1.281,0.112l4.87-3.411c1.093,0.601,2.248,1.078,3.445,1.424l0.976,5.861C21.3,47.647,21.717,48,22.206,48 h5.5c0.485,0,0.9-0.348,0.984-0.825l1.045-5.89c1.199-0.353,2.348-0.833,3.43-1.435l4.905,3.441 c0.398,0.281,0.938,0.232,1.282-0.111l3.888-3.891c0.346-0.347,0.391-0.894,0.104-1.292l-3.498-4.857 c0.593-1.08,1.064-2.222,1.407-3.408l5.918-1.039c0.479-0.084,0.827-0.5,0.827-0.985v-5.5C47.999,21.718,47.644,21.3,47.16,21.221z M25,32c-3.866,0-7-3.134-7-7c0-3.866,3.134-7,7-7s7,3.134,7,7C32,28.866,28.866,32,25,32z"></path>
+</svg>
+
+                    <h4>Reauthorize to change your account details</h4>
+
+                    <a href="{{ url_for('reauthorization_page') }}"><button class="reauth">Reauthorize</button></a>
+
+                </div>
+
+            </div>
+
+            <!-- Account Logout. -->
+
+            <div class="profile-subdiv-mid logout-subdivision">
+
+                <div class="logout-header">
+
+                    <h3>Log out from the account</h3>
+
+                </div>
+
+                <div class="logout-main-button">
+
+                    <svg width="45px" height="45px" class="log-out-svg" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M12.9999 2C10.2385 2 7.99991 4.23858 7.99991 7C7.99991 7.55228 8.44762 8 8.99991 8C9.55219 8 9.99991 7.55228 9.99991 7C9.99991 5.34315 11.3431 4 12.9999 4H16.9999C18.6568 4 19.9999 5.34315 19.9999 7V17C19.9999 18.6569 18.6568 20 16.9999 20H12.9999C11.3431 20 9.99991 18.6569 9.99991 17C9.99991 16.4477 9.55219 16 8.99991 16C8.44762 16 7.99991 16.4477 7.99991 17C7.99991 19.7614 10.2385 22 12.9999 22H16.9999C19.7613 22 21.9999 19.7614 21.9999 17V7C21.9999 4.23858 19.7613 2 16.9999 2H12.9999Z" fill="#000000"></path> <path d="M13.9999 11C14.5522 11 14.9999 11.4477 14.9999 12C14.9999 12.5523 14.5522 13 13.9999 13V11Z" fill="#000000"></path> <path d="M5.71783 11C5.80685 10.8902 5.89214 10.7837 5.97282 10.682C6.21831 10.3723 6.42615 10.1004 6.57291 9.90549C6.64636 9.80795 6.70468 9.72946 6.74495 9.67492L6.79152 9.61162L6.804 9.59454L6.80842 9.58848C6.80846 9.58842 6.80892 9.58778 5.99991 9L6.80842 9.58848C7.13304 9.14167 7.0345 8.51561 6.58769 8.19098C6.14091 7.86637 5.51558 7.9654 5.19094 8.41215L5.18812 8.41602L5.17788 8.43002L5.13612 8.48679C5.09918 8.53682 5.04456 8.61033 4.97516 8.7025C4.83623 8.88702 4.63874 9.14542 4.40567 9.43937C3.93443 10.0337 3.33759 10.7481 2.7928 11.2929L2.08569 12L2.7928 12.7071C3.33759 13.2519 3.93443 13.9663 4.40567 14.5606C4.63874 14.8546 4.83623 15.113 4.97516 15.2975C5.04456 15.3897 5.09918 15.4632 5.13612 15.5132L5.17788 15.57L5.18812 15.584L5.19045 15.5872C5.51509 16.0339 6.14091 16.1336 6.58769 15.809C7.0345 15.4844 7.13355 14.859 6.80892 14.4122L5.99991 15C6.80892 14.4122 6.80897 14.4123 6.80892 14.4122L6.804 14.4055L6.79152 14.3884L6.74495 14.3251C6.70468 14.2705 6.64636 14.1921 6.57291 14.0945C6.42615 13.8996 6.21831 13.6277 5.97282 13.318C5.89214 13.2163 5.80685 13.1098 5.71783 13H13.9999V11H5.71783Z" fill="#000000"></path> </g></svg>
+
+                    <a href="{{ url_for('logout') }}"><button class="log-out-button">Log Out</button></a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <script src="../static/JS%20Scripts/profile_script.js"></script>
+
+    {% if night_mode: %} <!-- Importing JavaScript if the user has night_mode turned on. -->
+
+        <script src="../static/JS%20Scripts/dark_light_mode.js"></script>
+
+    {% endif %}
+
+    <script src="../static/JS%20Scripts/pfp_submit.js"></script>
+
+    <script src="../static/JS%20Scripts/disable_checkbox.js"></script>
+
+</body>
+</html>

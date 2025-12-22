@@ -6,6 +6,8 @@
 
 /* General Styling */
 
+/* No dark mode applied. */
+
 body, html {
 
     margin: 0;
@@ -15,6 +17,38 @@ body, html {
     font-family: "Vend Sans", "sans-serif";
     background: linear-gradient(135deg, #4D55CC, #6C48C5);
     overflow: hidden;
+
+}
+
+body.dark {
+
+    background: linear-gradient(135deg, #353B8C, #4D348C);
+
+    .small-circle-upload-main, .small-circle-video-main, .small-circle-home {
+
+        background-color: #254580;
+
+    }
+
+    .user-dropdown-content {
+
+        background-color: #040789;
+
+    }
+
+    #search-form:hover .fa,
+    #search-form:focus-within .fa,
+    #search-form:valid .fa {
+
+        background: #132669;
+
+    }
+
+    .all-tags {
+
+        background-color: #2c007a;
+
+    }
 
 }
 
@@ -139,14 +173,89 @@ button, input, select, textarea {
 
 }
 
+/* Transition for the first exclamation mark. (The big one before hovering). */
+
+.pfp-div:hover #Excl-mark-pfp {
+
+    display: none;
+
+}
+
+/* Styling for the dropdown. */
+
+.pfp-div:hover .button-animation-after, .pfp-div:hover .button-animation-after button, .pfp-div:hover #Excl-mark-pfp-dropdown {
+
+    display: block;
+    position: absolute;
+    animation: slowlyAppear .4s ease-in-out forwards;
+
+}
+
 #user-pfp {
 
     display: block;
+    position: relative;
     border-radius: 50%;
     width: 50px;
     height: 50px;
     opacity: 0.8;
     margin: 10px;
+
+}
+
+/* Styling of the "Profile Details" inside the dropdown DIV. */
+
+.button-animation-after {
+
+    display: none;
+    background-color: rgba(255, 255, 255, .6);
+    border: none;
+    border-top: 1px solid rgba(255, 255, 255, .5);
+    border-left: 1px solid rgba(255, 255, 255, .5);
+    border-radius: 15px;
+    width: 120px;
+    height: 45px;
+    top: -40px;
+    left: 5px;
+
+}
+
+/* Styling of the "Profile Details" DIV. */
+
+.user-dropdown-content {
+
+    display: none;
+    background-color: #676AFA;
+    width: 100px;
+    color: #FFFFFF;
+    border-radius: 5000px;
+    border: none;
+    border-top: 1px solid rgba(255, 255, 255, .7);
+    border-left: 1px solid rgba(255, 255, 255, .7);
+    text-shadow: .5px .5px .5px #000;
+    box-shadow: 1px 1px 3px #FFFFFF;
+    cursor: pointer;
+    top: 10px;
+    left: 10px;
+
+}
+
+/* Styling of the exclamation mark's SVGs. */
+
+#Excl-mark-pfp {
+
+    position: absolute;
+    left: 50px;
+    bottom: 50px;
+
+}
+
+#Excl-mark-pfp-dropdown {
+
+    display: none;
+    position: absolute;
+    right: 5px;
+    top: 1px;
 
 }
 

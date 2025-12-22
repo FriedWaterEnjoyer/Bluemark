@@ -1,0 +1,352 @@
+/* For the input-styling of the 2FA page. */
+
+/* Dark Mode Styling. */
+
+body.dark {
+
+    .content-container {
+
+        background-color: rgba(0, 0, 0, .5);
+
+    }
+
+    .qr-header {
+
+        color: #FFFFFF
+
+    }
+
+    .recovery h5, .content-container p {
+
+        color: #FFF;
+
+    }
+
+    .recovery {
+
+        border: dashed 1px #FFF;
+
+    }
+
+}
+
+/* Root colors. */
+
+:root {
+
+    font-size: calc(10px + 1vmin);
+    --primary: hsl(260, 100%, 60%);
+	--primary-2: hsl(220, 100%, 60%);
+	--softGrey: #9a97a8;
+	--softTint: rgba(0, 0, 0, 0.2);
+	--bounce: 0.3s cubic-bezier(0.3, -0.1, 0.5, 1.4);
+	--ease: 0.2s cubic-bezier(0.3, 0.1, 0.3, 1);
+
+}
+
+/* Main animations */
+
+@keyframes tension {
+	to {
+		background-position-x: 60%;
+	}
+}
+
+@keyframes slowlyAppear {
+
+    0% { opacity: 0; }
+
+
+    100% { opacity: 1; }
+
+}
+
+/* Main input styling */
+
+.main-container {
+
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+}
+
+.content-container {
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    background-color: rgba(255, 255, 255, .5);
+    border: 1px solid rgba(255, 255, 255, .7);
+    border-radius: 10px;
+    animation: slowlyAppear 1.2s ease-in-out forwards;
+
+}
+
+.home-center-div {
+
+    padding: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+}
+
+.qr-header {
+
+    margin: 5px;
+    padding: 15px;
+
+}
+
+.user-qr-code {
+
+    width: 190px;
+    height: 190px;
+    border: 3px dashed #000;
+    margin: 10px;
+
+}
+
+form {
+
+  --size: 1.5rem;
+  --space: .8rem;
+  padding-left: var(--space);
+  position: relative;
+  display: flex;
+  overflow: hidden;
+  border-radius: calc(var(--size) / 4);
+  box-shadow: 0 1em 2em var(--softTint);
+  transition: var(--bounce);
+
+}
+
+form:focus-within {
+
+  transform: scale(0.94);
+  box-shadow: 0 1em 1em var(--softTint);
+
+}
+
+form input[type=number] {
+  appearance: none;
+  -webkit-appearance: none;
+  heght: 100%;
+  width: var(--size);
+  height: calc(var(--size) * 1.4);
+  font-size: calc(var(--size) * 0.7);
+  text-align: center;
+  border: 0.12em solid var(--softTint);
+  border-radius: calc(var(--size) * 0.2);
+  outline: none;
+  margin: var(--space);
+  margin-left: 0;
+  transition: var(--ease);
+}
+
+form input[type=number]::-webkit-outer-spin-button, form input[type=number]::-webkit-inner-spin-button {
+  display: none;
+}
+form input[type=number]:not(:placeholder-shown) {
+  border-color: var(--primary);
+}
+
+form .submit {
+  appearance: none;
+  -webkit-appearance: none;
+  border: none;
+  outline: none;
+  display: grid;
+  place-items: center;
+  width: calc(var(--size) + var(--space) * 2);
+  padding: 1em;
+  cursor: pointer;
+  background-color: var(--softTint);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 512'%3E%3Cpath fill='white' d='M224.3 273l-136 136c-9.4 9.4-24.6 9.4-33.9 0l-22.6-22.6c-9.4-9.4-9.4-24.6 0-33.9l96.4-96.4-96.4-96.4c-9.4-9.4-9.4-24.6 0-33.9L54.3 103c9.4-9.4 24.6-9.4 33.9 0l136 136c9.5 9.4 9.5 24.6.1 34z'/%3E%3C/svg%3E");
+  background-position: 50% 50%;
+  background-size: 30%;
+  background-repeat: no-repeat;
+  transition: var(--ease);
+  animation: tension 0.36s cubic-bezier(0.2, 0.4, 0.5, 1) paused alternate infinite;
+}
+form .submit:focus {
+  background-color: var(--primary);
+  animation-play-state: running;
+}
+
+form .indicator {
+  --i: 0;
+  position: absolute;
+  bottom: 0;
+  width: var(--size);
+  height: 0.5em;
+  border-radius: 0.5em 0.5em 0 0;
+  background: var(--primary);
+  transform: translateX(calc((var(--size) + var(--space)) * (var(--i) - 1)));
+  transition: var(--bounce);
+}
+
+
+#n1:focus ~ .indicator {
+  --i: 1;
+}
+
+#n2:focus ~ .indicator {
+  --i: 2;
+}
+
+#n3:focus ~ .indicator {
+  --i: 3;
+}
+
+#n4:focus ~ .indicator {
+  --i: 4;
+}
+
+#n5:focus ~ .indicator {
+  --i: 5;
+}
+
+#n6:focus ~ .indicator {
+  --i: 6;
+}
+
+.submit:focus ~ .indicator {
+	--i: 7;
+}
+
+#submitted:active ~ form {
+  background: var(--primary);
+  transform: translateX(100vw);
+  transition: var(--ease), transform var(--ease) 0.3s;
+}
+#submitted:active ~ form input,
+#submitted:active ~ form .indicator {
+  width: 0;
+  opacity: 0;
+  margin-right: 0;
+  transform: scaleX(0);
+}
+#submitted:active ~ form .submit {
+  background-color: var(--primary);
+  color: white;
+}
+
+.other-method-link {
+
+    font-size: 15px;
+    padding: 10px;
+    margin-top: 15px;
+    color: #5863EA;
+    text-decoration: none;
+
+}
+
+.other-method-link:hover {
+
+    text-decoration: underline;
+
+}
+
+.error-msg {
+
+    font-size: 13px;
+    color: #EB2714;
+
+}
+
+/* Thanks to Braden East for the styling of the inputs <3 */
+
+/* Styling for the manual typing. */
+
+.manual-type {
+
+    display: flex;
+    position: relative;
+    align-items: center;
+    flex-wrap: nowrap;
+
+}
+
+#button-to-copy {
+
+    margin: 5px;
+    border: none;
+    background-color: transparent;
+    cursor: pointer;
+    position: absolute;
+    right: -20px;
+    top: 21px;
+
+
+}
+
+#success-text {
+
+    margin: 5px;
+    color: #44F456;
+    font-size: 14px;
+
+}
+
+/* Styling for the recovery codes. */
+
+.recovery {
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    border: dashed 1px #000;
+
+}
+
+.copy-svg {
+
+    position: relative;
+
+}
+
+.button-to-copy:hover {
+
+    transform: scale(1.1);
+
+}
+
+.button-to-copy {
+
+    position: relative;
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    top: -15px;
+    transition: .3s ease-in-out;
+
+}
+
+.text-to-copy-clipboard {
+
+    margin: 15px;
+
+}
+
+@media (max-width: 374px) {
+
+    #button-to-copy {
+
+        bottom: -25px;
+        right: 43%;
+
+    }
+
+}
+
+.hidden {
+
+    display: none;
+
+}

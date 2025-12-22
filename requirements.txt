@@ -1,6 +1,11 @@
-sqlalchemy==2.0.44
+sqlalchemy==2.0.45
 flask==3.1.2
 python-dotenv==1.2.1
 authlib==1.6.5
 stripe==14.1.0b1
 cloudinary==1.44.1
+werkzeug==3.1.4
+itsdangerous==2.2.0
+pyotp==2.9.0
+cryptography==46.0.3
+qrcode==8.2

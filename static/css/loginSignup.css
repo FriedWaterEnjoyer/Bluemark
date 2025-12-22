@@ -1,4 +1,22 @@
-/* For both Signup and Login pages */
+/* For Signup, Login and Reset 2FA pages */
+
+/* Dark-mode styling (for Reset 2FA). */
+
+body.dark {
+
+    .code-form {
+
+        background-color: rgba(0, 0, 0, .5);
+
+    }
+
+    #sign-submit, .code-form h2, .register-input {
+
+        color: #FFFFFF;
+
+    }
+
+}
 
 /* Just adding display: flex to the html and css, since it's missing from the main file. (And i kinda need it here :3) */
 
@@ -15,14 +33,14 @@ body, html {
 
 /* Width and height are mobile-first. */
 
-.error-message {
+.error-message, #error-message {
 
     color: #F4403D;
     margin: 5px;
 
 }
 
-.sign-in-form, .google-register, .log-in-form {
+.sign-in-form, .google-register, .account-deletion, .log-in-form, .code-form {
 
     display: flex;
     justify-content: center;
@@ -117,7 +135,7 @@ body, html {
 
 /* Google register form */
 
-.google-register {
+.google-register, .account-deletion {
 
     position: absolute;
     justify-content: flex-start;
@@ -162,6 +180,62 @@ body, html {
 
 }
 
+.dangerous-button {
+  background: #FF4742;
+  border: 1px solid #FF4742;
+  border-radius: 6px;
+  box-shadow: rgba(0, 0, 0, 0.1) 1px 2px 4px;
+  box-sizing: border-box;
+  color: #FFFFFF;
+  cursor: pointer;
+  display: inline-block;
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 16px;
+  min-height: 40px;
+  outline: 0;
+  padding: 12px 14px;
+  text-align: center;
+  text-rendering: geometricprecision;
+  text-transform: none;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  vertical-align: middle;
+  transition: .4s ease-in-out;
+}
+
+.dangerous-button:hover,
+.dangerous-button:active {
+
+    text-shadow: 1px 1px 1px #FFFFFF;
+
+}
+
+.account-deletion {
+
+    justify-content: center;
+
+}
+
+/* Recovery-codes portion. */
+
+.code-form {
+
+    text-align: center;
+
+}
+
+.main-container {
+
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+}
+
 /* Animation for the text to appear. */
 
 @keyframes slowlyAppear {
@@ -177,10 +251,16 @@ body, html {
 
 @media (min-width: 426px) {
 
-    .sign-in-form, .google-register, .log-in-form {
+    .sign-in-form, .google-register, .log-in-form, .account-deletion, .code-form {
 
         width: 550px;
 
     }
+
+}
+
+.hidden {
+
+    display: none;
 
 }

@@ -1,0 +1,56 @@
+<!-- Responsible for asking the user their 6-digit 2FA code if they're trying to log in. -->
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/html">
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="stylesheet" href="../static/css/general.css" type="text/css">
+
+    <link rel="stylesheet" href="../static/css/two-factor.css" type="text/css">
+
+    <link rel="shortcut icon" href="../static/images/BluecheckmarkIcon.png" type="image/x-icon">
+
+    <title>Bluemark</title>
+
+</head>
+<body>
+
+<div class="main-container">
+
+    <div class="content-container">
+
+        <h3 class="qr-header">Please enter the 6-digit code from the authenticator app</h3>
+
+        {% if error_code: %} <!-- Occurs in case when the user submitted an incorrect authentication code. -->
+
+            <p class="error-msg">Incorrect 6-digit code</p>
+
+        {% endif %}
+
+        <!-- Main 6-digit code input. -->
+
+            <form method="post" action="{{ url_for('two_fa_required') }}" id="two-fa-main-form">
+
+                <input type="number" name="num1" min="0" max="9" maxlength="1" placeholder=" " oninput="this.nextElementSibling.focus()" id="n1" required autofocus>
+                <input type="number" name="num2" min="0" max="9" maxlength="1" placeholder=" " oninput="this.nextElementSibling.focus()" id="n2" required>
+                <input type="number" name="num3" min="0" max="9" maxlength="1" placeholder=" " oninput="this.nextElementSibling.focus()" id="n3" required>
+                <input type="number" name="num4" min="0" max="9" maxlength="1" placeholder=" " oninput="this.nextElementSibling.focus()" id="n4" required>
+                <input type="number" name="num5" min="0" max="9" maxlength="1" placeholder=" " oninput="this.nextElementSibling.focus()" id="n5" required>
+                <input type="number" name="num6" min="0" max="9" maxlength="1" placeholder=" " oninput="this.nextElementSibling.focus()" id="n6" required>
+
+                <input class="submit" type="submit" tabindex="0" id="submitted" value="">
+
+                <span class="indicator"></span>
+
+            </form>
+
+        <a href="{{ url_for('reset_2fa', from_login=True) }}" class="other-method-link">Lost authenticator device?</a>
+
+    </div>
+
+</div>
+
+</body>
+</html>

@@ -12,6 +12,7 @@
 
     <title>Bluemark</title>
 </head>
+
 <body>
 
     <div class="top-div">
@@ -281,9 +282,27 @@
 
         {% else: %} <!-- If he/she is registered - showing profile picture instead. -->
 
-            <div class="pfp-div"> <!-- TODO: pls make the .pfp-div lead to the user's profile :3 -->
+            <div class="pfp-div">
 
                 <img src="{{ user_data['ProfilePicture'] }}" alt="User's Profile Picture" id="user-pfp" /> <!-- YUIPEEEEEEEEEEEEEEEEEE -->
+
+                {% if not has_2fa: %}
+
+                <svg fill="#000000" height="20px" width="20px" id="Excl-mark-pfp" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 27.963 27.963" xml:space="preserve"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <g> <g id="c129_exclamation"> <path d="M13.983,0C6.261,0,0.001,6.259,0.001,13.979c0,7.724,6.26,13.984,13.982,13.984s13.98-6.261,13.98-13.984 C27.963,6.259,21.705,0,13.983,0z M13.983,26.531c-6.933,0-12.55-5.62-12.55-12.553c0-6.93,5.617-12.548,12.55-12.548 c6.931,0,12.549,5.618,12.549,12.548C26.531,20.911,20.913,26.531,13.983,26.531z"></path> <polygon points="15.579,17.158 16.191,4.579 11.804,4.579 12.414,17.158 "></polygon> <path d="M13.998,18.546c-1.471,0-2.5,1.029-2.5,2.526c0,1.443,0.999,2.528,2.444,2.528h0.056c1.499,0,2.469-1.085,2.469-2.528 C16.441,19.575,15.468,18.546,13.998,18.546z"></path> </g> <g id="Capa_1_207_"> </g> </g> </g></svg>
+
+                {% endif %}
+
+                <div class="button-animation-after">
+
+                    <a href="{{ url_for('user_profile') }}"><button class="user-dropdown-content">Profile Details</button></a>
+
+                    {% if not has_2fa: %}
+
+                    <svg fill="#000000" height="13px" width="13px" id="Excl-mark-pfp-dropdown" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 27.963 27.963" xml:space="preserve"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <g> <g id="c129_exclamation"> <path d="M13.983,0C6.261,0,0.001,6.259,0.001,13.979c0,7.724,6.26,13.984,13.982,13.984s13.98-6.261,13.98-13.984 C27.963,6.259,21.705,0,13.983,0z M13.983,26.531c-6.933,0-12.55-5.62-12.55-12.553c0-6.93,5.617-12.548,12.55-12.548 c6.931,0,12.549,5.618,12.549,12.548C26.531,20.911,20.913,26.531,13.983,26.531z"></path> <polygon points="15.579,17.158 16.191,4.579 11.804,4.579 12.414,17.158 "></polygon> <path d="M13.998,18.546c-1.471,0-2.5,1.029-2.5,2.526c0,1.443,0.999,2.528,2.444,2.528h0.056c1.499,0,2.469-1.085,2.469-2.528 C16.441,19.575,15.468,18.546,13.998,18.546z"></path> </g> <g id="Capa_1_207_"> </g> </g> </g></svg>
+
+                    {% endif %}
+
+                </div>
 
             </div>
 
@@ -301,7 +320,7 @@
 
             <div class="small-circle-video-mobile">
 
-                <svg fill="#000000" height="35px" width="35px" id="video-svg" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 472.615 472.615" xml:space="preserve"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <g> <g> <path d="M345.12,173.904v-37.506c0-26.472-21.463-47.934-47.934-47.934H47.933C21.462,88.464,0,109.926,0,136.398v199.82 c0,26.472,21.462,47.933,47.933,47.933h249.252c26.471,0,47.934-21.461,47.934-47.933V298.71l63.153,31.242V142.661 L345.12,173.904z M139.613,289.582V183.035l83.88,53.274L139.613,289.582z"></path> </g> </g> <g> <g> <polygon points="427.965,132.919 427.965,339.694 472.615,361.782 472.615,110.83 "></polygon> </g> </g> </g></svg>
+                <a href="#"><svg fill="#000000" height="35px" width="35px" id="video-svg" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 472.615 472.615" xml:space="preserve"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <g> <g> <path d="M345.12,173.904v-37.506c0-26.472-21.463-47.934-47.934-47.934H47.933C21.462,88.464,0,109.926,0,136.398v199.82 c0,26.472,21.462,47.933,47.933,47.933h249.252c26.471,0,47.934-21.461,47.934-47.933V298.71l63.153,31.242V142.661 L345.12,173.904z M139.613,289.582V183.035l83.88,53.274L139.613,289.582z"></path> </g> </g> <g> <g> <polygon points="427.965,132.919 427.965,339.694 472.615,361.782 472.615,110.83 "></polygon> </g> </g> </g></svg></a>
 
             </div>
 
@@ -309,7 +328,7 @@
 
         {% if registered: %} <!-- Checking if the user's registered. If yes - then showing the amount of items he/she has in his cart, alongside how many items the user has. -->
 
-            <div class="small-circle">{{ user_data[6] }}</div>
+            <div class="small-circle">{{ user_data[6]|length }}</div>
 
             <div class="small-circle-liked-mobile"></div>
 
@@ -321,6 +340,12 @@
 
 
     </div>
+
+{% if night_mode: %} <!-- Importing JavaScript if the user has night_mode turned on. -->
+
+    <script src="../static/JS%20Scripts/dark_light_mode.js"></script>
+
+{% endif %}
 
 </body>
 </html>
