@@ -4,9 +4,24 @@
 
 document.addEventListener('DOMContentLoaded', function() {
 
-    function checkSize(input) { // Checks if the size of the input is less than or equal to 2Mb. If not - returns false.
+    let valid_extensions = ["jpg", "jpeg", "png"];
+
+    function checkExtension(filename) {
+
+        const fileExtension = filename.name.split('.').pop().toLowerCase();
+        return valid_extensions.includes(fileExtension);
+
+    }
+
+    function checkSize(input) { // Checks if the size of the input is less than or equal to 2Mb. If not - returns false. (+Whether the file is in a correct format).
 
         if (input.target.files[0]) {
+
+            if (!checkExtension(input.target.files[0])) {
+
+                return "Incorrect file extension";
+
+            };
 
             if(input.target.files[0].size > 2000001) {
 
@@ -52,7 +67,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         let file_check = checkSize(e);
 
-        if(currFiles.length > 0 && file_check !== "No file submitted" && file_check && count < 5){
+        if(currFiles.length > 0 && file_check !== "No file submitted" && file_check !== "Incorrect file extension" && file_check && count < 5){ // In case of a successful upload.
 
               let src = URL.createObjectURL(currFiles[0]);
               let imagePreview = document.getElementById("file-preview");
@@ -62,6 +77,8 @@ document.addEventListener('DOMContentLoaded', function() {
               document.getElementsByClassName("file-size-error")[0].classList.add("hidden");
               document.getElementsByClassName("icon")[0].classList.add("hidden");
               document.getElementsByClassName("text")[0].classList.add("hidden");
+              document.getElementsByClassName("file-format-error")[0].classList.add("hidden");
+              document.getElementsByClassName("no-images-submitted")[0].classList.add("hidden");
 
               document.getElementsByClassName("image-success")[0].classList.remove("hidden");
               imagePreview.classList.remove("hidden");
@@ -77,6 +94,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
             document.getElementsByClassName("image-success")[0].classList.add("hidden");
             document.getElementsByClassName("max-img-am")[0].classList.add("hidden")
+            document.getElementsByClassName("file-format-error")[0].classList.add("hidden");
+            document.getElementsByClassName("no-images-submitted")[0].classList.add("hidden");
 
             document.getElementsByClassName("file-size-error")[0].classList.remove("hidden");
 
@@ -84,10 +103,21 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // pass
 
+        } else if(file_check === "Incorrect file extension") { // If the file extension is incorrect.
+
+            document.getElementsByClassName("image-success")[0].classList.add("hidden");
+            document.getElementsByClassName("max-img-am")[0].classList.add("hidden");
+            document.getElementsByClassName("file-size-error")[0].classList.add("hidden");
+            document.getElementsByClassName("no-images-submitted")[0].classList.add("hidden");
+
+            document.getElementsByClassName("file-format-error")[0].classList.remove("hidden");
+
         } else { // If the user's reached maximum amount of image uploads.
 
             document.getElementsByClassName("image-success")[0].classList.add("hidden");
             document.getElementsByClassName("file-size-error")[0].classList.add("hidden");
+            document.getElementsByClassName("file-format-error")[0].classList.add("hidden");
+            document.getElementsByClassName("no-images-submitted")[0].classList.add("hidden");
 
             document.getElementsByClassName("max-img-am")[0].classList.remove("hidden");
 
@@ -102,12 +132,22 @@ document.addEventListener('DOMContentLoaded', function() {
 
             e.preventDefault();
 
+            if (all_images === undefined || all_images.length === 0) { // Checks if the user's submitted at least 1 image.
+
+                document.getElementsByClassName("no-images-submitted")[0].classList.remove("hidden");
+
+                return false; // If not - then it prevents the form from being submitted and displays an error message.
+
+            };
+
             submitFormButton.disabled = true; // Disabling the form submission, since the loading kicks in a few seconds after the user's pressed the submit button.
 
 
             document.getElementsByClassName("image-success")[0].classList.add("hidden");
             document.getElementsByClassName("file-size-error")[0].classList.add("hidden");
             document.getElementsByClassName("max-img-am")[0].classList.add("hidden");
+            document.getElementsByClassName("file-format-error")[0].classList.add("hidden");
+            document.getElementsByClassName("no-images-submitted")[0].classList.add("hidden");
 
             document.getElementsByClassName("form-sending-success")[0].classList.remove("hidden");
 

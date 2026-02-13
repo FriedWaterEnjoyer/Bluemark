@@ -4,21 +4,15 @@ Man this is fun :D :D :D
 
 :3
 
-TODO: Implement these features: let the user delete their account.
+<3
 
-After doing everything above - Git commit.
-
-
-
-Next step - pls implement product pages,
+:3
 
 after that - cart and payment functionalities,
 
 then the search function,
 
-after that - let the user see what products and videos they've uploaded, as well as their purchase history,
-
-and the last - video functionality.
+after that - let the user see what products and videos they've uploaded, as well as their purchase history
 
 
 
@@ -33,4 +27,12 @@ Agreed :3
 
 Agreed x2 :3
 
+Agreed x3 :3
+
 Did a lot of important backend stuff today, went pretty well. It's honestly really fun through and through :d
+
+Another git push, yuipeeeee!
+
+Now for even more stuff to do! :3
+
+I'm really curious what will come out of it in the end...

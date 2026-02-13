@@ -6,7 +6,17 @@
 
 # I'll prolly do it closer to the end of the production, for now I want to have everything in one file.
 
-# TODO: Maybe add a shadow to the search bar..? At least when hovered, because it looks pretty cool :3
+# TODO: Maybe add a shadow to the search bar...? At least when hovered, because it looks pretty cool :3
+
+# TODO: Increase the width of the card for anything above 1440px pls :3
+
+# TODO: as a sidequest - let the user delete their own comments.
+
+# (Possible) TODO: sanitize the user's form inputs.
+
+# TODO: Night mode for the cart + checkout pls :3
+
+# TODO: (Closer to the end of the production) - adjust mobile frontend.
 
 #---- Imports ----#
 
@@ -14,7 +24,7 @@
 import os
 from dotenv import load_dotenv
 from flask import Flask, render_template, redirect, request, make_response, url_for, jsonify, session
-from sqlalchemy import Text, Numeric, Integer, BOOLEAN, ARRAY, create_engine, MetaData, Column, Table, LargeBinary  # For DB interactions.
+from sqlalchemy import Text, Numeric, Integer, BOOLEAN, ARRAY, create_engine, MetaData, Column, Table, LargeBinary, select  # For DB interactions.
 from sqlalchemy.orm import sessionmaker
 import argon2 # For hashing passwords.
 from authlib.integrations.flask_client import OAuth # For authorization with Google.
@@ -35,6 +45,7 @@ import secrets # For generating 2FA recovery codes.
 import string # Also a part of recovery code generation.
 # RIP email verification + forgot password features :( too expensive for my project...
 # Because I want this project to feel like it was made by a professional company, I'll have to use services like Mailgun, Mailjet, etc. The problem is that I'll have to own a DNS domain, which... costs money :(
+from decimal import Decimal, ROUND_HALF_UP # For working with the prices and quantities. (Used in calculate_price API).
 
 
 # !!!!!! Important information !!!!!!
@@ -177,15 +188,11 @@ customer_table = Table(
     Column("LastName", Text, nullable=False, unique=False),
     Column("Email", Text, nullable=False, unique=True, index=True),
     Column("Password", Text, nullable=False),
-    Column("Liked", ARRAY(Integer), nullable=True), # Will store the IDs of all the items that the user liked.
-    Column("InCart", ARRAY(Integer), nullable=True), # Will store all the items the user has in cart.
+    Column("InCartAmount", Integer, nullable=True), # Will store all the items the user has in cart.
     Column("ProfilePicture", Text, nullable=True),
     Column("Stripe", BOOLEAN, nullable=False),
     Column("Stripe_ID", Text, nullable=True),
-    Column("UserProducts", ARRAY(Integer), nullable=True), # All the products that the user's uploaded.
-    Column("UserProductHistory", ARRAY(Integer), nullable=True), # Pointing to all the items that the user's bought.
-    Column("UserVideos", ARRAY(Integer), nullable=True), # For IDs of user's videos.
-    Column("TwoFA", BOOLEAN, nullable=False), # For the two-factor authentication.
+    Column("TwoFA", BOOLEAN, nullable=False), # A boolean in order to easily check if the user has a 2FA turned on.
     Column("Night_mode", BOOLEAN, nullable=False),
     # 2FA parameters:
     Column("Encrypted_secret", LargeBinary, nullable=True),
@@ -205,19 +212,77 @@ product_table = Table(
 
 Column("ID", Integer, primary_key=True, autoincrement=True),
     Column("Name", Text, nullable=False),
-    Column("Rating", Numeric, nullable=False),
+    Column("Rating", Integer, nullable=False),
     Column("Price", Numeric, nullable=False),
     Column("Tags", ARRAY(Text), nullable=False, index=True),
-    Column("Reviews", ARRAY(Text), nullable=True),
     Column("Description", Text, nullable=False),
     Column("Images", ARRAY(Text), nullable=False),
     Column("OwnerID", Integer, nullable=False, index=True),
 
 )
 
-# TODO: let the user search for every item in a certain category in the product_page.
+reviews_table = Table( # This table is responsible for storing all the reviews from the users. (Each comment - new entry).
 
-# TODO: Create a table called "Videos", where i'll store every video that's been posted on the platform.
+    "Reviews Data",
+
+    meta_data_obj,
+
+    Column("ID", Integer, primary_key=True, autoincrement=True),
+    Column("user_id", Integer, nullable=False, index=True),
+    Column("product_id", Integer, nullable=False, index=True),
+    Column("user_comment", Text, nullable=False),
+    Column("user_rating", Integer, nullable=False),
+
+)
+
+in_cart_table = Table(  # Will store the data about the items the user has in the cart.
+
+    "In Cart Data",
+
+    meta_data_obj,
+
+    Column("ID", Integer, primary_key=True, autoincrement=True),
+    Column("user_id", Integer, nullable=False, index=True),
+    Column("product_id", Integer, nullable=False, index=True),
+    Column("quantity", Integer, nullable=False),
+
+)
+
+orders_table = Table(  # Same as the table above (except for the item's status), but with the ordered items (i.e., the ones that the user's already bought).
+
+    # Will be used for both the customer and the merchant (With the merchant being able to change the item_status column via the interface).
+
+    "Orders Data",
+
+    meta_data_obj,
+
+    Column("ID", Integer, primary_key=True, autoincrement=True),
+    Column("user_id", Integer, nullable=False, index=True),
+    Column("merchant_id", Integer, nullable=False, index=True),
+    Column("product_id", Integer, nullable=False, index=True),
+    Column("quantity", Integer, nullable=False),
+    Column("item_status", Text, nullable=False, unique=False),
+    Column("shipping_address", Text, nullable=False),
+    Column("customer_phone", Text, nullable=False),
+    Column("customer_email", Text, nullable=False),
+    Column("customer_full_name", Text, nullable=False),
+    Column("total_order_price", Numeric, nullable=False)
+
+)
+
+liked_items_table = Table(
+
+    "Liked Items Data",
+
+    meta_data_obj,
+
+    Column("ID", Integer, primary_key=True, autoincrement=True),
+    Column("user_id", Integer, nullable=False, index=True),
+    Column("product_id", Integer, nullable=False, index=True),
+
+)
+
+# TODO: let the user search for every item in a certain category in the product_page.
 
 # TODO: for late-stage development - create a seed data for the database using bulk_insert()
 
@@ -239,6 +304,8 @@ session_db = Session_db()
 # session_db.bulk_insert_mappings() !!!!!!!!!!!!!!!!!
 
 
+#---- Important Functions ----#
+
 #---- Cookie Management. ----#
 
 
@@ -250,7 +317,7 @@ def is_registered(): # Checks if the user's registered.
 
     # Since I'm using user's ID that's stored in a cookie to register the user - this means that there's a high risk of one user impersonating another simply by changing their cookies.
 
-    # If a cookie hasn't been set or BadSignature error's raised (i.e., if a user has tampered with a cookie)- returns None.
+    # If a cookie hasn't been set or BadSignature error's raised (i.e., if a user has tampered with a cookie) - returns None.
 
     # Else - returns the ID of the user.
 
@@ -337,7 +404,7 @@ def restrict_access_to_details(user_data): # If Can_access_credentials is True -
 
     # If it's set to False - then it simply does nothing.
 
-    if user_data[19]:
+    if user_data[15]:
 
         user_id = user_data[0]
 
@@ -395,6 +462,8 @@ def check_recovery_codes(all_recovery_codes: list, user_code_hash) -> bool: # A 
 @app.route("/like/<int:product_id>") # This route is responsible for adding a specific item to the user's "liked" pool.
 def add_to_liked(product_id):
 
+    # TODO: pls modify this :3
+
     user_cookies = is_registered()
 
     user_data_liked = id_query(int(user_cookies))
@@ -423,9 +492,9 @@ def main_page(): # Speaks for itself.
 
         restrict_access_to_details(user_data)
 
-        has_2fa = user_data[13]
+        has_2fa = user_data[9]
 
-        night_mode_data = user_data[14]
+        night_mode_data = user_data[10]
 
     else:
 
@@ -484,7 +553,7 @@ def login_page():
 
                 # Second - the hash stored in the database.
 
-                if not query[13]: # In case the user has no 2FA installed.
+                if not query[9]: # In case the user has no 2FA installed.
 
                     resp = make_response(redirect("/"))
 
@@ -582,7 +651,7 @@ def authorize_google_login(): # Where the user would consent the data to the ser
 
     if query and query[4] == "google": # If the user's found, and they've registered with Google.
 
-        if not query[13]: # If the user doesn't have 2FA installed.
+        if not query[9]: # If the user doesn't have 2FA installed.
 
             resp = make_response(redirect("/"))
 
@@ -658,17 +727,13 @@ def sign_up_page():
 
                 "ProfilePicture": "https://img.icons8.com/?size=100&id=tZuAOUGm9AuS&format=png&color=000000", # Just a default image when the user registers for the first time. Will be replaced if the user decides to change the image.
 
-                "InCart": [],
-
-                "Liked": [],
+                "InCartAmount": 0,
 
                 "Stripe": False,
 
                 "TwoFA": False,
 
                 "Night_mode": False,
-
-                "Is_verified": False,
 
                 "Can_access_credentials": False,
 
@@ -742,56 +807,68 @@ def authorize_google_register(): # Where the user would consent the data to the 
 
     two_m_exp = timedelta(days=60) + datetime.now()
 
+    if query: # If the user was found.
 
-    if query: # Checking if the user's already registered with their Google account.
+         if query[4] == "google": # If the user's found, and they've registered with Google.
 
-        resp.set_cookie(key="saved_cookies", value=serializer.dumps({"user_id": str(query[0])}), httponly=True, samesite="Lax", secure=True, partitioned=True, expires=two_m_exp)
+            if not query[9]: # If the user doesn't have 2FA installed.
+
+                resp.set_cookie(key="saved_cookies", value=serializer.dumps({"user_id": str(query[0])}), httponly=True, samesite="Lax", secure=True, partitioned=True, expires=two_m_exp)
+
+                return resp
+
+            else:  # If the user has 2FA installed.
+
+                session["temp_user_id"] = query[0]
+
+                return redirect("/login-2fa")
+
+         else: # If user's "password" value is not equal to "google" - then it means that: 1 - they've registered with this email sometime in the past, and 2 - they've registered manually, without using Google.
+
+             return "Error occurred during a sign up using Google. Maybe you've already registered with this email manually?"
+
+
+    else: # If the user hasn't been found in the DB at all.
+
+        with engine.connect() as connection:
+
+            connection.execute(customer_table.insert(), {
+
+                "FirstName": user_info["given_name"],
+
+                "LastName": user_info["family_name"],
+
+                "Email": user_info["email"],
+
+                "ProfilePicture": user_info["picture"],
+
+                "Password": "google",
+
+                # Just storing their passwords as "google".
+
+                # The reason that it's not a security threat is because I hash all the passwords, even when the user's trying to log in.
+
+                # And this hash, by design, will never give just the word "google" as a hash result.
+
+                "InCartAmount": 0,
+
+                "Stripe": False,
+
+                "TwoFA": False,
+
+                "Night_mode": False,
+
+                "Can_access_credentials": False,
+
+            })
+
+            connection.commit()
+
+        user_data = email_query(user_info["email"])
+
+        resp.set_cookie(key="saved_cookies", value=serializer.dumps({"user_id": str(user_data[0])}), httponly=True, samesite="Lax", secure=True, partitioned=True, expires=two_m_exp)
 
         return resp
-
-    with engine.connect() as connection:
-
-        connection.execute(customer_table.insert(), {
-
-            "FirstName": user_info["given_name"],
-
-            "LastName": user_info["family_name"],
-
-            "Email": user_info["email"],
-
-            "ProfilePicture": user_info["picture"],
-
-            "Password": "google",
-
-            # Just storing their passwords as "google".
-
-            # The reason that it's not a security threat is because I hash all the passwords, even when the user's trying to log in.
-
-            # And this hash, by design, will never give just the word "google" as a hash result.
-
-            "InCart": [],
-
-            "Liked": [],
-
-            "Stripe": False,
-
-            "TwoFA": False,
-
-            "Night_mode": False,
-
-            "Is_verified": False,
-
-            "Can_access_credentials": False,
-
-        })
-
-        connection.commit()
-
-    user_data = email_query(user_info["email"])
-
-    resp.set_cookie(key="saved_cookies", value=serializer.dumps({"user_id": str(user_data[0])}), httponly=True, samesite="Lax", secure=True, partitioned=True, expires=two_m_exp)
-
-    return resp
 
 @app.route("/login-2fa", methods=["GET", "POST"])
 def two_fa_required(): # Responsible for checking user's 2FA code when they try to log in.
@@ -800,7 +877,7 @@ def two_fa_required(): # Responsible for checking user's 2FA code when they try 
 
     user_data = id_query(session["temp_user_id"])
 
-    user_encrypted_secret, user_encrypted_nonce, user_id = user_data[15], user_data[16], user_data[0]
+    user_encrypted_secret, user_encrypted_nonce, user_id = user_data[11], user_data[12], user_data[0]
 
     encr_tool = ChaCha20Poly1305(b64decode(os.getenv("SECRET_ENCRYPTION_KEY")))
 
@@ -843,10 +920,486 @@ def two_fa_required(): # Responsible for checking user's 2FA code when they try 
 
     return render_template("login_2fa.html", error_code=False)
 
+@app.route("/cart")
+def cart_display():
 
-def product_page():
+    has_cookies = is_registered()
 
-    pass
+    if "temp_user_id" in session: session.clear()
+
+
+    if not has_cookies: return redirect("/login")
+
+
+    user_data = id_query(int(has_cookies))
+
+    restrict_access_to_details(user_data)
+
+    has_2fa = user_data[9]
+
+    night_mode_data = user_data[10]
+
+
+    stmt = select( # Querying relative information about the products that the user has in their cart, using product_id and user_id from the in_cart_table.
+
+        product_table.c.Name,
+        product_table.c.Price,
+        product_table.c.Images[1], # Fetching the first image. (I don't know why its index is 1 and not 0).
+        product_table.c.ID,
+        in_cart_table.c.quantity,
+
+    ).outerjoin(in_cart_table, product_table.c.ID == in_cart_table.c.product_id).where(
+
+        in_cart_table.c.user_id == has_cookies
+
+    )
+
+
+    with engine.connect() as connection:
+
+        all_in_cart = connection.execute(stmt).fetchall()
+
+
+    # Calculating the total price:
+
+    total_price = 0
+
+    if all_in_cart: # In case the user actually has something in their cart.
+
+        for single_product in all_in_cart:
+
+            total_price += single_product[1] * single_product[4] # Calculating the prices of the product (index 1), multiplied by the quantity of the product.
+
+
+    return render_template("cart.html", has_2fa=has_2fa, night_mode=night_mode_data, registered=has_cookies, user_data=user_data, user_products=all_in_cart, total=total_price)
+
+
+@app.route("/add-to-cart/<int:product_id>")
+def add_to_cart(product_id):
+
+    has_cookies = is_registered()
+
+    if not has_cookies: return redirect("/login")
+
+
+    already_has_in_cart = session_db.query(in_cart_table).where(in_cart_table.c.product_id == product_id).where(in_cart_table.c.user_id == has_cookies).first() # Checking if the user already has this product in the cart.
+
+    if already_has_in_cart: pass # If the user's trying to add an item that's already in the cart. (Do nothing and simply redirect to the precious page in that case).
+
+    else:
+
+        previous_user_amount = session_db.query(customer_table).where(customer_table.c.ID == has_cookies).first()[5]
+
+
+        with engine.connect() as connection:
+
+            connection.execute( # Updating the In Cart Table.
+
+                in_cart_table.insert(), {
+
+                    "user_id": has_cookies,
+
+                    "product_id": product_id,
+
+                    "quantity": 1,
+
+                },
+
+            )
+
+            connection.execute(
+
+                customer_table.update().where(customer_table.c.ID == has_cookies).values(
+
+                    InCartAmount=previous_user_amount + 1 # Updating the amount of items that the user has.
+
+                )
+
+            )
+
+            connection.commit()
+
+    return redirect(url_for("product_page", product_id=product_id))
+
+@app.route("/api/calculate-price", methods=["POST"]) # This API is responsible for calculating the total price of all the items the user has in their cart. (Adhering to the quantity as well).
+def calculate_price():
+
+    user_cookies = is_registered()
+
+    if not user_cookies: return redirect("/login")
+
+    # Getting the request.
+
+    data = request.get_json()
+
+    # Fetching the data from the request.
+
+    id_of_the_item = data["id"]
+
+    type_of_action = data["action"]
+
+    prev_total_price = data["prev_total"]
+
+    quantity_of_the_item = session_db.query(in_cart_table).where(in_cart_table.c.product_id == id_of_the_item).where(in_cart_table.c.user_id == user_cookies).first()[3] # Querying the quantity of an individual item.
+
+    prev_price = session_db.query(product_table).where(product_table.c.ID == id_of_the_item).first()[3] # Querying the price of an individual item (in order to not fetch it from the frontend).
+
+    if type_of_action == "plus": # If the user's trying to add one to the quantity of an item.
+
+        with engine.connect() as connection:
+
+            connection.execute(
+
+                in_cart_table.update().where(in_cart_table.c.user_id == user_cookies, in_cart_table.c.product_id == id_of_the_item).values(quantity=in_cart_table.c.quantity + 1)
+
+            )
+
+            # Increasing the quantity of the item by 1 in the DB.
+
+            connection.commit()
+
+        # Calculating the final price.
+
+        new_total_price = Decimal(str(prev_total_price)) + prev_price
+
+        new_total_price = new_total_price.quantize(new_total_price, rounding=ROUND_HALF_UP) # In order to add a float to a Decimal (this data type came from the database), and then having the final price with only 2 digits left after the decimal point,
+
+        return jsonify({"total": round(new_total_price, 2)})
+
+
+    elif type_of_action == "minus": # If the user's trying to reduce the quantity by one.
+
+        with engine.connect() as connection:
+
+            connection.execute(
+
+                in_cart_table.update().where(in_cart_table.c.user_id == user_cookies, in_cart_table.c.product_id == id_of_the_item).values(quantity=in_cart_table.c.quantity - 1)
+
+            )
+
+            # Decreasing the quantity of the item by 1 in the DB.
+
+            connection.commit()
+
+        new_total_price = Decimal(str(prev_total_price)) - prev_price
+
+        new_total_price = new_total_price.quantize(new_total_price, rounding=ROUND_HALF_UP)
+
+        return jsonify({"total": round(new_total_price, 2)})
+
+
+    elif type_of_action == "del": # If the user's trying to delete the item.
+
+        with engine.connect() as connection:
+
+            connection.execute(
+
+                in_cart_table.delete().where(in_cart_table.c.user_id == user_cookies, in_cart_table.c.product_id == id_of_the_item),
+
+            )
+
+            connection.execute(
+
+                customer_table.update().where(customer_table.c.ID == user_cookies).values(InCartAmount=customer_table.c.InCartAmount - 1)  # Decreasing the amount of items the user has.
+
+            )
+
+            connection.commit()
+
+        new_total_price = Decimal(str(prev_total_price)) - (prev_price * quantity_of_the_item)
+
+        new_total_price = new_total_price.quantize(new_total_price, rounding=ROUND_HALF_UP)
+
+        return jsonify({"total": round(new_total_price, 2)})
+
+
+    return None # There really is no reason for this return statement to exist. But my OCD will be mad at so many dim-yellow squiggly lines here because of the "no explicit return statement" warning >:3
+
+@app.route("/create-checkout-session", methods=["POST"])
+def create_stripe_checkout_session(): # When the user's proceeded to the checkout after modifying their cart.
+
+    has_cookies = is_registered()
+
+    if not has_cookies: return redirect("/login")
+
+
+    stmt = select( # Querying relative information about the products that the user has in their cart, using product_id and user_id from the in_cart_table.
+
+        # Long story short, same query as it was before in the cart, but with a fancy hat. (I.e., calculating the total price using quantities and prices from the DB).
+
+        product_table.c.Name,
+        product_table.c.Description,
+        product_table.c.Price,
+        product_table.c.Images[1],
+        product_table.c.OwnerID,
+        in_cart_table.c.quantity,
+        in_cart_table.c.product_id,
+        in_cart_table.c.user_id,
+
+
+    ).outerjoin(in_cart_table, product_table.c.ID == in_cart_table.c.product_id).where(
+
+        in_cart_table.c.user_id == has_cookies
+
+    )
+
+    with engine.connect() as connection:
+
+        all_in_cart = connection.execute(stmt).fetchall()
+
+
+    # Fetching all the relative data for the Stripe session.
+
+    line_items = []
+
+    for single_item in all_in_cart:
+
+        line_items.append({
+
+            "price_data": {
+
+                "currency": "usd",
+
+                "unit_amount_decimal": str(int(single_item[2] * 100)), # Since this argument accepts only in cents.billing_scheme
+
+                "product_data": {
+
+                    "name": single_item[0],
+
+                    "description": single_item[1],
+
+                    "images": [single_item[3]],
+
+                },
+
+            },
+
+            "metadata": {
+
+                "seller_id": single_item[4],
+                "product_id": single_item[6],
+                "user_id": single_item[7]
+
+            },
+
+            "quantity": single_item[5]
+
+        })
+
+    # Creating a Stripe Checkout session using the data fetched above.
+
+    session_stripe = stripe.checkout.Session.create(
+
+        mode = "payment",
+
+        success_url = "https://synovial-wilton-unspilt.ngrok-free.dev/order/stripe/success?session_id={CHECKOUT_SESSION_ID}",
+
+        line_items = line_items,
+
+        phone_number_collection = { "enabled": True },
+
+        shipping_address_collection = {
+
+            "allowed_countries": ["US", "CA", "GB", "AU", "DE", "FR", "JP", "SG", "CN", "IN", "IT", "ES"]
+
+        },
+
+        billing_address_collection = "required",
+
+    )
+
+
+    return {"url": session_stripe.url}
+
+
+@app.route("/order/stripe/success")
+def successful_payment_page(): # Redirects the user after the payment is complete.
+
+
+    session_payment = request.args.get("session_id")
+
+    if not session_payment: return redirect("/")
+
+
+    session_payed = stripe.checkout.Session.retrieve(session_payment)
+
+    address_dict = session_payed["collected_information"]["shipping_details"]["address"]
+
+    # TODO: Update the orders Table (add all the columns related about the customer's info), redistribute the money across the merchants, add the order to the orders table, delete it from the In Cart Table.
+
+    return render_template("success_stripe.html", address_details=address_dict, full_name=session_payed["customer_details"]["name"], phone_number=session_payed["customer_details"]["phone"], customer_email=session_payed["customer_details"]["email"], total=session_payed["amount_total"]/100)
+
+
+@app.route("/product-page/<int:product_id>")
+def product_page(product_id):
+
+    user_cookies = is_registered()
+
+    if not user_cookies:
+
+        night_mode = False
+
+        user_data = None
+
+        has_2fa = None
+
+    else:
+
+        user_data = id_query(int(user_cookies))
+
+        night_mode = user_data[10]
+
+        has_2fa = user_data[9]
+
+
+    # Querying the data about the product using an ID from the URL.
+
+    product_data = session_db.query(product_table).where(product_table.c.ID == product_id).first()
+
+    # Querying the data about the user who uploaded the image.
+
+    user_data_upload = session_db.query(customer_table).where(product_data[7] == customer_table.c.ID).first()
+
+
+    return render_template("product_page.html", night_mode=night_mode, registered=user_cookies, user_data=user_data, has_2fa=has_2fa, product_data=product_data, uploaded_fname=user_data_upload[1], uploaded_lname=user_data_upload[2], uploaded_pfp=user_data_upload[6])
+
+
+@app.route("/reviews/<int:product_id>", methods=["GET", "POST"])
+def reviews(product_id):
+
+    user_cookies = is_registered()
+
+    has_review = False # The main function of this variable is to detect whether the user's written a review before. Depending on that, the frontend will change.
+
+    user_uploaded_comment, user_uploaded_rating = None, None # Will be filled with text if the user's left a comment before, otherwise will stay None.
+
+
+    if not user_cookies:
+
+        night_mode = False
+
+        user_data = None
+
+        has_2fa = None
+
+    else:
+
+        user_data = id_query(int(user_cookies))
+
+        night_mode = user_data[10]
+
+        has_2fa = user_data[9]
+
+
+    possible_user_review = session_db.query(reviews_table).where(reviews_table.c.product_id == product_id).where(reviews_table.c.user_id == user_cookies).first() # Trying to fetch the data about whether the user already has a review on this specific product.
+
+
+    if possible_user_review: # I.e., if the user's left a comment previously.
+
+        has_review = True
+
+        user_uploaded_comment = possible_user_review[3]
+
+        user_uploaded_rating = possible_user_review[4]
+
+
+
+    stmt = select( # This form of loading applies a JOIN to the given SELECT statement so that related rows are loaded in the same result set.
+
+        # In order to query all the up-to-date data about the users who left reviews on a specific product. (Using OUTER JOIN in order to avoid N + 1 inefficiency/loading huge chunks of data at once).
+
+        reviews_table.c.user_comment,
+        reviews_table.c.user_rating,
+        customer_table.c.FirstName,
+        customer_table.c.LastName,
+        customer_table.c.ProfilePicture,
+
+    ).outerjoin(reviews_table, customer_table.c.ID == reviews_table.c.user_id).where(
+
+        reviews_table.c.product_id == product_id
+
+    )
+
+    with engine.connect() as connection:
+
+        users_query_result = connection.execute(stmt).fetchall()
+
+
+
+    if request.method == "POST":
+
+        new_user_rating = request.form["rating"]
+
+        new_user_comment = request.form["user-comment-review"]
+
+
+        if has_review: # If the user's editing an already existing review.
+
+            with engine.connect() as connection:
+
+                connection.execute(
+
+                    reviews_table.update().where(reviews_table.c.product_id == product_id).where(reviews_table.c.user_id == user_cookies).values(user_comment=new_user_comment, user_rating=new_user_rating)
+
+                )
+
+                connection.commit()
+
+        else: # If the user's writing a new comment.
+
+            with engine.connect() as connection:
+
+                connection.execute(
+
+                    reviews_table.insert(), {
+
+                        "user_id": user_cookies,
+
+                        "product_id": product_id,
+
+                        "user_comment": new_user_comment,
+
+                        "user_rating": new_user_rating,
+
+                    }
+
+                )
+
+                connection.commit()
+
+
+        # Calculating a new rating for the product:
+
+        prev_stars = session_db.query(reviews_table).where(reviews_table.c.product_id == product_id).all()
+
+        all_reviews = len(prev_stars)  # Getting the total amount of reviews prior to the user's review.
+
+        total_star = 0
+
+        if prev_stars:
+
+            for single_star in prev_stars:
+                total_star += single_star[4]  # Getting the total amount of stars prior to the user's review.
+
+
+        new_full_rating = total_star // all_reviews
+
+        with engine.connect() as connection:
+
+            connection.execute(
+
+                product_table.update().where(product_table.c.ID == product_id).values(Rating=new_full_rating)
+
+            )
+
+            connection.commit()
+
+
+        return redirect(url_for("reviews", product_id=product_id))
+
+
+    return render_template("reviews.html", night_mode=night_mode, registered=user_cookies, user_data=user_data, has_2fa=has_2fa, product_data_reviews=users_query_result, product_id=product_id, has_review=has_review, user_comment=user_uploaded_comment, user_rating=user_uploaded_rating)
+
 
 def search():
 
@@ -869,15 +1422,15 @@ def upload_item():
     restrict_access_to_details(user_data)
 
 
-    if not user_data[9]: return render_template("striperequired.html", night_mode = user_data[14], registered=user_cookies, user_data=user_data, has_2fa = user_data[13]) # If the user doesn't have an ID associated with their account.
+    if not user_data[8]: return render_template("striperequired.html", night_mode = user_data[10], registered=user_cookies, user_data=user_data, has_2fa = user_data[9]) # If the user doesn't have an ID associated with their account.
 
 
 
-    if not user_data[8]: # If the user does have an ID associated with the account, but doesn't have a Stripe column equal to True - then doing the steps below:
+    if not user_data[7]: # If the user does have an ID associated with the account, but doesn't have a Stripe column equal to True - then doing the steps below:
 
         try: # If the user came back to the page after completing an onboarding process.
 
-            new_account_stripe = stripe.Account.retrieve(user_data[9]) # Getting user's Stripe account using his ID. (Putting it in the try - except statement just in case).
+            new_account_stripe = stripe.Account.retrieve(user_data[8]) # Getting user's Stripe account using his ID. (Putting it in the try - except statement just in case).
 
 
             if not new_account_stripe["future_requirements"]["currently_due"]: # This key has all the necessary information about what the user should complete before uploading items.
@@ -894,7 +1447,7 @@ def upload_item():
 
                     connection.commit()
 
-            else: return render_template("striperequired.html", night_mode=user_data[14], registered=user_cookies, user_data=user_data, has_2fa = user_data[13])
+            else: return render_template("striperequired.html", night_mode=user_data[10], registered=user_cookies, user_data=user_data, has_2fa = user_data[9])
 
             # But if that list contains some elements - then it means that the user returned to the page while completing onboard.
 
@@ -948,7 +1501,6 @@ def upload_item():
 
             else: pass # If it doesn't have the right file type - simply not appending it to the final list.
 
-
         with engine.connect() as connection:
 
             connection.execute(product_table.insert(), {
@@ -965,7 +1517,7 @@ def upload_item():
 
                 "Description": product_descr,
 
-                "Images": db_upload_images, # TODO: don't forget to check if db_upload_images is None in the product page! (When I'll get to it eventually....)
+                "Images": db_upload_images,
 
                 "OwnerID": user_cookies,
 
@@ -977,7 +1529,7 @@ def upload_item():
         return jsonify({"redirect": "/"}) # Since I'm modifying formData in the upload.html, I need to upload a JSON.
 
 
-    return render_template("upload.html", night_mode=user_data[14])
+    return render_template("upload.html", night_mode=user_data[10])
 
 
 @app.route("/stripe_registry")
@@ -1045,11 +1597,11 @@ def onboard_page(): # Where the user will be redirected if they: 1 - agreed to t
     if not full_data_user: return "Error with user identification within the database", 500
 
 
-    if not full_data_user[8] and full_data_user[9]: # Checking if the user has their "Stripe" column set as False, and if they already have a stripe ID.
+    if not full_data_user[7] and full_data_user[8]: # Checking if the user has their "Stripe" column set as False, and if they already have a stripe ID.
 
         account_link = stripe.AccountLink.create( # Then redirecting the user to the Stripe onboarding process.
 
-            account=full_data_user[9], # User's Stripe account ID.
+            account=full_data_user[8], # User's Stripe account ID.
             refresh_url="https://synovial-wilton-unspilt.ngrok-free.dev/refresh-on-board-route", # Where Stripe redirects the user if the Account Link URL has expired or is otherwise invalid.
             return_url="https://synovial-wilton-unspilt.ngrok-free.dev/upload", # Where Stripe redirects the user after they have completed or left the onboarding flow.
             type="account_onboarding",
@@ -1074,7 +1626,7 @@ def refresh_onboarding(): # For regenerating the link if it's invalid.
 
     account_link = stripe.AccountLink.create( # Pls read documentation on this!!!!!!!
 
-        account=full_data_user[9],
+        account=full_data_user[8],
         refresh_url="https://synovial-wilton-unspilt.ngrok-free.dev/refresh-on-board-route",
         return_url="https://synovial-wilton-unspilt.ngrok-free.dev/upload",
         type="account_onboarding",
@@ -1098,15 +1650,15 @@ def user_profile(): # Will be responsible for showing user's profile. (And the p
 
     #---- User's data ----#
 
-    user_pfp = user_data[7] # Getting user's profile picture using this index.
+    user_pfp = user_data[6] # Getting user's profile picture using this index.
 
     first_name = user_data[1]
 
     last_name = user_data[2]
 
-    has_2fa = user_data[13]  # This index is a Boolean, indicating whether the user has 2-factor-authentication.
+    has_2fa = user_data[9]  # This index is a Boolean, indicating whether the user has 2-factor-authentication.
 
-    night_mode = user_data[14]
+    night_mode = user_data[10]
 
     if request.method == "POST":
 
@@ -1143,7 +1695,7 @@ def switch_color_mode(): # Dedicated to switching the color mode.
 
     if not cookies: return redirect("/login")
 
-    user_dark_mode_info = id_query(int(cookies))[14] # Getting user's night mode setting.
+    user_dark_mode_info = id_query(int(cookies))[10] # Getting user's night mode setting.
 
     # Switching dark mode to True/False, depending on user's preferences.
 
@@ -1171,12 +1723,12 @@ def generate_2fa(): # Will be responsible for generating user's 2FA.
 
     restrict_access_to_details(user_data)
 
-    if user_data[15]: return redirect("/") # If the user's manually typing the URL, trying to create 2FA. (There's another URL that's meant for resetting 2FA).
+    if user_data[11]: return redirect("/") # If the user's manually typing the URL, trying to create 2FA. (There's another URL that's meant for resetting 2FA).
 
 
     encr_tool = ChaCha20Poly1305(b64decode(os.getenv("SECRET_ENCRYPTION_KEY")))
 
-    if not user_data[17]: # Trying to access user's temporary key.
+    if not user_data[13]: # Trying to access user's temporary key.
 
         # Creating a new key with random_base32()
 
@@ -1208,9 +1760,9 @@ def generate_2fa(): # Will be responsible for generating user's 2FA.
 
     # That will lead to nonce not being fetched properly.
 
-    user_encr_key = user_data_updated[17]
+    user_encr_key = user_data_updated[13]
 
-    user_nonce = user_data_updated[16]
+    user_nonce = user_data_updated[12]
 
     # Decrypting user's key.
 
@@ -1278,10 +1830,10 @@ def generate_2fa(): # Will be responsible for generating user's 2FA.
 
         else: # If the user has submitted an incorrect authentication code.
 
-            return render_template("two-factor.html", qr_img=img_link, error_code=True, night_mode = user_data[14])
+            return render_template("two-factor.html", qr_img=img_link, error_code=True, night_mode = user_data[10])
 
 
-    return render_template("two-factor.html", qr_img=img_link, error_code=False, night_mode = user_data[14])
+    return render_template("two-factor.html", qr_img=img_link, error_code=False, night_mode = user_data[10])
 
 
 @app.route("/generate-2fa/manual", methods=["GET", "POST"])
@@ -1297,11 +1849,11 @@ def generate_2fa_manually(): # If the user decided to enter the 2FA code manuall
     restrict_access_to_details(user_data)
 
 
-    user_encr_key = user_data[17]
+    user_encr_key = user_data[13]
 
-    user_nonce = user_data[16]
+    user_nonce = user_data[12]
 
-    if user_data[15]: return redirect("/")
+    if user_data[11]: return redirect("/")
 
     if not user_encr_key and not user_nonce: return redirect("/generate-2fa")
 
@@ -1344,10 +1896,10 @@ def generate_2fa_manually(): # If the user decided to enter the 2FA code manuall
 
         else:
 
-            return render_template("two-factor-manual.html", secret_32=key, error_code_manual=True, night_mode = user_data[14])
+            return render_template("two-factor-manual.html", secret_32=key, error_code_manual=True, night_mode = user_data[10])
 
 
-    return render_template("two-factor-manual.html", secret_32=key, error_code_manual=False, night_mode = user_data[14])
+    return render_template("two-factor-manual.html", secret_32=key, error_code_manual=False, night_mode = user_data[10])
 
 
 @app.route("/recovery-codes")
@@ -1362,13 +1914,13 @@ def generate_recovery(): # Will be responsible for generating 2FA recovery codes
     user_data = id_query(int(user_cookie))
 
 
-    if user_data[18]: return redirect("/") # If the user already has recovery codes.
+    if user_data[14]: return redirect("/") # If the user already has recovery codes.
 
     all_users_codes = generate_2fa_recovery_codes()
 
     hash_and_commit_recovery_codes(all_users_codes, int(user_cookie))
 
-    return render_template("recovery_codes.html", all_recovery_codes=all_users_codes, night_mode = user_data[14])
+    return render_template("recovery_codes.html", all_recovery_codes=all_users_codes, night_mode = user_data[10])
 
 
 @app.route("/reset-2fa/<from_login>", methods=["GET", "POST"]) # from_login is a boolean that indicates whether the user came from the login page. (The differences being: how I fetch user's ID, and what I do after resetting their 2FA settings.)
@@ -1386,12 +1938,12 @@ def reset_2fa(from_login): # Will generate a simple form, where the user can inp
     user_data = id_query(int(user_id)) # Just in case convert the user_id to an integer... :D
 
 
-    if from_login != "True": night_mode = user_data[14] # If the user came from their profile page.
+    if from_login != "True": night_mode = user_data[10] # If the user came from their profile page.
 
     else: night_mode = False # If from the login page.
 
 
-    user_recovery_codes = user_data[18]
+    user_recovery_codes = user_data[14]
 
     if not user_recovery_codes: return redirect("/") # If user's account doesn't have a single recovery code.
 
@@ -1450,7 +2002,7 @@ def reauthorization_page(): # Will be responsible for checking user's credential
 
     user_hash_password = user_data[4]
 
-    has_2fa = user_data[13]
+    has_2fa = user_data[9]
 
     if user_hash_password == "google": # In case the user's registered with Google.
 
@@ -1511,9 +2063,9 @@ def reauthorize_2fa():
     encr_tool = ChaCha20Poly1305(b64decode(os.getenv("SECRET_ENCRYPTION_KEY")))
 
 
-    user_encr_key = user_data[15]
+    user_encr_key = user_data[11]
 
-    user_nonce = user_data[16]
+    user_nonce = user_data[12]
 
     # Decrypting user's key in order to verify it during POST request.
 
@@ -1538,10 +2090,10 @@ def reauthorize_2fa():
 
             return redirect("/change-details")
 
-        else: return render_template("two-factor-reauthorize.html", error_code=True, night_mode=user_data[14])
+        else: return render_template("two-factor-reauthorize.html", error_code=True, night_mode=user_data[10])
 
 
-    return render_template("two-factor-reauthorize.html", error_code=False, night_mode=user_data[14])
+    return render_template("two-factor-reauthorize.html", error_code=False, night_mode=user_data[10])
 
 
 @app.route("/change-details", methods=["GET", "POST"])
@@ -1569,13 +2121,13 @@ def change_details(): # Responsible for letting the user change their account de
 
     user_current_password = user_data[4]
 
-    night_mode = user_data[14]
+    night_mode = user_data[10]
 
 
     if user_current_password == "google": registered_with_google = True
 
 
-    if not user_data[19]: return redirect("/") # If the user doesn't have a permission to access the data.
+    if not user_data[15]: return redirect("/") # If the user doesn't have a permission to access the data.
 
     if request.method == "POST":
 
@@ -1683,11 +2235,11 @@ def delete_account():
 
     user_data = id_query(int(user_cookies))
 
-    if not user_data[19]: return redirect("/change-details") # Then checking if they have Can_access_credentials flag set to True.
+    if not user_data[15]: return redirect("/change-details") # Then checking if they have Can_access_credentials flag set to True.
 
-    night_mode = user_data[14]
+    night_mode = user_data[10]
 
-    if request.method == "POST":
+    if request.method == "POST": # TODO: delete all the products that are related to the user!
 
         with engine.connect() as connection:
 

@@ -24,9 +24,15 @@ body.dark {
 
     background: linear-gradient(135deg, #353B8C, #4D348C);
 
-    .small-circle-upload-main, .small-circle-video-main, .small-circle-home {
+    .small-circle-upload-main, .small-circle-history-main, .small-circle-home {
 
         background-color: #254580;
+
+    }
+
+    .small-circle-upload-main:hover, .small-circle-history-main:hover, .small-circle-home:hover {
+
+        background-color: #1E3D80;
 
     }
 
@@ -47,6 +53,12 @@ body.dark {
     .all-tags {
 
         background-color: #2c007a;
+
+    }
+
+    .small-circle {
+
+        background-color: #7A10B3;
 
     }
 
@@ -259,6 +271,21 @@ button, input, select, textarea {
 
 }
 
+/* Styling of the cart SVG. (Basically increasing its size when hovered). */
+
+#cart, .small-circle {
+
+    transition: .3s ease-in-out;
+
+}
+
+#cart:hover, .small-circle:hover {
+
+    transform: scale(1.03);
+    cursor: pointer;
+
+}
+
 /* Top DIV's elements styling. */
 
 /* Subsection: search bar. (Mobile-first approach here too! Actual design will be in the media query.) */
@@ -322,7 +349,7 @@ form {
 
 }
 
-.small-circle-video-main {
+.small-circle-history-main {
 
     display: none;
 
@@ -351,7 +378,7 @@ form {
 
 }
 
-.small-circle-video-mobile {
+.small-circle-history-mobile {
 
         position: absolute;
         display: flex;
@@ -367,7 +394,15 @@ form {
 
 }
 
-.small-circle-video-mobile:hover {
+.small-circle-history-mobile svg {
+
+    position: relative;
+    top: 3px;
+    left: 3px;
+
+}
+
+.small-circle-history-mobile:hover {
 
         background-color: rgba(55, 90, 160, 1);
         transform: scale(1.05);
@@ -425,6 +460,15 @@ form {
 
 }
 
+@keyframes slowlyAppear {
+
+    0% { opacity: 0; }
+
+
+    100% { opacity: 1; }
+
+}
+
 /* Just manually adjusting some of the bottom SVGs, because i've failed to center them using justify-content :( */
 
 @media (min-width: 321px and max-width: 375px) {
@@ -439,7 +483,7 @@ form {
 
 @media (min-width: 376px and max-width: 425px) {
 
-    .small-circle-video-mobile {
+    .small-circle-history-mobile {
 
         left: 58%;
 
@@ -469,7 +513,7 @@ form {
 
     }
 
-    .small-circle-video-mobile {
+    .small-circle-history-mobile {
 
         display: none;
 
@@ -492,16 +536,17 @@ form {
 
     }
 
-    .small-circle-upload-main svg, .small-circle-video-main svg {
+    .small-circle-upload-main svg, .small-circle-history-main svg {
 
         position: relative;
         left: 1px;
 
     }
 
-    .small-circle-video-main svg {
+    .small-circle-history-main svg {
 
-        top: 1px;
+        top: 2px;
+        left: 3px;
 
     }
 
@@ -519,7 +564,7 @@ form {
 
     }
 
-    .small-circle-video-main {
+    .small-circle-history-main {
 
         display: flex;
         justify-content: center;
@@ -532,7 +577,7 @@ form {
 
     }
 
-    .small-circle-video-main:hover {
+    .small-circle-history-main:hover {
 
         background-color: rgba(55, 90, 160, 1);
         transform: scale(1.05);

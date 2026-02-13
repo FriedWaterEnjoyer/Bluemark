@@ -9,20 +9,26 @@ body.dark {
 
     }
 
+    .product-card:hover, .liked-item-mobile:hover, .product-item-mobile:hover {
+
+        box-shadow: 4px 4px 60px 8px rgba(255,255,255,0.2);
+
+    }
+
     .link-to-product h3, .link-to-product-mobile, .liked-cluster h2 {
 
         color: #FFFFFF;
 
     }
 
-    .details-link button, .see-details-liked, .details-button-mobile {
+    .details-link, .see-details-liked, .details-button-mobile {
 
         background-color: #156c8a;
         color: #FFFFFF
 
     }
 
-    .details-link button:hover, .see-details-liked:hover, .details-button-mobile:hover {
+    .details-link:hover, .see-details-liked:hover, .details-button-mobile:hover {
 
         background-color: #11944f;
 
@@ -464,17 +470,13 @@ body.dark {
 
     }
 
-    .details-link, .details-link button {
+    .details-link {
 
         position: relative;
         width: 81px;
         bottom: -7px;
-        right: .2px;
-
-    }
-
-    .details-link button {
-
+        right: .5px;
+        top: 15px;
         background-color: #9CDBF0;
         cursor: pointer;
         border-radius: 60px;
@@ -482,10 +484,11 @@ body.dark {
         border-top: 1px solid rgba(255, 255, 255, .4);
         border-left: 1px solid rgba(255, 255, 255, .4);
         transition: .3s ease-in-out;
+        height: 25px;
 
     }
 
-    .details-link button:hover {
+    .details-link:hover {
 
         background-color: #A7F5CC;
 

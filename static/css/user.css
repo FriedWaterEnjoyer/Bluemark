@@ -191,7 +191,7 @@ body.dark {
 
 }
 
-.file-error {
+.file-error, .file-type-error {
 
     font-size: 15px;
     color: #E60400;

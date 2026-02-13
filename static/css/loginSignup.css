@@ -10,9 +10,35 @@ body.dark {
 
     }
 
-    #sign-submit, .code-form h2, .register-input {
+    #sign-submit, .code-form h2, .register-input, .sign-in-form h2 {
 
         color: #FFFFFF;
+
+    }
+
+    .register-input:hover, #sign-submit:hover {
+
+        box-shadow: 1px 1px 30px 4px rgba(255,255,255,0.2);
+        text-shadow: 2px 2px 5px rgba(255,255,255,0.2);
+
+    }
+
+    .register-input:focus, #sign-submit:focus {
+
+        box-shadow: 1px 1px 15px 2px rgba(255,255,255,0.2);
+
+    }
+
+    .sign-in-form, .account-deletion {
+
+        background-color: rgba(0, 0, 0, .5)
+
+    }
+
+    .dangerous-button {
+
+        background: #800300;
+        border: 1px solid #800300;
 
     }
 

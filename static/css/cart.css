@@ -1,0 +1,359 @@
+/* Night-mode Styling */
+
+body.dark {
+
+    .total-amount {
+
+        color: rgba(255,255,255,.9)
+
+    }
+
+}
+
+/* Scrollbar Styling. (For Chrome and Safari) */
+
+::-webkit-scrollbar { /* Need to set this property before modifying the rest. */
+
+    background: transparent;
+    width: 10px;
+
+}
+
+::-webkit-scrollbar-track {
+
+    background-color: transparent;
+
+}
+
+::-webkit-scrollbar-thumb {
+
+    background-color: rgba(255, 255, 255, .3);
+    height: 10px;
+    border-radius: 40px;
+
+}
+
+/* Styling for main screens. */
+
+/* Large divs styling. */
+
+.centered-div {
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100vw;
+    height: 100vh;
+
+}
+
+.full-content {
+
+    display: grid;
+    width: 75%;
+    height: 80%;
+    grid-template-columns: 1.5fr .5fr;
+
+}
+
+.list-of-items {
+
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    background-color: rgba(255, 255, 255, .5);
+    border-right: 1px solid rgba(255, 255, 255, .3);
+    border-bottom: 1px solid rgba(255, 255, 255, .3);
+    border-radius: 15px;
+    animation: slowlyAppear 1.2s ease-in-out;
+    text-align: center;
+
+}
+
+/* Individual card styling. */
+
+.card {
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    width: 100%;
+    height: 25%;
+    border-radius: 15px;
+    transition: all 0.4s ease-in-out;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+
+}
+
+.card:hover {
+
+    transform: scale(1.02);
+    box-shadow: 4px 4px 60px 8px rgba(0,0,0,0.2);
+
+}
+
+.card img {
+
+    border-radius: 15px;
+    height: 100%;
+    max-width: 334px;
+
+}
+
+.link-to-product {
+
+        text-decoration: none;
+        color: black;
+
+}
+
+.link-to-product:hover {
+
+        text-decoration: underline;
+
+}
+
+.product-text h3, .product-text a {
+
+        display: block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        max-width: 180px;
+        margin-left: 5px;
+
+}
+
+.product-price-details {
+
+        display: flex;
+        justify-content: space-around;
+
+}
+
+.details-link {
+
+        position: relative;
+        width: 81px;
+        bottom: -7px;
+        right: .5px;
+        top: 15px;
+        background-color: #9CDBF0;
+        cursor: pointer;
+        border-radius: 60px;
+        border: none;
+        border-top: 1px solid rgba(255, 255, 255, .4);
+        border-left: 1px solid rgba(255, 255, 255, .4);
+        transition: .3s ease-in-out;
+        height: 25px;
+
+}
+
+.details-link:hover {
+
+        background-color: #A7F5CC;
+
+}
+
+.trash-can-svg {
+
+    left: -5px;
+
+}
+
+.quantity {
+
+    display: flex;
+    gap: 5px;
+    align-items: center;
+    flex-direction: row;
+    right: 5px;
+
+}
+
+.minus-button, .plus-button, .trash-can-svg {
+
+    transition: .3s ease;
+
+}
+
+.minus-button:hover, .plus-button:hover, .trash-can-svg:hover {
+
+    cursor: pointer;
+    transform: scale(1.08);
+
+}
+
+/* The checkout part. */
+
+.checkout-part {
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    animation: slowlyAppear 2.2s ease-in-out;
+
+}
+
+.total-amount {
+
+    font-size: 22px;
+    padding: 10px;
+
+}
+
+.checkout-button {
+
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  translate: 0 -28px;
+  background-color: #49E19F;
+  appearance: none;
+  border: 0;
+  display: flex;
+  align-items: center;
+  padding: 16px 20px 16px 15px;
+  height: 56px;
+  font-weight: 500;
+  line-height: 1em;
+  color: white;
+  cursor: pointer;
+  border-radius: 32px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+  -webkit-tap-highlight-color: transparent;
+  transition: box-shadow 0.2s ease-in-out, background-color 250ms ease-in-out;
+  margin: 10px;
+
+}
+
+.checkout-button:focus {
+
+    box-shadow: 2px 6px 24px 9px rgba(0,0,0,.2);
+    outline: none;
+
+}
+
+.checkout-button:hover {
+
+    background-color: #16A085;
+
+}
+
+.padding-div {
+
+    background-color: rgba(255,255,255,.6);
+    border-radius: 15px;
+    border-top: 1px solid rgba(255, 255, 255, .4);
+    border-left: 1px solid rgba(255, 255, 255, .4);
+    text-align: center;
+
+}
+
+/* Mobile styling */
+
+@media(max-width: 425px) {
+
+    .full-content {
+
+        grid-template-rows: 1.5fr .5fr;
+        grid-template-columns: 1fr;
+        height: 70%;
+        width: 95%;
+        gap: 10px;
+
+    }
+
+    .list-of-items {
+
+        flex-direction: row;
+        overflow: hidden;
+        overflow-x: auto;
+        gap: 30px;
+
+    }
+
+    .card {
+
+        height: 100%;
+        width: fit-content;
+
+    }
+
+    .card img {
+
+        max-height: fit-content;
+
+    }
+
+}
+
+/* Tablet Styling (mostly just the width adjustments). */
+
+@media(min-width: 426px) and (max-width: 769px) { /* !!!!!!!!!! */
+
+    .full-content {
+
+        width: 95%;
+
+    }
+
+    .card img {
+
+        max-width: 220px;
+
+    }
+
+}
+
+/* For everything above the tablet but below the standard notebook screen. (Mostly just the width adjustment on the image). */
+
+@media(min-width: 769px) and (max-width: 1024px) {
+
+    .card img {
+
+        max-width: 230px;
+
+    }
+
+}
+
+/* For big screens. */
+
+@media(min-width: 1440px) {
+
+    .full-content {
+
+        width: 70%;
+
+    }
+
+}
+
+/* Animation for the divs. */
+
+@keyframes slowlyAppear {
+
+    0% { opacity: 0; }
+
+
+    100% { opacity: 1; }
+
+}
+
+.inactive {
+
+    pointer-events: none; /* Will remove all the pointer-events related to plus and minus SVGs. */
+    cursor: default;
+    opacity: .5;
+
+}
+
+.hidden {
+
+    display: none;
+
+}

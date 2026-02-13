@@ -1,0 +1,588 @@
+/* Dark-Mode Styling. */
+
+body.dark {
+
+    .main-content {
+
+        color: #FFFFFF;
+
+    }
+
+    .carousel-div, .text-content {
+
+        background-color: rgba(0, 0, 0, .6);
+
+    }
+
+    .all-product-tags, .add-to-cart, .add-to-liked, .review-button {
+
+        background-color: rgba(0, 0, 0, .5);
+
+    }
+
+    .review-button, .add-to-cart, .add-to-liked, .one-tag a {
+
+        color: #FFFFFF;
+
+    }
+
+    .review-button:hover, .add-to-cart:hover, .add-to-liked:hover, .all-product-tags:hover {
+
+            box-shadow: 2px 2px 30px 4px rgba(255,255,255,0.2);
+            text-shadow: 2px 2px 5px rgba(255,255,255,0.2);
+
+    }
+
+    .review-button:focus, .add-to-cart:focus, .add-to-liked:focus, .all-product-tags:focus {
+
+        box-shadow: 3px 3px 20px 4px rgba(255,255,255,0.2);
+
+    }
+
+}
+
+
+/* Main Styling */
+
+.center-container {
+
+    display: flex;
+    width: 100vw;
+    height: 100vh;
+    justify-content: center;
+    align-items: center;
+
+}
+
+.main-content {
+
+    display: grid;
+    width: 98%;
+    height: 83%;
+    gap: 15px;
+    grid-template-columns: .2fr 1.8fr;
+
+
+}
+
+/* Carousel Styling */
+
+
+.carousel > input[type=radio]:nth-child(5):checked ~ .carousel__next > label:nth-child(1), .carousel > input[type=radio]:nth-child(5):checked ~ .carousel__prev > label:nth-child(4), .carousel > input[type=radio]:nth-child(4):checked ~ .carousel__next > label:nth-child(5), .carousel > input[type=radio]:nth-child(4):checked ~ .carousel__prev > label:nth-child(3), .carousel > input[type=radio]:nth-child(3):checked ~ .carousel__next > label:nth-child(4), .carousel > input[type=radio]:nth-child(3):checked ~ .carousel__prev > label:nth-child(2), .carousel > input[type=radio]:nth-child(2):checked ~ .carousel__next > label:nth-child(3), .carousel > input[type=radio]:nth-child(2):checked ~ .carousel__prev > label:nth-child(1), .carousel > input[type=radio]:nth-child(1):checked ~ .carousel__next > label:nth-child(2), .carousel > input[type=radio]:nth-child(1):checked ~ .carousel__prev > label:nth-child(5) {
+  opacity: 1 !important;
+  z-index: 3;
+}
+
+.carousel-div {
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    background-color: rgba(255, 255, 255, .5);
+    border: 1px solid rgba(255, 255, 255, .7);
+    border-radius: 10px;
+    box-shadow: 4px 4px 60px rgba(0, 0, 0, 0.2);
+    animation: slowlyAppear 1.5s ease-in-out;
+    transition: .4s ease-in-out;
+    max-width: 100%;
+
+}
+
+.text-content {
+
+    display: grid;
+    position: relative;
+    background-color: rgba(255, 255, 255, .5);
+    border: 1px solid rgba(255, 255, 255, .7);
+    border-radius: 10px;
+    box-shadow: 4px 4px 60px rgba(0, 0, 0, 0.2);
+    animation: slowlyAppear 2s ease-in-out;
+    text-align: center;
+    width: 100%;
+    min-width: 359px;
+    grid-template-rows: repeat(3, 1fr);
+    overflow: hidden;
+    transition: .4s ease-in-out;
+    gap: 5px;
+
+}
+
+.main-product-header {
+
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    flex-direction: column;
+    text-align: center;
+    min-width: 0; /* !!!!!!!!!!!!!!!! Since min-width for grids is usually auto. */
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow-wrap: break-word;
+
+}
+
+.product-name, .product-description {
+
+    width: 80%;
+    margin: 0;
+    margin-top: 5px;
+
+}
+
+.product-description {
+
+    margin: 10px 0 0;
+
+}
+
+.star-tags-divs {
+
+    display: flex;
+    flex-direction: column;
+    margin: 5px;
+
+}
+
+.star-rating, .price-tags {
+
+    display: flex;
+    justify-content: space-evenly;
+    align-items: center;
+    gap: 5px;
+    flex-direction: row;
+
+}
+
+.all-star-rating {
+
+    display: flex;
+    flex-direction: row;
+    position: relative;
+    left: -8%;
+
+}
+
+.review-div {
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 50%;
+
+}
+
+.review-link {
+
+    position: relative;
+    right: 15px;
+    margin-top: 15px;
+
+}
+
+.checked {
+
+    text-shadow: 3px 3px 8px #ffcda5, 3px 3px 8px #ffcda5;
+
+}
+
+.product-rating {
+
+    font-size: 30px;
+    margin-top: 5px;
+    margin-bottom: 5px;
+
+}
+
+.review-button, .purchase-button {
+
+    width: 140%;
+    background: transparent;
+    padding: 1em;
+    margin-bottom: 2em;
+    margin-top: 5%;
+    border: none;
+    background-color: rgba(255, 255, 255, .5);
+    border-left: 1px solid rgba(255, 255, 255, .5);
+    border-top: 1px solid rgba(255, 255, 255, .5);
+    border-radius: 5000px;
+    backdrop-filter: blur(5px);
+    box-shadow: 4px 4px 60px rgba(0,0,0,0.2);
+    color: #000;
+    transition: all 0.2s ease-in-out;
+    text-shadow: 1px 1px 4px rgba(0,0,0,0.2);
+    outline: none;
+    cursor: pointer;
+
+}
+
+.review-button {
+
+    background-color: rgba(255, 235, 230, .8);
+    position: relative;
+    right: 3px;
+
+}
+
+.purchase-button {
+
+    width: 50%;
+
+}
+
+.add-to-cart-svg, .review-svg {
+
+    position: relative;
+
+}
+
+.review-svg {
+
+    right: 3px;
+    top: 2px;
+
+}
+
+.review-button:hover {
+
+    box-shadow: 4px 4px 60px 8px rgba(0,0,0,0.2);
+    text-shadow: 2px 2px 5px rgba(0,0,0,0.2);
+
+}
+
+.review-button:focus {
+
+    box-shadow: 5px 5px 60px 9px rgba(0,0,0,0.2);
+
+}
+
+.price-text {
+
+    position: relative;
+    right: 10px;
+
+}
+
+.price-text:hover {
+
+    text-decoration: underline;
+
+}
+
+.all-product-tags {
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    flex-direction: row;
+    width: 50%;
+    position: relative;
+    right: -5px;
+    border: solid 2px #000;
+    border-radius: 10px;
+    transition: .3s ease-in-out;
+    background-color: rgba(255, 255, 255, .3);
+
+}
+
+.all-product-tags:hover {
+
+    background-color: rgba(255, 255, 255, .5);
+    box-shadow: 2px 2px 30px 4px rgba(0,0,0,0.2);
+
+}
+
+.one-tag {
+
+    margin: 2px;
+    padding: 3px;
+    cursor: pointer;
+
+}
+
+.one-tag a {
+
+    text-decoration: none;
+    color: #000;
+
+}
+
+.one-tag a:hover {
+
+    text-decoration: underline;
+
+}
+
+.main-buttons-div {
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    gap: 10px;
+    text-align: center;
+
+}
+
+.add-to-cart-svg {
+
+    position: relative;
+    right: 3px;
+    top: 4px;
+
+}
+
+.add-to-liked-svg {
+
+    position: relative;
+    right: 3px;
+    top: 6px;
+
+}
+
+.purchase-button-div, .add-to-liked-product {
+
+    display: flex;
+    width: 100%;
+
+    justify-content: center;
+    align-items: center;
+    position: relative;
+
+}
+
+.user-details-div {
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: row;
+    gap: 5px;
+
+}
+
+.merchant-pfp {
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background-color: rgba(174, 177, 217, .4);
+    margin: 5px;
+    transition: .4s ease-in-out;
+    border: 2px solid #000;
+    box-shadow: 4px 4px 20px rgba(255, 255, 255, .4);
+
+}
+
+.merchant-pfp:hover {
+
+    box-shadow: 6px 6px 30px rgba(255, 255, 255, .5);
+
+}
+
+.carousel-div:hover, .text-content:hover {
+
+    box-shadow: 4px 4px 60px 8px rgba(0,0,0,0.2);
+
+}
+
+.carousel-container {
+  width: 580px;
+  min-width: 580px;
+  padding: 25px;
+}
+
+.carousel {
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+}
+.carousel > input[type=radio] {
+  position: absolute;
+  left: 0;
+  opacity: 0;
+  top: 0;
+}
+.carousel > input[type=radio]:checked ~ .carousel__items .carousel__item,
+.carousel > input[type=radio]:checked ~ .carousel__prev > label,
+.carousel > input[type=radio]:checked ~ .carousel__next > label {
+  opacity: 0;
+}
+.carousel > input[type=radio]:nth-child(1):checked ~ .carousel__items .carousel__item:nth-child(1) {
+  opacity: 1;
+}
+.carousel > input[type=radio]:nth-child(1):checked ~ .carousel__nav > label:nth-child(1) {
+  background: #ccc;
+  cursor: default;
+  pointer-events: none;
+}
+.carousel > input[type=radio]:nth-child(2):checked ~ .carousel__items .carousel__item:nth-child(2) {
+  opacity: 1;
+}
+.carousel > input[type=radio]:nth-child(2):checked ~ .carousel__nav > label:nth-child(2) {
+  background: #ccc;
+  cursor: default;
+  pointer-events: none;
+}
+.carousel > input[type=radio]:nth-child(3):checked ~ .carousel__items .carousel__item:nth-child(3) {
+  opacity: 1;
+}
+.carousel > input[type=radio]:nth-child(3):checked ~ .carousel__nav > label:nth-child(3) {
+  background: #ccc;
+  cursor: default;
+  pointer-events: none;
+}
+.carousel > input[type=radio]:nth-child(4):checked ~ .carousel__items .carousel__item:nth-child(4) {
+  opacity: 1;
+}
+.carousel > input[type=radio]:nth-child(4):checked ~ .carousel__nav > label:nth-child(4) {
+  background: #ccc;
+  cursor: default;
+  pointer-events: none;
+}
+.carousel > input[type=radio]:nth-child(5):checked ~ .carousel__items .carousel__item:nth-child(5) {
+  opacity: 1;
+}
+.carousel > input[type=radio]:nth-child(5):checked ~ .carousel__nav > label:nth-child(5) {
+  background: #ccc;
+  cursor: default;
+  pointer-events: none;
+}
+.carousel__items {
+  padding: 0;
+  list-style-type: none;
+  width: 100%;
+  height: 500px;
+  position: relative;
+}
+.carousel__item {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 581px;
+  height: 421px;
+  z-index: 1;
+  transition: opacity 2s;
+  -webkit-transition: opacity 2s;
+}
+.carousel__item img {
+  width: 100%;
+  vertical-align: middle;
+}
+.carousel__prev > label, .carousel__next > label {
+  border: 1px solid #fff;
+  border-radius: 50%;
+  cursor: pointer;
+  display: block;
+  width: 40px;
+  height: 40px;
+  position: absolute;
+  top: 40%;
+  transform: translateY(-50%);
+  -webkit-transform: translateY(-50%);
+  transition: all 0.3s ease;
+  -webkit-transition: all 0.3s ease;
+  opacity: 0;
+  z-index: 2;
+}
+.carousel__prev > label:hover, .carousel__prev > label:focus, .carousel__next > label:hover, .carousel__next > label:focus {
+  opacity: 0.5 !important;
+}
+.carousel__prev > label:before, .carousel__prev > label:after, .carousel__next > label:before, .carousel__next > label:after {
+  content: "";
+  position: absolute;
+  width: inherit;
+  height: inherit;
+}
+.carousel__prev > label:before, .carousel__next > label:before {
+  background: linear-gradient(to top, #fff 0%, #fff 10%, rgba(51, 51, 51, 0) 10%), linear-gradient(to left, #fff 0%, #fff 10%, rgba(51, 51, 51, 0) 10%);
+  width: 60%;
+  height: 60%;
+  top: 20%;
+}
+.carousel__prev > label {
+  left: 2%;
+}
+.carousel__prev > label:before {
+  left: 35%;
+  top: 20%;
+  transform: rotate(135deg);
+  -webkit-transform: rotate(135deg);
+}
+.carousel__next > label {
+  right: 2%;
+}
+.carousel__next > label:before {
+  left: 10%;
+  transform: rotate(315deg);
+  -webkit-transform: rotate(315deg);
+}
+.carousel__nav {
+  position: absolute;
+  bottom: 15%;
+  left: 0;
+  text-align: center;
+  width: 100%;
+  z-index: 3;
+}
+.carousel__nav > label {
+  border: 1px solid #fff;
+  display: inline-block;
+  border-radius: 50%;
+  cursor: pointer;
+  margin: 0 0.125%;
+  width: 20px;
+  height: 20px;
+}
+
+/* Animations. */
+
+@keyframes slowlyAppear {
+
+    0% { opacity: 0; }
+
+
+    100% { opacity: 1; }
+
+}
+
+@media (max-width: 769px) {
+
+    .main-content {
+
+        overflow-x: auto;
+
+    }
+
+}
+
+/* For large screens. */
+
+@media (min-width: 1540px) {
+
+    .main-content {
+
+        width: 70%;
+        height: 73%;
+
+    }
+
+    .all-star-rating {
+
+        left: -8%;
+
+    }
+
+    .price-text {
+
+        right: -20px;
+
+    }
+
+}
+
+/* Thanks to Dang Van Thanh for the carousel <3 */
