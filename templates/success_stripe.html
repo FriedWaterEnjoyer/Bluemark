@@ -54,7 +54,7 @@
 
                                 {% if single_address_detail: %}
 
-                                    {{ single_address_detail }},
+                                    {{ single_address_detail }}
 
                                 {% endif %}
 
@@ -101,6 +101,12 @@
         </div>
 
     </div>
+
+{% if night_mode: %} <!-- Importing JavaScript if the user has night_mode turned on. -->
+
+    <script src="{{ url_for('static', filename='JS Scripts/dark_light_mode.js') }}"></script>
+
+{% endif %}
 
 </body>
 </html>

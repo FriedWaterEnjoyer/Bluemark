@@ -341,3 +341,11 @@ body.dark {
     display: none;
 
 }
+
+.inactive {
+
+    pointer-events: none;
+    cursor: default;
+    opacity: .5;
+
+}

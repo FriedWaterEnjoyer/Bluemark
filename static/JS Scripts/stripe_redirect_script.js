@@ -3,25 +3,40 @@
 
 async function checkoutRedirect() {
 
-    const response = await fetch(
+    let previousTotalPrice = document.getElementById("text-total");
 
-    "/create-checkout-session", {
+    previousTotalPrice = previousTotalPrice.textContent;
 
-        method: "POST",
+    previousTotalPrice = parseFloat(previousTotalPrice.split("$")[1]);
 
-        headers: {
+    if (previousTotalPrice > 0.00) {
 
-            "Content-type": "application/json"
+
+
+        const response = await fetch(
+
+        "/create-checkout-session", {
+
+            method: "POST",
+
+            headers: {
+
+                "Content-type": "application/json"
+
+                }
 
             }
 
-        }
+        )
 
-    )
+        const data = await response.json()
 
-    const data = await response.json()
+        window.location.href = data.url; // Redirecting to Stripe.
 
-    window.location.href = data.url; // Redirecting to Stripe.
+    } else {
 
+        // pass, since the user's prolly modified the frontend :(
+
+    }
 
 };

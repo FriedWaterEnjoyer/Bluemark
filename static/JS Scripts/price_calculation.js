@@ -1,16 +1,14 @@
 // The main point of this file is to calculate the price of the individual items in the cart. (And let the user increase it using plus and minus signs).
 
-async function updateCart(itemId, actionType, previousTotalPriceInput) {
+async function updateCart(itemId, actionType) {
 
 /*
 
-This function takes three inputs:
+This function takes two inputs:
 
 itemId (speaks for itself);
 
 actionType (can be: "plus", "minus" or "del". Takes part in determining the final price and regulating the quantity);
-
-previousTotalPriceInput (the previous total price of all the items in the cart).
 
 Gets triggered whenever the user's pressing the plus/minus SVGs or the trashcan SVG.
 
@@ -33,7 +31,7 @@ Gets triggered whenever the user's pressing the plus/minus SVGs or the trashcan 
 
             },
 
-            body: JSON.stringify({id: itemId, action: actionType, prev_total: previousTotalPrice})
+            body: JSON.stringify({id: itemId, action: actionType})
 
         });
 
@@ -76,7 +74,7 @@ async function checkQuantity(actionTypeButton, itemId, button) { // Activates wh
 // cardId - mostly to just point out in which card the quantity change needs to happen.
 
 
-    previousTotalPrice = document.getElementById("text-total");
+    let previousTotalPrice = document.getElementById("text-total");
 
     previousTotalPrice = previousTotalPrice.textContent;
 
@@ -109,7 +107,7 @@ async function checkQuantity(actionTypeButton, itemId, button) { // Activates wh
 
         numberCheck++; // Updating the quantity of the item if the termination conditions aren't met.
 
-        let newTotalPrice = await updateCart(itemId, "plus", previousTotalPrice); // Updating the cart with "plus" as the action.
+        let newTotalPrice = await updateCart(itemId, "plus"); // Updating the cart with "plus" as the action.
 
         totalElement.textContent = `$${newTotalPrice}`; // Updating the frontend price.
 
@@ -128,7 +126,7 @@ async function checkQuantity(actionTypeButton, itemId, button) { // Activates wh
 
     }
 
-    if (actionTypeButton === "minus") {
+    else if (actionTypeButton === "minus") {
 
         plusButton.classList.add("inactive");
 
@@ -142,7 +140,7 @@ async function checkQuantity(actionTypeButton, itemId, button) { // Activates wh
 
         numberCheck--;
 
-        let newTotalPrice = await updateCart(itemId, "minus", previousTotalPrice);
+        let newTotalPrice = await updateCart(itemId, "minus");
 
         totalElement.textContent = `$${newTotalPrice}`;
 
@@ -161,9 +159,9 @@ async function checkQuantity(actionTypeButton, itemId, button) { // Activates wh
 
     }
 
-    if (actionTypeButton === "del") { // If the user wants to delete something from their cart.
+    else if (actionTypeButton === "del") { // If the user wants to delete something from their cart.
 
-        let newTotalPrice = await updateCart(itemId, "del", previousTotalPrice); // No need to check anything, just send the request to the server.
+        let newTotalPrice = await updateCart(itemId, "del"); // No need to check anything, just send the request to the server.
 
         mainCard.remove(); // Deleting the element.
 
@@ -177,6 +175,12 @@ async function checkQuantity(actionTypeButton, itemId, button) { // Activates wh
             checkoutButton.classList.add("inactive");
 
         }
+
+    }
+
+    else {
+
+        // pass - since, most likely, the user's changed the content of the onclick. (I'll prolly never use it after this project... Too risky and unsafe).
 
     }
 

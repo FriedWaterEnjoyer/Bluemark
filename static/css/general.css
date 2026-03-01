@@ -62,6 +62,12 @@ body.dark {
 
     }
 
+    #search-form:hover {
+
+        box-shadow: 1px 1px 30px #FFFFFF;
+
+    }
+
 }
 
 button, input, select, textarea {
@@ -649,6 +655,12 @@ form {
     #search-form:valid .fa {
       background: #305E9C;
       color: white;
+    }
+
+    #search-form:hover {
+
+        box-shadow: 1px 1px 30px #000;
+
     }
 
     /* Tags subsection. */

@@ -19,6 +19,19 @@ hr {
 
 }
 
+/* Dark Mode Styling. */
+
+body.dark {
+
+    .full-container {
+
+        background-color: #1a1a1a;
+        color: rgba(255, 255, 255, .9);
+
+    }
+
+}
+
 /* General containers. */
 
 .full-container {
@@ -195,6 +208,12 @@ hr {
     .order-details {
 
         width: 125%;
+
+    }
+
+    .data-point {
+
+        margin-right: 3px;
 
     }
 

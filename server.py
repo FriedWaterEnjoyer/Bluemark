@@ -6,25 +6,20 @@
 
 # I'll prolly do it closer to the end of the production, for now I want to have everything in one file.
 
-# TODO: Maybe add a shadow to the search bar...? At least when hovered, because it looks pretty cool :3
-
-# TODO: Increase the width of the card for anything above 1440px pls :3
-
-# TODO: as a sidequest - let the user delete their own comments.
-
-# (Possible) TODO: sanitize the user's form inputs.
-
-# TODO: Night mode for the cart + checkout pls :3
+# TODO: as a sidequest - let the user delete their own reviews.
 
 # TODO: (Closer to the end of the production) - adjust mobile frontend.
+
+# TODO: (Closer to the end of the production) - Create fake test accounts using stripe.Account.create, then insert their IDs into the DB. (Check if it's possible to set payouts_enabled, charges_enabled and transfers to True in these accounts).
 
 #---- Imports ----#
 
 
 import os
+import json
 from dotenv import load_dotenv
-from flask import Flask, render_template, redirect, request, make_response, url_for, jsonify, session
-from sqlalchemy import Text, Numeric, Integer, BOOLEAN, ARRAY, create_engine, MetaData, Column, Table, LargeBinary, select  # For DB interactions.
+from flask import Flask, render_template, redirect, request, make_response, url_for, jsonify, session, Response
+from sqlalchemy import Text, Numeric, Integer, BOOLEAN, ARRAY, create_engine, MetaData, Column, Table, LargeBinary, select, func  # For DB interactions.
 from sqlalchemy.orm import sessionmaker
 import argon2 # For hashing passwords.
 from authlib.integrations.flask_client import OAuth # For authorization with Google.
@@ -33,6 +28,8 @@ import stripe # For payment processing. (Using offline API Key, because I can't 
 import cloudinary # Cloud for storing images and videos.
 import cloudinary.uploader as cloud_upload
 from werkzeug.utils import secure_filename # For preventing directory attacks. (Removes stuff like "/", which can lead to the attackers going up through the directory).
+from werkzeug.datastructures import FileStorage # Chiefly used in the exceeds_file_size_limit function.
+import magic # For securing user-uploaded files. (Checking image's MIME type + the magic numbers).
 from itsdangerous import URLSafeSerializer, BadSignature # In order to cryptographically sign cookies.
 import pyotp # For Two-Factor Authentication.
 import qrcode # For creating Google Authentication QR-codes.
@@ -49,6 +46,13 @@ from decimal import Decimal, ROUND_HALF_UP # For working with the prices and qua
 
 
 # !!!!!! Important information !!!!!!
+
+# !!!!!! Don't forget to type "pip install python-magic-bin" (If you're on Windows) In the console, otherwise the "magic" library won't work with the error:
+
+# "ImportError: failed to find libmagic. Check your installation"
+
+# For other OS, check this: https://github.com/ahupp/python-magic/blob/master/README.md
+
 
 # Please register in ngrok.com and then run these two commands:
 
@@ -125,6 +129,9 @@ stripe_keys = {
 stripe.api_key = stripe_keys["secret_key"]
 
 
+stripe_endpoint_secret = os.getenv("STRIPE_WEBHOOK_SECRET") # Will be useful when verifying the event of the webhook payment processing. (Check the /webhook endpoint).
+
+
 #---- Initializing Oauth ----#
 
 
@@ -170,10 +177,6 @@ engine = create_engine(DATABASE_URL)
 
 meta_data_obj = MetaData() # Where all the tables and columns will be stored.
 
-
-# Main DB tables:
-
-# There will be 2 main tables: one will contain all the data about the customers, and the second one - about the products.
 
 # PLS PLS PLS PLS PLS KEEP EVERY SINGLE COLUMN NAME WITHOUT SPACEBARS!!
 
@@ -245,10 +248,11 @@ in_cart_table = Table(  # Will store the data about the items the user has in th
     Column("user_id", Integer, nullable=False, index=True),
     Column("product_id", Integer, nullable=False, index=True),
     Column("quantity", Integer, nullable=False),
+    Column("single_item_price", Numeric, nullable=False),
 
 )
 
-orders_table = Table(  # Same as the table above (except for the item's status), but with the ordered items (i.e., the ones that the user's already bought).
+orders_items_table = Table( # One row per one product bought.
 
     # Will be used for both the customer and the merchant (With the merchant being able to change the item_status column via the interface).
 
@@ -266,7 +270,22 @@ orders_table = Table(  # Same as the table above (except for the item's status),
     Column("customer_phone", Text, nullable=False),
     Column("customer_email", Text, nullable=False),
     Column("customer_full_name", Text, nullable=False),
-    Column("total_order_price", Numeric, nullable=False)
+    Column("total_order_price", Numeric, nullable=False),
+    Column("single_item_price", Numeric, nullable=False),
+    Column("master_order_id", Integer, index=True, nullable=False),
+
+)
+
+master_orders_table = Table( # Just the order in general, not every single item the user's bought. (That's for the orders_items_table)
+
+    "Master Orders Table",
+
+    meta_data_obj,
+
+    Column("order_id", Integer, primary_key=True, autoincrement=True),
+    Column("buyer_id", Integer, index=True, nullable=False),
+    Column("shipping_info", Text, nullable=False),
+    Column("total_price", Numeric, nullable=False),
 
 )
 
@@ -345,7 +364,9 @@ def id_query(id_input: int): # Does the same as the function above, but with an 
 
     return session_db.query(customer_table).where(customer_table.c.ID == id_input).first()
 
+
 #---- 2FA Management -----#
+
 
 # Does exactly what it says - just generates recovery for 2FA after the user's done with the main generation process.
 
@@ -389,7 +410,8 @@ def hash_and_commit_recovery_codes(all_codes: list, user_id: int): # The codes g
 #---- Additional Security Functions ----#
 
 
-ALL_ALLOWED_EXTENSIONS = ["jpeg", "png", "jpg", "mp4"]
+ALL_ALLOWED_EXTENSIONS = ["jpeg", "png", "jpg"]
+
 
 def check_file_allowed(filename: str) -> bool: # This function is responsible for checking if a file sent by the user has correct extension. (JPEG, PNG and .mp4 in my case).
 
@@ -398,6 +420,82 @@ def check_file_allowed(filename: str) -> bool: # This function is responsible fo
     # Checks if dot is in the name of the file. If it is - then it splits the string from the right (.rsplit) and checks the rightmost side if its extension is allowed.
 
     # If one of these conditions is not True - then returns False.
+
+
+def exceeds_file_size_limit(file_object: FileStorage, max_file_size: int):
+
+    # Takes two inputs - the file to check (file_object), and the file size (max_file_size), acting as the cap (in bytes).
+
+    # Returns False if the file doesn't exceed the size, returns True if it does.
+
+
+    current_pointer_pos = file_object.tell() # Outputs the current position of the pointer.
+
+    file_object.seek(0, os.SEEK_END) # Moving the pointer to the last part of the file.
+
+    file_size_bytes = file_object.tell() # Where the image's file size lies.
+
+    file_object.seek(current_pointer_pos) # Moving the pointer to the beginning.
+
+    # Checking if the file's size exceeds the one allowed by the max_file_size function; returning an appropriate Boolean.
+
+    if file_size_bytes > max_file_size: return True
+
+    else: return False
+
+
+FILE_CONTENT_WHITELIST = ["image/jpeg", "image/jpg", "image/png"]
+
+def check_image_content(file_object: FileStorage):
+
+    mime = magic.from_buffer(file_object.read(4096), mime=True) # Reading the first 4096 bytes (a bit of an overkill, but just in case...) to determine its MIME type in order to determine whether it's an actual image.
+
+    file_object.seek(0) # Return the pointer for saving.
+
+    return mime in FILE_CONTENT_WHITELIST
+
+
+def image_decode(file_object: FileStorage): # Checks whether the file, submitted by the user, is actually an image and not a malicious file, dressing up as an image.
+
+    try:
+
+        img = Image.open(file_object)
+
+        img.verify() # Checking the internal consistency of the submitted image.
+
+        file_object.seek(0) # Resetting the pointer, since verification invalidates the image object.
+
+        return True
+
+    except Exception:
+
+        return False
+
+
+def image_re_encode(file_object: FileStorage):
+
+    img = Image.open(file_object)
+
+    img_format = img.format # Getting the format of the image before the conversion, since it'll return None after the img.convert("RGB").
+
+    img = img.convert("RGB") # Since it removes any suspicious formats + potentially dangerous metadata.
+
+    clean_buffer_img = BytesIO() # Creating a clean in-memory file.
+
+
+    # Re-encoding the image with adherence to its file format.
+
+    if img_format == "JPEG" or img_format == "JPG":
+
+        img.save(clean_buffer_img, format="JPEG", quality=90, optimize=True)
+
+    else:
+
+        img.save(clean_buffer_img, format="PNG", quality=90, optimize=True)
+
+    clean_buffer_img.seek(0)
+
+    return clean_buffer_img
 
 
 def restrict_access_to_details(user_data): # If Can_access_credentials is True - then the function immediately sets it to False (In order to keep user's restriction to the data change page, locking it behind reauthorization).
@@ -982,14 +1080,23 @@ def add_to_cart(product_id):
     if not has_cookies: return redirect("/login")
 
 
-    already_has_in_cart = session_db.query(in_cart_table).where(in_cart_table.c.product_id == product_id).where(in_cart_table.c.user_id == has_cookies).first() # Checking if the user already has this product in the cart.
+    full_product_info = session_db.query(product_table).where(product_table.c.ID == product_id).first()
 
-    if already_has_in_cart: pass # If the user's trying to add an item that's already in the cart. (Do nothing and simply redirect to the precious page in that case).
+
+    owner_id = full_product_info[7]
+
+    product_price_info = full_product_info[3] # For updating the total in user's cart.
+
+
+    previous_user_amount = session_db.query(customer_table).where(customer_table.c.ID == has_cookies).first()[5] # Will help determine how many items the user has in their cart, if it's above 15 - then it'll show an error.
+
+    if previous_user_amount + 1 >= 21: pass
+
+    elif owner_id == has_cookies: pass
+
+    # These two checks above are just in case stuff, since the user can still modify the HTML and send POST request to this API.
 
     else:
-
-        previous_user_amount = session_db.query(customer_table).where(customer_table.c.ID == has_cookies).first()[5]
-
 
         with engine.connect() as connection:
 
@@ -997,11 +1104,13 @@ def add_to_cart(product_id):
 
                 in_cart_table.insert(), {
 
-                    "user_id": has_cookies,
+                        "user_id": has_cookies,
 
-                    "product_id": product_id,
+                        "product_id": product_id,
 
-                    "quantity": 1,
+                        "quantity": 1,
+
+                        "single_item_price": product_price_info,
 
                 },
 
@@ -1038,9 +1147,16 @@ def calculate_price():
 
     type_of_action = data["action"]
 
-    prev_total_price = data["prev_total"]
+
+    prev_total_price = session_db.query(func.sum(in_cart_table.c.single_item_price * in_cart_table.c.quantity)).where(in_cart_table.c.user_id == user_cookies).first()[0] or 0.0 # Query the previous price from the DB. (Since the frontend one is too risky and insecure).
 
     quantity_of_the_item = session_db.query(in_cart_table).where(in_cart_table.c.product_id == id_of_the_item).where(in_cart_table.c.user_id == user_cookies).first()[3] # Querying the quantity of an individual item.
+
+
+    if quantity_of_the_item == 3 and type_of_action == "plus" or quantity_of_the_item == 1 and type_of_action == "minus": return jsonify({"total": prev_total_price})
+
+    # This line above is necessary, since the user can switch between the pages of the products and then come back to the cart page, where the values on the frontend will be outdated, but the values in the database will be up-to-date. (e.g. 2 on the frontend - the user can still add one more item to the cart, but in the database - it'll be 3, thus, making the amount of items to be equal to 4).
+
 
     prev_price = session_db.query(product_table).where(product_table.c.ID == id_of_the_item).first()[3] # Querying the price of an individual item (in order to not fetch it from the frontend).
 
@@ -1115,6 +1231,7 @@ def calculate_price():
 
     return None # There really is no reason for this return statement to exist. But my OCD will be mad at so many dim-yellow squiggly lines here because of the "no explicit return statement" warning >:3
 
+
 @app.route("/create-checkout-session", methods=["POST"])
 def create_stripe_checkout_session(): # When the user's proceeded to the checkout after modifying their cart.
 
@@ -1123,7 +1240,7 @@ def create_stripe_checkout_session(): # When the user's proceeded to the checkou
     if not has_cookies: return redirect("/login")
 
 
-    stmt = select( # Querying relative information about the products that the user has in their cart, using product_id and user_id from the in_cart_table.
+    stmt = (select( # Querying relative information about the products that the user has in their cart, using product_id and user_id from the in_cart_table.
 
         # Long story short, same query as it was before in the cart, but with a fancy hat. (I.e., calculating the total price using quantities and prices from the DB).
 
@@ -1131,17 +1248,22 @@ def create_stripe_checkout_session(): # When the user's proceeded to the checkou
         product_table.c.Description,
         product_table.c.Price,
         product_table.c.Images[1],
-        product_table.c.OwnerID,
+        customer_table.c.Stripe_ID,
         in_cart_table.c.quantity,
         in_cart_table.c.product_id,
         in_cart_table.c.user_id,
+        product_table.c.OwnerID,
 
 
-    ).outerjoin(in_cart_table, product_table.c.ID == in_cart_table.c.product_id).where(
+    ).join(in_cart_table, product_table.c.ID == in_cart_table.c.product_id)
+
+    .join(customer_table, product_table.c.OwnerID == customer_table.c.ID)
+
+    .where(
 
         in_cart_table.c.user_id == has_cookies
 
-    )
+    ))
 
     with engine.connect() as connection:
 
@@ -1151,6 +1273,18 @@ def create_stripe_checkout_session(): # When the user's proceeded to the checkou
     # Fetching all the relative data for the Stripe session.
 
     line_items = []
+
+    metadata_checkout = { # This dictionary will be built up during the all_in_cart loop, but will be passed as an argument during the checkout session. (This is done in order to split the payment between multiple merchants).
+
+        "seller_amount": [],
+        "seller_stripe_id": [],
+        "buyer_id": has_cookies,
+        "product_id": [],
+        "product_quantity": [],
+        "seller_db_id": [],
+        "single_item_price": [],
+
+    }
 
     for single_item in all_in_cart:
 
@@ -1174,17 +1308,33 @@ def create_stripe_checkout_session(): # When the user's proceeded to the checkou
 
             },
 
-            "metadata": {
-
-                "seller_id": single_item[4],
-                "product_id": single_item[6],
-                "user_id": single_item[7]
-
-            },
-
             "quantity": single_item[5]
 
         })
+
+        # Appending the data to metadata.
+
+        metadata_checkout["seller_amount"].append(str(int((single_item[2] * 100) * single_item[5])))
+
+        metadata_checkout["seller_stripe_id"].append(str(single_item[4])) # Storing the merchant's IDs in the metadata. (So that i can redistribute the money across the merchants).
+
+        # Appending information about the product. (Necessary for the DB).
+
+        metadata_checkout["product_id"].append(single_item[6])
+
+        metadata_checkout["product_quantity"].append(single_item[5])
+
+        metadata_checkout["seller_db_id"].append(single_item[8])
+
+        metadata_checkout["single_item_price"].append(str(single_item[2]))
+
+
+    # Converting this metadata into JSON (Since stripe.checkout.Session.create metadata accepts only strings as both keys and values).
+
+    metadata_as_string = json.dumps(metadata_checkout) # !!!!!!!!!!!!!
+
+    # The json.dumps() function converts a Python object (such as a dictionary or list) into a JSON-formatted string.
+
 
     # Creating a Stripe Checkout session using the data fetched above.
 
@@ -1193,6 +1343,8 @@ def create_stripe_checkout_session(): # When the user's proceeded to the checkou
         mode = "payment",
 
         success_url = "https://synovial-wilton-unspilt.ngrok-free.dev/order/stripe/success?session_id={CHECKOUT_SESSION_ID}",
+
+        cancel_url = "https://synovial-wilton-unspilt.ngrok-free.dev/cart",
 
         line_items = line_items,
 
@@ -1206,28 +1358,260 @@ def create_stripe_checkout_session(): # When the user's proceeded to the checkou
 
         billing_address_collection = "required",
 
+        metadata = {
+
+            "main_key": metadata_as_string,
+
+        }
+
     )
 
 
     return {"url": session_stripe.url}
 
+@app.route("/webhook-money-distribution", methods=["POST"])
+def money_distribution(): # Does exactly what it says - checks if the payment was successful - if it was - then it collects all the Stripe IDs of the merchants, and then redistributes user's money to all the merchants.
+
+    payload = request.data
+
+    event = None
+
+
+    try:
+
+        dumped_payload = json.loads(payload)
+
+
+        event = stripe.Event.construct_from(
+
+            dumped_payload, stripe.api_key
+
+        )
+
+
+    except ValueError as e: # Invalid payload. (Like if the parameters of the request are incorrect or the request itself was parsed too early).
+
+        return f"Error with the payload: {e}", 400
+
+
+    # Verifying the endpoint secret.
+
+    sig_header = request.headers.get("stripe-signature")
+
+    try:
+
+        event = stripe.Webhook.construct_event(
+
+            payload, sig_header, stripe_endpoint_secret
+
+        )
+
+    except stripe.error.SignatureVerificationError as e:
+
+        print(f"Something bad happened with the signature :(  {str(e)}")
+
+        return jsonify(success=False)
+
+
+    # Handling the event + DB actions.
+
+
+    if event.type == "checkout.session.completed":
+
+        session_payment = event["data"]["object"]
+
+
+        if session_payment["payment_status"] == "paid":
+
+
+            # Getting the charge ID for the source_transaction.
+
+            payment_intent_session = session_payment["payment_intent"]
+
+
+            payment_intent_retrieve = stripe.PaymentIntent.retrieve(
+
+                payment_intent_session,
+
+            )
+
+            source_transaction = payment_intent_retrieve["latest_charge"] # The ID of the charge. (Used in order to specify the source_transaction when calling the stripe.Transfer.create, as not specifying this will cause an insufficient funds error, since Stripe will try to get the money for this transfer from my bank account).
+
+
+            metadata_checkout_session = json.loads(session_payment["metadata"]["main_key"])
+
+            customer_email = session_payment["customer_details"]["email"]
+
+            customer_phone = session_payment["customer_details"]["phone"]
+
+            customer_provided_address = session_payment["customer_details"]["address"]
+
+            customer_provided_full_name = session_payment["collected_information"]["shipping_details"]["name"]
+
+            total_order_price = session_payment["amount_total"]
+
+            customer_full_shipping_address = f"{customer_provided_address.get("country")} {customer_provided_address["state"] if customer_provided_address["state"] else ""} {customer_provided_address.get("city")} {customer_provided_address.get("line1")} {customer_provided_address["line2"] if customer_provided_address.get("line2") else ""} {customer_provided_address.get("postal_code")}".replace("  ", " ")
+
+            # In the gigantic line of code above I fetch the entire user-provided address, and then glue it into one string. And then reduce any double spaces.
+
+
+            # Creating a hashmap with all the sellers and the amount of money that has to go to them.
+
+            seller_hash = {}
+
+            # Fetching data form metadata. (Organizing it conveniently).
+
+            full_metadata_seller_amount = metadata_checkout_session["seller_amount"]
+
+            full_metadata_seller_ids = metadata_checkout_session["seller_stripe_id"]
+
+
+            # Looping through all the seller's IDs and the amount of money that needs to be distributed to them.
+
+            for i in range(len(full_metadata_seller_amount)): # Using a single index i to loop through both lists.
+
+                if full_metadata_seller_ids[i] not in seller_hash:
+
+                    seller_hash[full_metadata_seller_ids[i]] = int(full_metadata_seller_amount[i])
+
+                else: seller_hash[full_metadata_seller_ids[i]] += int(full_metadata_seller_amount[i])
+
+
+            # In the end I'll have a hashmap with all the sellers IDs and the total amount of money that will be sent to them, using user's money as the source of the transaction.
+
+
+            for merchant_id, amount_merchant in seller_hash.items():
+
+                transfer_key = f"transfer_{session_payment["id"]}_{merchant_id}" # Acting as an idempotency key. (Basically a key that ensures the transfer will not happen twice because of, for instance, a random network error).
+
+                transfer = stripe.Transfer.create(
+
+                        amount = amount_merchant,
+
+                        currency = "usd",
+
+                        source_transaction = source_transaction,
+
+                        destination = merchant_id,
+
+                        idempotency_key = transfer_key,
+
+                )
+
+
+            # Updating the DB.
+
+            with engine.connect() as connection:
+
+                # Creating the master order. (An "umbrella-order", which will contain all the products the user's ordered).
+
+                result = connection.execute(
+
+                    master_orders_table.insert().returning(master_orders_table.c.order_id), { # .returning() since I need to get the master_order's id to pass to all the products below.
+
+                        "buyer_id": metadata_checkout_session["buyer_id"],
+
+                        "shipping_info": customer_full_shipping_address,
+
+                        "total_price": total_order_price/100, # Converting the price from cents to dollars.
+
+                    }
+
+                )
+
+                new_master_order_id = result.fetchone().order_id # Getting the ID inserted part.
+
+
+                # Creating the "rows" list in order to bulk-insert it into a DB.
+
+                rows = [
+
+                {
+
+                    "user_id": metadata_checkout_session["buyer_id"],
+
+                    "merchant_id": seller_id,
+
+                    "product_id": product_id,
+
+                    "quantity": quantity,
+
+                    "item_status": "Order Placed",
+
+                    "shipping_address": customer_full_shipping_address,
+
+                    "customer_email": customer_email,
+
+                    "customer_phone": customer_phone,
+
+                    "customer_full_name": customer_provided_full_name,
+
+                    "total_order_price": total_order_price/100, # Same as "total_price" in the master order.
+
+                    "single_item_price": single_item_price,
+
+                    "master_order_id": new_master_order_id,
+
+                }
+
+                for seller_id, product_id, quantity, single_item_price in zip( # Using zip() function in order to avoid using "for j in range" loops.
+
+                    metadata_checkout_session["seller_db_id"],
+
+                    metadata_checkout_session["product_id"],
+
+                    metadata_checkout_session["product_quantity"],
+
+                    metadata_checkout_session["single_item_price"],
+
+                )
+
+            ]
+
+
+
+                connection.execute( # Bulk-inserting all the data from the "rows" variable.
+
+                    orders_items_table.insert(), rows
+
+            )
+
+                connection.execute( # Deleting all the items from the in_cart_table.
+
+                    in_cart_table.delete().where(in_cart_table.c.user_id == metadata_checkout_session["buyer_id"])
+
+            )
+
+                connection.execute( # Setting the InCartAmount of the user to 0.
+
+                    customer_table.update().where(customer_table.c.ID == metadata_checkout_session["buyer_id"]).values(InCartAmount=0)
+
+            )
+
+                connection.commit()
+
+    return Response(status=200)
+
 
 @app.route("/order/stripe/success")
-def successful_payment_page(): # Redirects the user after the payment is complete.
-
+def successful_payment_page(): # Redirects the user after the payment is complete. (Mostly for the frontend purposes, webhook is the one responsible for all the transfers and database changes).
 
     session_payment = request.args.get("session_id")
 
     if not session_payment: return redirect("/")
 
+    user_cookies = is_registered() # In order to get the data on user's night mode.
+
+    night_mode_data = session_db.query(customer_table).where(customer_table.c.ID == user_cookies).first()[10]
+
+    # Retrieving all the necessary information to display to the user.
 
     session_payed = stripe.checkout.Session.retrieve(session_payment)
 
     address_dict = session_payed["collected_information"]["shipping_details"]["address"]
 
-    # TODO: Update the orders Table (add all the columns related about the customer's info), redistribute the money across the merchants, add the order to the orders table, delete it from the In Cart Table.
 
-    return render_template("success_stripe.html", address_details=address_dict, full_name=session_payed["customer_details"]["name"], phone_number=session_payed["customer_details"]["phone"], customer_email=session_payed["customer_details"]["email"], total=session_payed["amount_total"]/100)
+    return render_template("success_stripe.html", address_details=address_dict, full_name=session_payed["customer_details"]["name"], phone_number=session_payed["customer_details"]["phone"], customer_email=session_payed["customer_details"]["email"], total=session_payed["amount_total"]/100, night_mode=night_mode_data)
 
 
 @app.route("/product-page/<int:product_id>")
@@ -1243,6 +1627,8 @@ def product_page(product_id):
 
         has_2fa = None
 
+        in_cart_amount_user = 0
+
     else:
 
         user_data = id_query(int(user_cookies))
@@ -1251,17 +1637,27 @@ def product_page(product_id):
 
         has_2fa = user_data[9]
 
+        in_cart_amount_user = user_data[5]
+
+    error_message = None # Will be equal to the error message if the restriction is hit by the user. (Stuff like the owner of the item trying to add their own product to the cart, or the user trying to add a product they already have in their cart, etc.)
+
+    # For now, the error message will be None, since the user didn't do anything wrong.
 
     # Querying the data about the product using an ID from the URL.
 
     product_data = session_db.query(product_table).where(product_table.c.ID == product_id).first()
 
-    # Querying the data about the user who uploaded the image.
+    # Querying the data about the user who uploaded the product.
 
     user_data_upload = session_db.query(customer_table).where(product_data[7] == customer_table.c.ID).first()
 
 
-    return render_template("product_page.html", night_mode=night_mode, registered=user_cookies, user_data=user_data, has_2fa=has_2fa, product_data=product_data, uploaded_fname=user_data_upload[1], uploaded_lname=user_data_upload[2], uploaded_pfp=user_data_upload[6])
+    if int(user_cookies) == product_data[7]: error_message = "Owner can't add to the cart or write a review on their own product"
+
+    elif in_cart_amount_user + 1 >= 21: error_message = "Amount of items in the cart can't exceed 20"
+
+
+    return render_template("product_page.html", night_mode=night_mode, registered=user_cookies, user_data=user_data, has_2fa=has_2fa, product_data=product_data, uploaded_fname=user_data_upload[1], uploaded_lname=user_data_upload[2], uploaded_pfp=user_data_upload[6], error_message=error_message)
 
 
 @app.route("/reviews/<int:product_id>", methods=["GET", "POST"])
@@ -1272,6 +1668,10 @@ def reviews(product_id):
     has_review = False # The main function of this variable is to detect whether the user's written a review before. Depending on that, the frontend will change.
 
     user_uploaded_comment, user_uploaded_rating = None, None # Will be filled with text if the user's left a comment before, otherwise will stay None.
+
+    is_owner = False # A "flag" that will determine whether the user that's trying to access this page is an owner of the product.
+
+    # If they're - then set this variable to True. Because of this, the user won't be able to leave reviews on their own product.
 
 
     if not user_cookies:
@@ -1289,6 +1689,12 @@ def reviews(product_id):
         night_mode = user_data[10]
 
         has_2fa = user_data[9]
+
+        is_owner = True if session_db.query(product_table).where(product_table.c.ID == product_id).where(product_table.c.OwnerID == user_cookies).first() else False
+
+        # If the DB query above returned something, then set is_owner to True, since owners shouldn't leave reviews on their own product.
+
+        # If the user that's trying to access this page isn't an owner - then no changes made to the is_owner variable.
 
 
     possible_user_review = session_db.query(reviews_table).where(reviews_table.c.product_id == product_id).where(reviews_table.c.user_id == user_cookies).first() # Trying to fetch the data about whether the user already has a review on this specific product.
@@ -1327,6 +1733,9 @@ def reviews(product_id):
 
 
     if request.method == "POST":
+
+        if not user_cookies: return redirect("/login")
+
 
         new_user_rating = request.form["rating"]
 
@@ -1398,7 +1807,7 @@ def reviews(product_id):
         return redirect(url_for("reviews", product_id=product_id))
 
 
-    return render_template("reviews.html", night_mode=night_mode, registered=user_cookies, user_data=user_data, has_2fa=has_2fa, product_data_reviews=users_query_result, product_id=product_id, has_review=has_review, user_comment=user_uploaded_comment, user_rating=user_uploaded_rating)
+    return render_template("reviews.html", night_mode=night_mode, registered=user_cookies, user_data=user_data, has_2fa=has_2fa, product_data_reviews=users_query_result, product_id=product_id, has_review=has_review, user_comment=user_uploaded_comment, user_rating=user_uploaded_rating, is_owner=is_owner)
 
 
 def search():
@@ -1424,18 +1833,15 @@ def upload_item():
 
     if not user_data[8]: return render_template("striperequired.html", night_mode = user_data[10], registered=user_cookies, user_data=user_data, has_2fa = user_data[9]) # If the user doesn't have an ID associated with their account.
 
-
-
     if not user_data[7]: # If the user does have an ID associated with the account, but doesn't have a Stripe column equal to True - then doing the steps below:
 
         try: # If the user came back to the page after completing an onboarding process.
 
             new_account_stripe = stripe.Account.retrieve(user_data[8]) # Getting user's Stripe account using his ID. (Putting it in the try - except statement just in case).
 
+            if new_account_stripe["capabilities"]["transfers"] == "active" and new_account_stripe["charges_enabled"] and new_account_stripe["payouts_enabled"] and not new_account_stripe["requirements"]["currently_due"]: # These keys have all the necessary information about what the user should complete before uploading items.
 
-            if not new_account_stripe["future_requirements"]["currently_due"]: # This key has all the necessary information about what the user should complete before uploading items.
-
-                # If this key is empty - then it means that the user just completed the onboarding process - and the Stripe key column's yet to be changed.
+                # If these keys are either set to True or "active", or None - then it means that the user just completed the onboarding process - and the Stripe key column's yet to be changed.
 
                 with engine.connect() as connection:
 
@@ -1449,9 +1855,9 @@ def upload_item():
 
             else: return render_template("striperequired.html", night_mode=user_data[10], registered=user_cookies, user_data=user_data, has_2fa = user_data[9])
 
-            # But if that list contains some elements - then it means that the user returned to the page while completing onboard.
+            # But if at least one of them doesn't meet the requirements - then it means that the user returned to the page while completing onboard or didn't fully complete the onboarding process. (Like having some problems with the ID or SSN, etc.)
 
-            # In this case - return him to the previous page as they didn't complete the onboarding, which is necessary for the product upload feature.
+            # In this case - return them to the previous page as they didn't fully complete the onboarding, which is necessary for the product upload feature.
 
 
         except stripe.StripeError as e: # Juuuuuuuuust in case...
@@ -1476,7 +1882,7 @@ def upload_item():
 
         all_product_tags = request.form.getlist("all-tags-upload")
 
-        all_imgs = request.files.getlist("product_img")
+        all_imgs = request.files.getlist("product_img")[:5] # Cutting the amount of images up to 5. (In case the user's changed the frontend JS and is trying to submit more than that).
 
         db_upload_images = []
 
@@ -1486,11 +1892,15 @@ def upload_item():
 
             single_img.filename = secure_filename(single_img.filename)
 
-            # Then, using this secured filename, checking if the file has correct extension.
+            # Then, using this secured filename, checking if the file has correct extension and if the file size is correct, since the frontend JS is convenient, but not secure enough.
 
-            if check_file_allowed(single_img.filename):
+            if check_file_allowed(single_img.filename) and not exceeds_file_size_limit(single_img, 1500000) and check_image_content(single_img) and image_decode(single_img):
 
-                # If it does - uploading the image to Cloudinary.
+                # Re-encoding the image after decoding it. (This function returns a buffer).
+
+                single_img = image_re_encode(single_img)
+
+                # If it does - uploading the buffer to Cloudinary.
 
                 upload_result = cloud_upload.upload(single_img)
 
@@ -1499,7 +1909,12 @@ def upload_item():
                 db_upload_images.append(upload_result["secure_url"])
 
 
-            else: pass # If it doesn't have the right file type - simply not appending it to the final list.
+            else: pass # If it doesn't have the right file type or exceeds the file size limit - simply not appending it to the final list.
+
+
+        if not db_upload_images: return redirect("/upload") # If the db_upload_images is empty - then it means that the user's modified the frontend JS, jettisoning the file size controls.
+
+        # In that case - don't commit this to the DB and redirect the user to the upload page.
 
         with engine.connect() as connection:
 
@@ -1542,6 +1957,10 @@ def stripe_registration(): # Where the user will be redirected to if they clicke
 
     if not user_full_data: return "User registration error.", 500 # Throwing an error if the query didn't find any email, related to the user's ID.
 
+    if user_full_data[8]: return redirect("/onboard") # Immediately redirect the user to the onboarding process if they already have a Stripe ID assigned to their profile.
+
+    # This likely means that they didn't fully complete the onboarding process (i.e., left a few fields unconfirmed), then immediately redirect them to the onboarding session, since they don't need another Stripe ID.
+
     try:
 
         # Creating a Stripe Account:
@@ -1550,14 +1969,14 @@ def stripe_registration(): # Where the user will be redirected to if they clicke
 
             email=user_full_data[3],
             controller={
-                "fees": {"payer": "application"},
-                "losses": {"payments": "application"},
-                "stripe_dashboard": {"type": "express"},
+                    "fees": {"payer": "application"},
+                    "losses": {"payments": "application"},
+                    "stripe_dashboard": {"type": "express"},
             },
 
             capabilities={
-                'card_payments': {'requested': True}, # Enabling card payment capability.
-                'transfers': {'requested': True}, # As well as transfers (as in, transfer between the users) capability.
+                    'card_payments': {'requested': True}, # Enabling card payment capability.
+                    'transfers': {'requested': True}, # As well as transfers (as in, transfer between the users) capability.
             },
 
         )
@@ -1575,8 +1994,7 @@ def stripe_registration(): # Where the user will be redirected to if they clicke
 
             connection.commit()
 
-
-        return redirect("/onboard") # Redirecting the user to the onboarding URL if everything was successful.
+        return redirect("/onboard")  # Redirecting the user to the onboarding URL if everything was successful.
 
 
     except stripe.StripeError as e:
@@ -1596,10 +2014,10 @@ def onboard_page(): # Where the user will be redirected if they: 1 - agreed to t
 
     if not full_data_user: return "Error with user identification within the database", 500
 
-
     if not full_data_user[7] and full_data_user[8]: # Checking if the user has their "Stripe" column set as False, and if they already have a stripe ID.
 
-        account_link = stripe.AccountLink.create( # Then redirecting the user to the Stripe onboarding process.
+
+        account_link = stripe.AccountLink.create( # Redirecting the user to the Stripe onboarding process.
 
             account=full_data_user[8], # User's Stripe account ID.
             refresh_url="https://synovial-wilton-unspilt.ngrok-free.dev/refresh-on-board-route", # Where Stripe redirects the user if the Account Link URL has expired or is otherwise invalid.
@@ -1629,7 +2047,7 @@ def refresh_onboarding(): # For regenerating the link if it's invalid.
         account=full_data_user[8],
         refresh_url="https://synovial-wilton-unspilt.ngrok-free.dev/refresh-on-board-route",
         return_url="https://synovial-wilton-unspilt.ngrok-free.dev/upload",
-        type="account_onboarding",
+        type="account_update",
 
     )
 
@@ -1662,13 +2080,15 @@ def user_profile(): # Will be responsible for showing user's profile. (And the p
 
     if request.method == "POST":
 
-        user_pfp_new = request.files.get("new-pfp-user") # In order to get <FileStorage>
+        user_pfp_new = request.files.get("new-pfp-user") # In order to get <FileStorage>.
 
         # File security measures:
 
         secure_filename(user_pfp_new.filename)
 
-        if check_file_allowed(user_pfp_new.filename):
+        if check_file_allowed(user_pfp_new.filename) and not exceeds_file_size_limit(user_pfp_new, 1500000) and check_image_content(user_pfp_new) and image_decode(user_pfp_new):
+
+            user_pfp_new = image_re_encode(user_pfp_new)
 
             upload_result = cloud_upload.upload(user_pfp_new)
 

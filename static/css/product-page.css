@@ -345,10 +345,15 @@ body.dark {
 
     display: flex;
     width: 100%;
-
     justify-content: center;
     align-items: center;
     position: relative;
+
+}
+
+.purchase-button-div {
+
+    flex-direction: column;
 
 }
 
@@ -582,6 +587,22 @@ body.dark {
         right: -20px;
 
     }
+
+}
+
+.inactive { /* For when the user can't add the product to the cart due to the system limitations. */
+
+    pointer-events: none;
+    cursor: default;
+    opacity: .5;
+
+}
+
+.error-message {
+
+    font-size: 12px;
+    color: #F4403D;
+    margin: 2px;
 
 }
 

@@ -8,6 +8,38 @@ body.dark {
 
     }
 
+    .list-of-items {
+
+        background-color: rgba(0, 0, 0, .5);
+        color: #FFF;
+
+    }
+
+    .padding-div {
+
+        background-color: rgba(0, 0, 0, .7);
+
+    }
+
+    .link-to-product h3 {
+
+        color: #FFFFFF;
+
+    }
+
+    .details-link {
+
+        background-color: #156c8a;
+        color: #FFFFFF
+
+    }
+
+    .details-link:hover {
+
+        background-color: #11944f;
+
+    }
+
 }
 
 /* Scrollbar Styling. (For Chrome and Safari) */

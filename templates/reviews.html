@@ -13,7 +13,7 @@
 
     <title>Bluemark</title>
 </head>
-<body>
+<body {% if is_owner %} class="disable-rating" {% endif %}> <!-- Adding the "disable-rating" class if the owner's looking at their own product. -->
 
         <div class="top-div">
 
@@ -106,6 +106,8 @@
 
             <div class="main-content-container">
 
+                {% if not is_owner: %} <!-- Letting the user see the review upload form if they're not an owner of the product. -->
+
                     <form class="review-form" action="{{ url_for('reviews', product_id=product_id) }}" method="post">
 
                         <div class="rating-div">
@@ -140,7 +142,7 @@
 
                                 <label for="text-area-review-edit">Edit your review here:</label>
 
-                                <textarea cols="30" id="text-area-review-edit" class="text-area-review" placeholder="Maximum 150 chars." maxlength="150" name="user-comment-review" required>{{ user_comment }}</textarea>
+                                <textarea cols="30" id="text-area-review-edit" class="text-area-review" placeholder="Maximum 600 chars." maxlength="600" name="user-comment-review" required>{{ user_comment }}</textarea>
 
                                 <input type="submit" value="Edit Review" class="submit-review" onclick="document.getElementsByClassName('review-form')[0].submit(); this.disabled=true;">
 
@@ -157,6 +159,8 @@
                         </div>
 
                     </form>
+
+                {% endif %}
 
                     <div class="text-reviews-div">
 
@@ -289,7 +293,7 @@
 
 {% endif %}
 
-{% if has_review %} <!-- This script is responsible for checking the right amount of stars if the user had already left a review in the past. -->
+{% if has_review and not is_owner %} <!-- This script is responsible for checking the right amount of stars if the user had already left a review in the past. -->
 
     <script>
 

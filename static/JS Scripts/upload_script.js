@@ -2,6 +2,9 @@
 
 // Then it prevents default behavior of the form, creates its own behavior afterwards - then adds all the images, texts and tags - and then sends it to the main server.
 
+// I was not cooking with this one...
+
+
 document.addEventListener('DOMContentLoaded', function() {
 
     let valid_extensions = ["jpg", "jpeg", "png"];
@@ -42,7 +45,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
     let uploadButton = document.getElementById('file');
 
-    let submitFormButton = document.getElementsByClassName("upload-submit")[0]
+    let submitFormButton = document.getElementsByClassName("upload-submit")[0];
+
+    let fileInput = document.getElementById("file");
+
+    let allTextInputs = document.getElementsByClassName("product-input");
+
+    let tagsSelect = document.getElementById("upload-tags");
 
     let count = 0; // Will be responsible for limiting the amount of images the user can upload.
 
@@ -140,9 +149,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
             };
 
-            submitFormButton.disabled = true; // Disabling the form submission, since the loading kicks in a few seconds after the user's pressed the submit button.
-
-
             document.getElementsByClassName("image-success")[0].classList.add("hidden");
             document.getElementsByClassName("file-size-error")[0].classList.add("hidden");
             document.getElementsByClassName("max-img-am")[0].classList.add("hidden");
@@ -150,6 +156,33 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementsByClassName("no-images-submitted")[0].classList.add("hidden");
 
             document.getElementsByClassName("form-sending-success")[0].classList.remove("hidden");
+
+
+
+            submitFormButton.disabled = true; // Disabling the form submission, since the loading kicks in a few seconds after the user's pressed the submit button.
+
+            submitFormButton.classList.add("inactive");
+
+            // Disabling form's input fields. (So that the user won't modify them while the upload's happening).
+
+            fileInput.disabled = true;
+
+            fileInput.classList.add("inactive");
+
+
+            for(let singleTextInput of allTextInputs) {
+
+                singleTextInput.disabled = true;
+
+                singleTextInput.classList.add("inactive");
+
+            }
+
+
+            tagsSelect.disabled = true;
+
+            tagsSelect.classList.add("inactive");
+
 
             const form = e.target;
 

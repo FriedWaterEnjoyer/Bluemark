@@ -31,6 +31,18 @@ body.dark {
 
 }
 
+/* Styling for when the owner's accessing reviews on their own product. */
+
+body.disable-rating {
+
+    .main-content-container {
+
+        grid-template-rows: 1fr; /* Simply making the entire grid only 1 fraction (Making the "text-reviews" stretch across the entire middle of the screen), since the "review-form" tag is disabled. */
+
+    }
+
+}
+
 /* Main Styling. */
 
 .main-container {
