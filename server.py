@@ -249,6 +249,9 @@ in_cart_table = Table(  # Will store the data about the items the user has in th
     Column("product_id", Integer, nullable=False, index=True),
     Column("quantity", Integer, nullable=False),
     Column("single_item_price", Numeric, nullable=False),
+    # Information about the vendor:
+    Column("seller_db_id", Integer, nullable=False, index=True),
+    Column("seller_stripe_id", Text, nullable=False),
 
 )
 
@@ -405,6 +408,20 @@ def hash_and_commit_recovery_codes(all_codes: list, user_id: int): # The codes g
         )
 
         connection.commit()
+
+
+#---- Decimal-to-cents Conversion Function ----#
+
+
+def to_cents(amount: Decimal) -> int: # The main purpose of this function is to convert DB's Decimal values (e.g. Decimal(299.98)) into an integer in cents.
+
+    # This is done because Stripe's transfer function accepts only in cents.
+
+    return int(
+
+        (amount * Decimal("100")).quantize(Decimal("1"), rounding=ROUND_HALF_UP)
+
+    )
 
 
 #---- Additional Security Functions ----#
@@ -1075,6 +1092,8 @@ def cart_display():
 @app.route("/add-to-cart/<int:product_id>")
 def add_to_cart(product_id):
 
+    # TODO: Add an error system. (Something similar to the checks on the product_page).
+
     has_cookies = is_registered()
 
     if not has_cookies: return redirect("/login")
@@ -1084,6 +1103,8 @@ def add_to_cart(product_id):
 
 
     owner_id = full_product_info[7]
+
+    owner_stripe_id = session_db.query(customer_table).where(customer_table.c.ID == owner_id).first()[8]
 
     product_price_info = full_product_info[3] # For updating the total in user's cart.
 
@@ -1098,35 +1119,51 @@ def add_to_cart(product_id):
 
     else:
 
-        with engine.connect() as connection:
+        # If the user's passed these two checks - then checking if they're trying to add a product that's already in their cart.
 
-            connection.execute( # Updating the In Cart Table.
+        already_in_cart_check = session_db.query(in_cart_table).where(in_cart_table.c.product_id == product_id).where(in_cart_table.c.user_id == has_cookies).first()
 
-                in_cart_table.insert(), {
+        if already_in_cart_check: pass
 
-                        "user_id": has_cookies,
+        # If it has returned something - then it means that the user already has this item in the cart.
 
-                        "product_id": product_id,
+        # In that case - render the product page.
 
-                        "quantity": 1,
+        else:
 
-                        "single_item_price": product_price_info,
+            with engine.connect() as connection:
 
-                },
+                connection.execute( # Updating the In Cart Table.
 
-            )
+                    in_cart_table.insert(), {
 
-            connection.execute(
+                            "user_id": has_cookies,
 
-                customer_table.update().where(customer_table.c.ID == has_cookies).values(
+                            "product_id": product_id,
 
-                    InCartAmount=previous_user_amount + 1 # Updating the amount of items that the user has.
+                            "quantity": 1,
+
+                            "single_item_price": product_price_info,
+
+                            "seller_db_id": owner_id,
+
+                            "seller_stripe_id": owner_stripe_id,
+
+                    },
 
                 )
 
-            )
+                connection.execute(
 
-            connection.commit()
+                    customer_table.update().where(customer_table.c.ID == has_cookies).values(
+
+                        InCartAmount=previous_user_amount + 1 # Updating the amount of items that the user has.
+
+                    )
+
+                )
+
+                connection.commit()
 
     return redirect(url_for("product_page", product_id=product_id))
 
@@ -1248,10 +1285,7 @@ def create_stripe_checkout_session(): # When the user's proceeded to the checkou
         product_table.c.Description,
         product_table.c.Price,
         product_table.c.Images[1],
-        customer_table.c.Stripe_ID,
         in_cart_table.c.quantity,
-        in_cart_table.c.product_id,
-        in_cart_table.c.user_id,
         product_table.c.OwnerID,
 
 
@@ -1276,13 +1310,7 @@ def create_stripe_checkout_session(): # When the user's proceeded to the checkou
 
     metadata_checkout = { # This dictionary will be built up during the all_in_cart loop, but will be passed as an argument during the checkout session. (This is done in order to split the payment between multiple merchants).
 
-        "seller_amount": [],
-        "seller_stripe_id": [],
         "buyer_id": has_cookies,
-        "product_id": [],
-        "product_quantity": [],
-        "seller_db_id": [],
-        "single_item_price": [],
 
     }
 
@@ -1308,25 +1336,9 @@ def create_stripe_checkout_session(): # When the user's proceeded to the checkou
 
             },
 
-            "quantity": single_item[5]
+            "quantity": single_item[4]
 
         })
-
-        # Appending the data to metadata.
-
-        metadata_checkout["seller_amount"].append(str(int((single_item[2] * 100) * single_item[5])))
-
-        metadata_checkout["seller_stripe_id"].append(str(single_item[4])) # Storing the merchant's IDs in the metadata. (So that i can redistribute the money across the merchants).
-
-        # Appending information about the product. (Necessary for the DB).
-
-        metadata_checkout["product_id"].append(single_item[6])
-
-        metadata_checkout["product_quantity"].append(single_item[5])
-
-        metadata_checkout["seller_db_id"].append(single_item[8])
-
-        metadata_checkout["single_item_price"].append(str(single_item[2]))
 
 
     # Converting this metadata into JSON (Since stripe.checkout.Session.create metadata accepts only strings as both keys and values).
@@ -1459,22 +1471,35 @@ def money_distribution(): # Does exactly what it says - checks if the payment wa
 
             seller_hash = {}
 
-            # Fetching data form metadata. (Organizing it conveniently).
+            # Fetching data form the Database, using user's ID from the metadata. (Organizing it conveniently).
 
-            full_metadata_seller_amount = metadata_checkout_session["seller_amount"]
+            order_query = session_db.query(in_cart_table).where(in_cart_table.c.user_id == metadata_checkout_session["buyer_id"]).all()
 
-            full_metadata_seller_ids = metadata_checkout_session["seller_stripe_id"]
+            # Fetching all the products IDs, as well as the price and quantity for each item, and seller's DB IDs.
 
 
-            # Looping through all the seller's IDs and the amount of money that needs to be distributed to them.
+            (
 
-            for i in range(len(full_metadata_seller_amount)): # Using a single index i to loop through both lists.
+                _,
+                _,
+                all_order_product_ids,
+                all_order_product_quantity,
+                all_order_items_price,
+                all_order_sellers_db_ids,
+                _,
 
-                if full_metadata_seller_ids[i] not in seller_hash:
+            ) = zip(*order_query) # The asterisk transforms rows into columns, making it easier to grab whole data of columns, thus, "looping" through the query once.
 
-                    seller_hash[full_metadata_seller_ids[i]] = int(full_metadata_seller_amount[i])
 
-                else: seller_hash[full_metadata_seller_ids[i]] += int(full_metadata_seller_amount[i])
+            # Looping through the DB query.
+
+            for single_order in order_query:
+
+                if single_order[6] not in seller_hash:
+
+                    seller_hash[single_order[6]] = to_cents(single_order[4])
+
+                else: seller_hash[single_order[6]] += to_cents(single_order[4])
 
 
             # In the end I'll have a hashmap with all the sellers IDs and the total amount of money that will be sent to them, using user's money as the source of the transaction.
@@ -1556,13 +1581,13 @@ def money_distribution(): # Does exactly what it says - checks if the payment wa
 
                 for seller_id, product_id, quantity, single_item_price in zip( # Using zip() function in order to avoid using "for j in range" loops.
 
-                    metadata_checkout_session["seller_db_id"],
+                    all_order_sellers_db_ids,
 
-                    metadata_checkout_session["product_id"],
+                    all_order_product_ids,
 
-                    metadata_checkout_session["product_quantity"],
+                    all_order_product_quantity,
 
-                    metadata_checkout_session["single_item_price"],
+                    all_order_items_price,
 
                 )
 
@@ -1639,6 +1664,7 @@ def product_page(product_id):
 
         in_cart_amount_user = user_data[5]
 
+
     error_message = None # Will be equal to the error message if the restriction is hit by the user. (Stuff like the owner of the item trying to add their own product to the cart, or the user trying to add a product they already have in their cart, etc.)
 
     # For now, the error message will be None, since the user didn't do anything wrong.
@@ -1651,10 +1677,18 @@ def product_page(product_id):
 
     user_data_upload = session_db.query(customer_table).where(product_data[7] == customer_table.c.ID).first()
 
+    # Querying the in_cart_table to see if the user already has this product in their cart.
+
+    has_in_cart = session_db.query(in_cart_table).where(in_cart_table.c.user_id == user_cookies).where(in_cart_table.c.product_id == product_id).first()
+
+
+    # Checking if at least one of the queries returns True.
 
     if int(user_cookies) == product_data[7]: error_message = "Owner can't add to the cart or write a review on their own product"
 
-    elif in_cart_amount_user + 1 >= 21: error_message = "Amount of items in the cart can't exceed 20"
+    elif in_cart_amount_user == 120: error_message = "Amount of items in the cart can't exceed 120"
+
+    elif has_in_cart: error_message = "You already have this item in the cart"
 
 
     return render_template("product_page.html", night_mode=night_mode, registered=user_cookies, user_data=user_data, has_2fa=has_2fa, product_data=product_data, uploaded_fname=user_data_upload[1], uploaded_lname=user_data_upload[2], uploaded_pfp=user_data_upload[6], error_message=error_message)
