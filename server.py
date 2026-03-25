@@ -10,6 +10,12 @@
 
 # TODO: (Closer to the end of the production) - adjust mobile frontend.
 
+# TODO: Pls fix the carousel on the product page. (I.e., when the user clicks on the right arrow while they're on the last image - then it won't skip to the first image).
+
+# TODO: Delete the words "Liked Items" at a certain height on the index page.
+
+# TODO: Pls disable "add to cart" and "and to liked" button after the user clicks either of them.
+
 # TODO: (Closer to the end of the production) - Create fake test accounts using stripe.Account.create, then insert their IDs into the DB. (Check if it's possible to set payouts_enabled, charges_enabled and transfers to True in these accounts).
 
 #---- Imports ----#
@@ -271,11 +277,17 @@ orders_items_table = Table( # One row per one product bought.
     Column("item_status", Text, nullable=False, unique=False),
     Column("shipping_address", Text, nullable=False),
     Column("customer_phone", Text, nullable=False),
-    Column("customer_email", Text, nullable=False),
     Column("customer_full_name", Text, nullable=False),
     Column("total_order_price", Numeric, nullable=False),
     Column("single_item_price", Numeric, nullable=False),
     Column("master_order_id", Integer, index=True, nullable=False),
+    Column("merchant_comment", Text, nullable=True),
+    Column("tracking_number", Text, nullable=True),
+    Column("payment_intent_id", Text, nullable=False),
+    Column("first_img_product", Text, nullable=False),
+    Column("product_name", Text, nullable=False),
+    Column("transfer_id", Text, nullable=False),
+    Column("refund_id", Text, nullable=True),
 
 )
 
@@ -289,6 +301,8 @@ master_orders_table = Table( # Just the order in general, not every single item 
     Column("buyer_id", Integer, index=True, nullable=False),
     Column("shipping_info", Text, nullable=False),
     Column("total_price", Numeric, nullable=False),
+    Column("first_item_img", Text, nullable=False),
+    Column("all_items_delivered", BOOLEAN, nullable=False),
 
 )
 
@@ -472,7 +486,7 @@ def check_image_content(file_object: FileStorage):
     return mime in FILE_CONTENT_WHITELIST
 
 
-def image_decode(file_object: FileStorage): # Checks whether the file, submitted by the user, is actually an image and not a malicious file, dressing up as an image.
+def image_decode(file_object: FileStorage): # Checks whether the file submitted by the user is actually an image and not a malicious file, dressing up as an image.
 
     try:
 
@@ -1184,6 +1198,8 @@ def calculate_price():
 
     type_of_action = data["action"]
 
+    # TODO: Create another query in order to check if this item is in the user's cart. If it's not - then it's highly likely that the user's changed the frontend values - do nothing with them in this case.
+
 
     prev_total_price = session_db.query(func.sum(in_cart_table.c.single_item_price * in_cart_table.c.quantity)).where(in_cart_table.c.user_id == user_cookies).first()[0] or 0.0 # Query the previous price from the DB. (Since the frontend one is too risky and insecure).
 
@@ -1370,11 +1386,13 @@ def create_stripe_checkout_session(): # When the user's proceeded to the checkou
 
         billing_address_collection = "required",
 
-        metadata = {
+        payment_intent_data = {
 
-            "main_key": metadata_as_string,
+            "metadata": { "main_key": metadata_as_string }
 
-        }
+        },
+
+        customer_creation="always",
 
     )
 
@@ -1428,166 +1446,226 @@ def money_distribution(): # Does exactly what it says - checks if the payment wa
     # Handling the event + DB actions.
 
 
-    if event.type == "checkout.session.completed":
+    if event.type == "payment_intent.succeeded": # A bit more reliable than checkout.session.completed, since payment_intent.succeeded guarantees funds.
 
         session_payment = event["data"]["object"]
 
 
-        if session_payment["payment_status"] == "paid":
+        payment_customer_info = stripe.Customer.retrieve(session_payment["customer"]) # Retrieving the Customer object in order to fetch the phone number.
 
+        # Getting the charge ID for the source_transaction.
 
-            # Getting the charge ID for the source_transaction.
+        source_transaction = session_payment["latest_charge"] # The ID of the charge. (Used in order to specify the source_transaction when calling the stripe.Transfer.create, as not specifying this will cause an insufficient funds error, since Stripe will try to get the money for this transfer from my bank account).
 
-            payment_intent_session = session_payment["payment_intent"]
+        payment_intent_id = session_payment["id"]
 
 
-            payment_intent_retrieve = stripe.PaymentIntent.retrieve(
+        # Will also be used for refunds. (Stripe requires charge ID in the .Refund.create function. I'll pass source_transaction into the refund_id column).
 
-                payment_intent_session,
 
-            )
+        metadata_checkout_session = json.loads(session_payment["metadata"]["main_key"])
 
-            source_transaction = payment_intent_retrieve["latest_charge"] # The ID of the charge. (Used in order to specify the source_transaction when calling the stripe.Transfer.create, as not specifying this will cause an insufficient funds error, since Stripe will try to get the money for this transfer from my bank account).
+        customer_phone = payment_customer_info["phone"]
 
+        customer_provided_address = session_payment["shipping"]["address"]
 
-            metadata_checkout_session = json.loads(session_payment["metadata"]["main_key"])
+        customer_provided_full_name = session_payment["shipping"]["name"]
 
-            customer_email = session_payment["customer_details"]["email"]
+        total_order_price = session_payment["amount"]
 
-            customer_phone = session_payment["customer_details"]["phone"]
+        customer_full_shipping_address = f"{customer_provided_address.get("country")} {customer_provided_address["state"] if customer_provided_address["state"] else ""} {customer_provided_address.get("city")} {customer_provided_address.get("line1")} {customer_provided_address["line2"] if customer_provided_address.get("line2") else ""} {customer_provided_address.get("postal_code")}".replace("  ", " ")
 
-            customer_provided_address = session_payment["customer_details"]["address"]
+        # In the gigantic line of code above I fetch the entire user-provided address, and then glue it into one string. And then reduce any double spaces.
 
-            customer_provided_full_name = session_payment["collected_information"]["shipping_details"]["name"]
 
-            total_order_price = session_payment["amount_total"]
+        # Creating a hash of transfer IDs, they'll be needed for the refunds.
 
-            customer_full_shipping_address = f"{customer_provided_address.get("country")} {customer_provided_address["state"] if customer_provided_address["state"] else ""} {customer_provided_address.get("city")} {customer_provided_address.get("line1")} {customer_provided_address["line2"] if customer_provided_address.get("line2") else ""} {customer_provided_address.get("postal_code")}".replace("  ", " ")
+        transfer_ids = {}
 
-            # In the gigantic line of code above I fetch the entire user-provided address, and then glue it into one string. And then reduce any double spaces.
+        # Creating a hashmap with all the sellers and the amount of money that has to go to them.
 
+        seller_hash = {}
 
-            # Creating a hashmap with all the sellers and the amount of money that has to go to them.
+        # Fetching data form the Database, using user's ID from the metadata. (Organizing it conveniently).
 
-            seller_hash = {}
+        order_query = session_db.query(in_cart_table).where(in_cart_table.c.user_id == metadata_checkout_session["buyer_id"]).all()
 
-            # Fetching data form the Database, using user's ID from the metadata. (Organizing it conveniently).
+        # Fetching all the products IDs, as well as the price and quantity for each item, and seller's DB IDs. (Unnecessary columns are marked with an underscore).
 
-            order_query = session_db.query(in_cart_table).where(in_cart_table.c.user_id == metadata_checkout_session["buyer_id"]).all()
 
-            # Fetching all the products IDs, as well as the price and quantity for each item, and seller's DB IDs.
+        (
 
+            _,
+            _,
+            all_order_product_ids,
+            all_order_product_quantity,
+            all_order_items_price,
+            all_order_sellers_db_ids,
+            _,
 
-            (
+        ) = zip(*order_query) # The asterisk transforms rows into columns, making it easier to grab whole data of columns, thus, "looping" through the query once.
 
-                _,
-                _,
-                all_order_product_ids,
-                all_order_product_quantity,
-                all_order_items_price,
-                all_order_sellers_db_ids,
-                _,
+        # Querying the first image of the product in user's order, as it'll be the image of the master_order.
 
-            ) = zip(*order_query) # The asterisk transforms rows into columns, making it easier to grab whole data of columns, thus, "looping" through the query once.
+        first_product_img = session_db.query(product_table).where(product_table.c.ID == order_query[0][2]).first()[6][0]
 
 
-            # Looping through the DB query.
+        # Querying the names and the first pictures of every product that's in the order. (Because it'll be a lot more convenient to display them when the user checks )
 
-            for single_order in order_query:
+        name_and_image_stmt = select(
 
-                if single_order[6] not in seller_hash:
+            product_table.c.Name,
+            product_table.c.Images[1]
 
-                    seller_hash[single_order[6]] = to_cents(single_order[4])
+        ).outerjoin(in_cart_table, product_table.c.ID == in_cart_table.c.product_id).where(
 
-                else: seller_hash[single_order[6]] += to_cents(single_order[4])
+            in_cart_table.c.user_id == metadata_checkout_session["buyer_id"]
 
+        )
 
-            # In the end I'll have a hashmap with all the sellers IDs and the total amount of money that will be sent to them, using user's money as the source of the transaction.
 
+        # Looping through the DB query.
 
-            for merchant_id, amount_merchant in seller_hash.items():
+        for single_order in order_query:
 
-                transfer_key = f"transfer_{session_payment["id"]}_{merchant_id}" # Acting as an idempotency key. (Basically a key that ensures the transfer will not happen twice because of, for instance, a random network error).
+            if single_order[6] not in seller_hash:
 
-                transfer = stripe.Transfer.create(
+                seller_hash[single_order[6]] = [to_cents(single_order[4] * single_order[3]), single_order[5]] # Multiplying the price of a single item by its quantity (index 3).
 
-                        amount = amount_merchant,
+                # Creating a list for every single iteration if the key isn't in the hash.
 
-                        currency = "usd",
+                # This list will contain: 1 - the total amount of money that the user has to pay for the product (i.e., amount * quantity); 2 - merchant's Database ID. (Necessary to fill the transfer_id in the DB, which, in turn, will be useful in case of a refund).
 
-                        source_transaction = source_transaction,
+            else: seller_hash[single_order[6]][0] += to_cents(single_order[4] * single_order[3])
 
-                        destination = merchant_id,
 
-                        idempotency_key = transfer_key,
+        # In the end I'll have a hashmap with all the sellers IDs and the total amount of money that will be sent to them, using user's money as the source of the transaction.
 
-                )
+        for merchant_id, amount_merchant in seller_hash.items():
 
+            transfer_key = f"transfer_{session_payment["id"]}_{merchant_id}" # Acting as an idempotency key. (Basically a key that ensures the transfer will not happen twice because of, for instance, a random network error).
 
-            # Updating the DB.
+            transfer = stripe.Transfer.create(
 
-            with engine.connect() as connection:
+                amount = amount_merchant[0],
 
-                # Creating the master order. (An "umbrella-order", which will contain all the products the user's ordered).
+                currency = "usd",
 
-                result = connection.execute(
+                source_transaction = source_transaction,
 
-                    master_orders_table.insert().returning(master_orders_table.c.order_id), { # .returning() since I need to get the master_order's id to pass to all the products below.
+                destination = merchant_id,
 
-                        "buyer_id": metadata_checkout_session["buyer_id"],
+                idempotency_key = transfer_key,
 
-                        "shipping_info": customer_full_shipping_address,
+                metadata = {
 
-                        "total_price": total_order_price/100, # Converting the price from cents to dollars.
-
-                    }
-
-                )
-
-                new_master_order_id = result.fetchone().order_id # Getting the ID inserted part.
-
-
-                # Creating the "rows" list in order to bulk-insert it into a DB.
-
-                rows = [
-
-                {
-
-                    "user_id": metadata_checkout_session["buyer_id"],
-
-                    "merchant_id": seller_id,
-
-                    "product_id": product_id,
-
-                    "quantity": quantity,
-
-                    "item_status": "Order Placed",
-
-                    "shipping_address": customer_full_shipping_address,
-
-                    "customer_email": customer_email,
-
-                    "customer_phone": customer_phone,
-
-                    "customer_full_name": customer_provided_full_name,
-
-                    "total_order_price": total_order_price/100, # Same as "total_price" in the master order.
-
-                    "single_item_price": single_item_price,
-
-                    "master_order_id": new_master_order_id,
+                    "merchant_db_id": amount_merchant[1] # Passing merchant's Database ID in the metadata.
 
                 }
 
-                for seller_id, product_id, quantity, single_item_price in zip( # Using zip() function in order to avoid using "for j in range" loops.
+            )
 
-                    all_order_sellers_db_ids,
+            # Assigning the ID of an individual transfer to the corresponding merchant's Database ID.
 
-                    all_order_product_ids,
 
-                    all_order_product_quantity,
+            fetched_merchant_db_id_metadata = transfer["metadata"]["merchant_db_id"]
 
-                    all_order_items_price,
+
+            transfer_ids[int(fetched_merchant_db_id_metadata)] = transfer["id"]
+
+
+        # Updating the DB.
+
+        with engine.connect() as connection:
+
+            # Executing previously declared name_and_image_stmt.
+
+            result_name_and_image = connection.execute(
+
+                name_and_image_stmt
+
+            ).fetchall()
+
+
+            product_order_name, product_order_first_img = zip(*result_name_and_image)
+
+
+            # Creating the master order. (An "umbrella-order", which will contain all the products the user's ordered).
+
+            result = connection.execute(
+
+                master_orders_table.insert().returning(master_orders_table.c.order_id), { # .returning() since I need to get the master_order's id to pass to all the products below.
+
+                    "buyer_id": metadata_checkout_session["buyer_id"],
+
+                    "shipping_info": customer_full_shipping_address,
+
+                    "total_price": total_order_price/100, # Converting the price from cents to dollars.
+
+                    "first_item_img": first_product_img,
+
+                    "all_items_delivered": False,
+
+                }
+
+            )
+
+            new_master_order_id = result.fetchone().order_id # Getting the ID inserted part.
+
+
+            # Creating the "rows" list in order to bulk-insert it into a DB.
+
+            rows = [
+
+            {
+
+                "user_id": metadata_checkout_session["buyer_id"],
+
+                "merchant_id": seller_id,
+
+                "product_id": product_id,
+
+                "quantity": quantity,
+
+                "item_status": "Order Placed",
+
+                "shipping_address": customer_full_shipping_address,
+
+                "customer_phone": customer_phone,
+
+                "customer_full_name": customer_provided_full_name,
+
+                "total_order_price": total_order_price/100, # Same as "total_price" in the master order.
+
+                "single_item_price": single_item_price,
+
+                "master_order_id": new_master_order_id,
+
+                "payment_intent_id": payment_intent_id,
+
+                "first_img_product": product_first_img,
+
+                "product_name": product_name,
+
+                "transfer_id": transfer_ids.get(seller_id), # Finding the corresponding value of the transfer ID, using merchant's database ID.
+                    
+                "refund_id": "",
+
+            }
+
+            for seller_id, product_id, quantity, single_item_price, product_name, product_first_img in zip( # Using zip() function in order to avoid using "for j in range" loops.
+
+                all_order_sellers_db_ids,
+
+                all_order_product_ids,
+
+                all_order_product_quantity,
+
+                all_order_items_price,
+
+                product_order_name,
+
+                product_order_first_img
 
                 )
 
@@ -1595,25 +1673,25 @@ def money_distribution(): # Does exactly what it says - checks if the payment wa
 
 
 
-                connection.execute( # Bulk-inserting all the data from the "rows" variable.
+            connection.execute( # Bulk-inserting all the data from the "rows" variable.
 
-                    orders_items_table.insert(), rows
-
-            )
-
-                connection.execute( # Deleting all the items from the in_cart_table.
-
-                    in_cart_table.delete().where(in_cart_table.c.user_id == metadata_checkout_session["buyer_id"])
+                orders_items_table.insert(), rows
 
             )
 
-                connection.execute( # Setting the InCartAmount of the user to 0.
+            connection.execute( # Deleting all the items from the in_cart_table.
 
-                    customer_table.update().where(customer_table.c.ID == metadata_checkout_session["buyer_id"]).values(InCartAmount=0)
+                in_cart_table.delete().where(in_cart_table.c.user_id == metadata_checkout_session["buyer_id"])
 
             )
 
-                connection.commit()
+            connection.execute( # Setting the InCartAmount of the user to 0.
+
+                customer_table.update().where(customer_table.c.ID == metadata_checkout_session["buyer_id"]).values(InCartAmount=0)
+
+            )
+
+            connection.commit()
 
     return Response(status=200)
 
@@ -1769,6 +1847,12 @@ def reviews(product_id):
     if request.method == "POST":
 
         if not user_cookies: return redirect("/login")
+
+        # Checking if it's the owner that's trying to leave a review on their own product.
+
+        owner_id_details = session_db.query(product_table).where(product_table.c.ID == product_table)[7]
+
+        if int(user_cookies) == owner_id_details: return redirect(url_for("reviews", product_id = product_id)) # If it's the owner of the product - redirect them to the reviews page.
 
 
         new_user_rating = request.form["rating"]
@@ -1975,7 +2059,7 @@ def upload_item():
             connection.commit()
 
 
-        return jsonify({"redirect": "/"}) # Since I'm modifying formData in the upload.html, I need to upload a JSON.
+        return jsonify({"redirect": "/user-uploaded-products"}) # Since I'm modifying formData in the upload.html, I need to upload a JSON.
 
 
     return render_template("upload.html", night_mode=user_data[10])
@@ -2076,12 +2160,12 @@ def refresh_onboarding(): # For regenerating the link if it's invalid.
     if not full_data_user: return redirect("/login")
 
 
-    account_link = stripe.AccountLink.create( # Pls read documentation on this!!!!!!!
+    account_link = stripe.AccountLink.create(
 
         account=full_data_user[8],
         refresh_url="https://synovial-wilton-unspilt.ngrok-free.dev/refresh-on-board-route",
         return_url="https://synovial-wilton-unspilt.ngrok-free.dev/upload",
-        type="account_update",
+        type="account_onboarding",
 
     )
 
@@ -2382,11 +2466,15 @@ def reset_2fa(from_login): # Will generate a simple form, where the user can inp
 
     if from_login == "True":
 
-        user_id = session["temp_user_id"]  # In case the user came from the login page.
+        user_id = session.get("temp_user_id")  # In case the user came from the login page.
+
+        if not user_id: return redirect("/")
 
     else:
 
         user_id = is_registered()
+
+        if not user_id: return redirect("/")
 
 
     user_data = id_query(int(user_id)) # Just in case convert the user_id to an integer... :D
@@ -2658,9 +2746,392 @@ def change_details(): # Responsible for letting the user change their account de
     return render_template("change_credentials.html", error=False, error_no_change=False, fname=user_data[1], lname=user_data[2], email=user_data[3], password=user_data[4], google=registered_with_google, night_mode=night_mode)
 
 
-def item_status(): # Will be responsible for displaying the status of various products. (The status itself won't change, but it'll be pretty cool still).
+@app.route("/order-status-active")
+def master_order_status_active(): # Will be responsible for displaying the information about all the active master orders (i.e., the ones that are not yet fully delivered) that are in user's inventory.
 
-    pass
+    user_cookies = is_registered()
+
+    if not user_cookies: return redirect("/login")
+
+
+    user_data = id_query(int(user_cookies))
+
+    restrict_access_to_details(user_data)
+
+    has_2fa = user_data[9]
+
+    night_mode_data = user_data[10]
+
+
+    # Querying the information about user's orders.
+
+    # (For now querying master orders, since the user has to click on the master order to see the detailed information).
+
+
+    user_orders = session_db.query(master_orders_table).where(master_orders_table.c.buyer_id == user_cookies).where(master_orders_table.c.all_items_delivered == False).all()
+
+    return render_template("master_order.html", has_2fa=has_2fa, night_mode=night_mode_data, registered=user_cookies, user_data=user_data, all_orders=user_orders)
+
+
+@app.route("/order-status-delivered")
+def master_order_status_delivered(): # Same functionality as the endpoint above, but now with the items that were delivered. (I.e., acting as a sort of "Order History")
+
+    user_cookies = is_registered()
+
+    if not user_cookies: return redirect("/login")
+
+
+    user_data = id_query(int(user_cookies))
+
+    restrict_access_to_details(user_data)
+
+    has_2fa = user_data[9]
+
+    night_mode_data = user_data[10]
+
+
+    # Querying the information about user's orders.
+
+    # (For now querying master orders, since the user has to click on the master order to see the detailed information).
+
+    user_orders = session_db.query(master_orders_table).where(master_orders_table.c.buyer_id == user_cookies).where(master_orders_table.c.all_items_delivered == True).all()
+
+    return render_template("master_order.html", has_2fa=has_2fa, night_mode=night_mode_data, registered=user_cookies, user_data=user_data, all_orders=user_orders)
+
+
+@app.route("/order-details/<int:master_order_id>")
+def user_order_details(master_order_id): # In order to show the details about a certain order.
+
+    user_cookies = is_registered()
+
+    if not user_cookies: return redirect("/login")
+
+
+    user_data = id_query(int(user_cookies))
+
+    restrict_access_to_details(user_data)
+
+    has_2fa = user_data[9]
+
+    night_mode_data = user_data[10]
+
+
+    buyer_db_id_order = session_db.query(master_orders_table).where(master_orders_table.c.order_id == master_order_id).first()[1]
+
+    if int(user_cookies) != buyer_db_id_order: return redirect("/") # Because in that case some other user's trying to access order details of another user.
+
+
+    master_order_products = session_db.query(orders_items_table).where(orders_items_table.c.master_order_id == master_order_id).all()
+
+
+    return render_template("master_order_details.html", has_2fa=has_2fa, night_mode=night_mode_data, registered=user_cookies, user_data=user_data, all_order_products=master_order_products)
+
+
+@app.route("/manage-orders")
+def merchant_item_management(): # This endpoint is useful only for the merchants - things like changing the delivery status of an item, or seeing user's contact details.
+
+    user_cookies = is_registered()
+
+    if not user_cookies: return redirect("/login")
+
+
+    user_data = id_query(int(user_cookies))
+
+    restrict_access_to_details(user_data)
+
+    has_2fa = user_data[9]
+
+    night_mode_data = user_data[10]
+
+
+    all_client_orders = session_db.query(orders_items_table).where(orders_items_table.c.merchant_id == user_cookies).where(orders_items_table.c.item_status != "Delivered").where(orders_items_table.c.item_status != "Refunded").all()
+
+    print(all_client_orders)
+
+    return render_template("manage_client_orders.html", has_2fa=has_2fa, night_mode=night_mode_data, registered=user_cookies, user_data=user_data, all_orders=all_client_orders)
+
+
+@app.route("/change-order-delivery-status/<int:product_delivery_status_id>/<string:delivery_status>/<int:master_order_id_delivery>")
+def change_delivery_status(product_delivery_status_id, delivery_status, master_order_id_delivery):
+
+    user_cookies = is_registered()
+
+    if not user_cookies: return redirect("/login")
+
+
+    # Querying the order that was refunded using ID from the URL.
+
+    delivery_product_details = session_db.query(orders_items_table).where(orders_items_table.c.ID == product_delivery_status_id).first()
+
+
+    if not delivery_product_details: return redirect("/") # If the order with this ID doesn't even exist.
+
+
+    if int(user_cookies) == delivery_product_details[1] or int(user_cookies) == delivery_product_details[2]:
+
+        # Who let bro cook again...
+
+        if delivery_status == "Processing":
+
+            # Second "if" Statement as just in case security measure.
+
+            if delivery_product_details[5] == "Order Placed":
+
+                with engine.connect() as connection:
+
+                    connection.execute(
+
+                        orders_items_table.update().where(orders_items_table.c.ID == product_delivery_status_id).values(item_status="Processing")
+
+                    )
+
+                    connection.commit()
+
+
+        if delivery_status == "Delivered":
+
+            if delivery_product_details[5] == "Delivering":
+
+                with engine.connect() as connection:
+
+                    connection.execute(
+
+                        orders_items_table.update().where(orders_items_table.c.ID == product_delivery_status_id).values(item_status="Delivered")
+
+                    )
+
+                    connection.commit()
+
+            # Checking if all the items in the order were delivered - if yes - then changing the all_items_delivered column in the DB.
+
+            master_order_all_item_statuses = session_db.query(orders_items_table).where(orders_items_table.c.master_order_id == master_order_id_delivery).all()
+
+
+            if all(master_order_product[5] == "Delivered" or master_order_product[5] == "Refunded" for master_order_product in master_order_all_item_statuses):
+
+                # Checking if all the products in the order are either delivered or refunded. If they are - then setting the all_items_delivered column set to True.
+
+                with engine.connect() as connection:
+
+                    connection.execute(
+
+                        master_orders_table.update().where(master_orders_table.c.order_id == master_order_id_delivery).values(all_items_delivered=True)
+
+                    )
+
+                    connection.commit()
+
+
+        return redirect("/manage-orders")
+
+
+    else: return redirect("/")
+
+
+@app.route("/submit-comment-merchant/<int:order_id_comment>", methods=["POST"])
+def submit_comment(order_id_comment):
+
+    user_cookies = is_registered()
+
+    if not user_cookies: return redirect("/login")
+
+
+    delivery_tracking_number_product_details = session_db.query(orders_items_table).where(orders_items_table.c.ID == order_id_comment).first()
+
+
+    if delivery_tracking_number_product_details and int(user_cookies) == delivery_tracking_number_product_details[2]:
+
+        # Getting merchant's comment, then querying the database, then committing merchant's comment (the customer will be able to see it on their end in master_order_product_details).
+
+        merchant_comment_input = request.form.get("merchant-comment")
+
+        with engine.connect() as connection:
+
+            connection.execute(
+
+                orders_items_table.update().where(orders_items_table.c.ID == order_id_comment).values(merchant_comment=merchant_comment_input)
+
+            )
+
+            connection.commit()
+
+
+        return redirect("/manage-orders")
+
+    else:
+
+        return redirect("/")
+
+
+@app.route("/delivery-tracking/<int:order_id_delivery_tracking>", methods=["POST"])
+def submit_delivery_tracking_number(order_id_delivery_tracking):
+
+    user_cookies = is_registered()
+
+    if not user_cookies: return redirect("/login")
+
+
+    delivery_tracking_number_product_details = session_db.query(orders_items_table).where(orders_items_table.c.ID == order_id_delivery_tracking).first()
+
+
+    if delivery_tracking_number_product_details and int(user_cookies) == delivery_tracking_number_product_details[2] and delivery_tracking_number_product_details[5] == "Processing":
+
+        # Getting the tracking number from the form, then querying the database and changing the value of the tracking_number column in accordance with user's input.
+
+        # Plus changing the item status to "Delivering".
+
+        tracking_number_input = request.form.get("tracking-number")
+
+        with engine.connect() as connection:
+
+            connection.execute(
+
+                orders_items_table.update().where(orders_items_table.c.ID == order_id_delivery_tracking).values(tracking_number=tracking_number_input, item_status="Delivering")
+
+            )
+
+            connection.commit()
+
+
+        return redirect("/manage-orders")
+
+    else:
+
+        return redirect("/")
+
+
+@app.route("/user-uploaded-products")
+def user_uploaded_products(): # Lets the user see all the products they've uploaded, also edit and delete them.
+
+    user_cookies = is_registered()
+
+    if not user_cookies: return redirect("/login")
+
+
+    user_data = id_query(int(user_cookies))
+
+    restrict_access_to_details(user_data)
+
+    has_2fa = user_data[9]
+
+    night_mode_data = user_data[10]
+
+
+    all_user_products = session_db.query(product_table).where(product_table.c.OwnerID == user_cookies).all()
+
+
+    return render_template("user_uploaded_products.html", has_2fa=has_2fa, night_mode=night_mode_data, registered=user_cookies, user_data=user_data, all_orders=all_user_products)
+
+
+@app.route("/cancel-order/<int:product_id_refund_process>/<int:master_order_id_refund>/<string:customer_refund>")
+def cancel_and_refund(product_id_refund_process, master_order_id_refund, customer_refund):
+
+    user_cookies = is_registered()
+
+    if not user_cookies: return redirect("/login")
+
+
+    # Querying the order that was refunded using ID from the URL.
+
+    refund_product_details = session_db.query(orders_items_table).where(orders_items_table.c.ID == product_id_refund_process).first()
+
+
+    if not refund_product_details: return redirect("/") # If the order with this ID doesn't even exist.
+
+
+    if (int(user_cookies) == refund_product_details[1] or int(user_cookies) == refund_product_details[2]) and (refund_product_details[5] == "Order Placed" or refund_product_details[5] == "Processing"): # Checking if the one who's making this request is either the buyer of the product or the owner of the product.
+
+
+        # Converting customer_refund into a boolean.
+
+        if customer_refund == "False": customer_refund = False
+
+        elif customer_refund == "True": customer_refund = True
+
+        else: return redirect("/manage-orders") # That means that the user's manually changed the HTML frontend parameters responsible for the build up of the URL.
+
+        # Doing all the things above since werkzeug doesn't support "bool:" as a datatype :(
+
+
+        # Also checking if the status of the order is equal to either "Order Placed" or to the "Processing". (In order to prevent the user from refunding the same product twice and refunding the product while it's shipping/arrived).
+
+
+        # If they are either of them - continuing with the refund and cancellation processes.
+
+        # Calculating the total amount to refund.
+
+
+        total_to_refund = (refund_product_details[10] * refund_product_details[4]).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+
+        total_to_refund_cents = int(total_to_refund * 100) # Since Stripe accepts only in cents (or the smallest currency unit).
+
+
+        # Calling the create_reversal function. (In order to draw the money from the Connected Account, i.e., the merchant, in order to send them back to the user in a refund).
+
+        stripe.Transfer.create_reversal(
+
+            refund_product_details[17], # transfer ID.
+
+            amount=total_to_refund_cents,
+
+        )
+
+        # Refunding the customer.
+
+        refund_object = stripe.Refund.create(
+
+            payment_intent=refund_product_details[14], # Payment Intent ID.
+
+            amount=total_to_refund_cents,
+
+        )
+
+
+        with engine.connect() as connection:
+
+            connection.execute(
+
+                orders_items_table.update().where(orders_items_table.c.ID == product_id_refund_process).values(item_status="Refunded", refund_id=refund_object["id"])
+
+            )
+
+            connection.commit()
+
+
+        # Querying all the statuses of the items assigned to the master order. If they're all equal to "Refunded", then that means that the user's refunded their entire order.
+
+        # In that case - move the order to "Finished Deliveries".
+
+        master_order_all_item_statuses = session_db.query(orders_items_table).where(orders_items_table.c.master_order_id == master_order_id_refund).all()
+
+
+        # Checking whether all the items are refunded in the master order.
+
+        if all(master_order_product[5] == "Refunded" for master_order_product in master_order_all_item_statuses):
+
+            with engine.connect() as connection:
+
+                connection.execute(
+
+                    master_orders_table.update().where(master_orders_table.c.order_id == master_order_id_refund).values(all_items_delivered=True)
+
+                )
+
+                # If all the items are refunded - then placing the master order into the "Finished Deliveries" section by setting the all_items_delivered column to True.
+
+                connection.commit()
+
+        if not customer_refund: return redirect("/manage-orders")
+
+
+        return redirect(url_for("user_order_details", master_order_id=master_order_id_refund))
+
+
+    else:
+
+        # If they are not (i.e., some random user trying to cancel someone else's order) - then return them to the home page.
+
+        return redirect("/")
 
 
 @app.route("/logout")

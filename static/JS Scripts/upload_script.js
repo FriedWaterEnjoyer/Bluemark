@@ -47,9 +47,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
     let submitFormButton = document.getElementsByClassName("upload-submit")[0];
 
+    let file_input_ui = document.getElementsByClassName("custum-file-upload")[0];
+
     let fileInput = document.getElementById("file");
 
     let allTextInputs = document.getElementsByClassName("product-input");
+
+    let tagsText = document.getElementsByClassName("label-upload-tags")[0];
 
     let tagsSelect = document.getElementById("upload-tags");
 
@@ -165,6 +169,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // Disabling form's input fields. (So that the user won't modify them while the upload's happening).
 
+
+            file_input_ui.classList.add("inactive");
+
+
             fileInput.disabled = true;
 
             fileInput.classList.add("inactive");
@@ -178,6 +186,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
             }
 
+
+            tagsText.classList.add("inactive");
 
             tagsSelect.disabled = true;
 

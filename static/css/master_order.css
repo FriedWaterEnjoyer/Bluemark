@@ -1,0 +1,673 @@
+body.dark {
+
+    .see-order-button {
+
+        background-color: #156c8a;
+        color: #FFFFFF
+
+    }
+
+    .see-order-button:hover {
+
+        background-color: #11944f;
+
+    }
+
+    .master-order-info, .master-order-info-current-deliveries, .master-order-info-manage-client-orders, .master-order-info-user-uploaded {
+
+        background-color: rgba(0, 0, 0, .5);
+        color: #FFFFFF;
+        text-shadow: 2px 2px 4px rgba(255, 255, 255, .2);
+
+    }
+
+    .master-order-info:hover, .master-order-info-current-deliveries:hover, .master-order-info-manage-client-orders:hover, .master-order-info-user-uploaded:hover {
+
+        box-shadow: 2px 2px 10px 4px rgba(225, 225, 255, .4);
+
+    }
+
+    .no-orders-error, .main-header-order {
+
+        color: #FFFFFF;
+
+    }
+
+    .cancel-order-button {
+
+        background: #800300;
+        border: 1px solid #800300;
+
+    }
+
+    .cancel-order-button:hover, .cancel-order-button:active {
+
+        color: #800300;
+        background-color: initial;
+        background-position: 0 0;
+
+    }
+
+    .tracking-number-input, .text-area-merchant-comment-class, .submit-input, .submit-tracking, .tracking-number-input {
+
+        color: #FFFFFF;
+
+    }
+
+    .submit-input:hover, .text-area-merchant-comment-class:hover, .submit-tracking:hover, .tracking-number-input:hover {
+
+        box-shadow: 2px 2px 10px 4px rgba(255,255,255,0.2);
+        text-shadow: 2px 2px 5px rgba(255,255,255,0.2);
+
+    }
+
+    .submit-input:focus, .text-area-merchant-comment-class:focus, .submit-tracking:focus, .tracking-number-input:focus {
+
+        box-shadow: 2px 2px 30px 3px rgba(255,255,255,0.2);
+
+    }
+
+}
+
+/* Scrollbar Styling. (For Chrome and Safari) */
+
+::-webkit-scrollbar { /* Need to set this property before modifying the rest. */
+
+    background: transparent;
+    width: 10px;
+
+}
+
+::-webkit-scrollbar-track {
+
+    background-color: transparent;
+
+}
+
+::-webkit-scrollbar-thumb {
+
+    background-color: rgba(105, 120, 213);
+    height: 10px;
+    border-radius: 10px;
+
+}
+
+/* Main Styling. */
+
+.middle-div {
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    width: 100vw;
+    height: 100vh;
+
+}
+
+/* Styling for the 4 main links. */
+
+.main-nav-links {
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  width: 100%;
+  height: 15%;
+  padding: 45px 0 20px 0;
+  background: rgba(0, 0, 0, .05);
+  box-shadow: 0px 0px 30px rgba(255, 255, 255, .1);
+  animation: slowlyAppear 1.2s ease-in-out;
+
+}
+
+.order-links {
+
+  display: flex;
+  flex-direction: row;
+  font-size: 1.8rem;
+  text-shadow: 0px 0px 8px rgba(255, 255, 255, .4);
+  padding: 0;
+
+}
+
+.nav__item {
+
+  padding: 0 30px 0 30px;
+  overflow: hidden;
+  margin-bottom: 20px;
+  color: rgba(255, 255, 255, .8);
+
+}
+
+.underline {
+
+  display: block;
+  background: currentColor;
+  height: 3px;
+  transition: all .4s ease-out;
+  box-shadow: none;
+  margin-left: 4px;
+
+}
+
+.nav__item:hover {
+
+    cursor: pointer;
+
+}
+
+.nav__item:hover > .underline__grow--center {
+
+  transform: scale(1, 1);
+  box-shadow: 0px 0px 8px rgba(255, 255, 255, .4);
+
+}
+.underline__grow--center {
+
+  transform: scale(0, 1);
+
+}
+
+/* Styling for the orders. */
+
+.list-of-master-orders {
+
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    text-align: center;
+    width: 75%;
+    height: 60%;
+    flex-direction: column;
+    overflow-x: hidden;
+    overflow-y: auto;
+    gap: 25px;
+    padding-top: 25px;
+    animation: slowlyAppear 1.2s ease-in-out;
+
+}
+
+.master-order-info, .master-order-info-current-deliveries, .master-order-info-user-uploaded, .master-order-info-manage-client-orders {
+
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    width: 50%;
+    height: 55%;
+    background: transparent;
+    background-color: rgba(255, 255, 255, .7);
+    border: none;
+    border-left: 1px solid rgba(255, 255, 255, .5);
+    border-top: 1px solid rgba(255, 255, 255, .5);
+    border-radius: 35px;
+    backdrop-filter: blur(5px);
+    box-shadow: 4px 4px 60px rgba(0,0,0,0.2);
+    color: #000;
+    transition: all 0.2s ease-in-out;
+    text-shadow: 1px 1px 4px rgba(0,0,0,0.2);
+    outline: none;
+    flex-shrink: 0;
+    text-shadow: 2px 2px 4px rgba(0,0,0,.2);
+    transition: .6s ease-in-out;
+
+}
+
+.master-order-info:hover, .master-order-info-current-deliveries:hover, .master-order-info-user-uploaded:hover, .master-order-info-manage-client-orders:hover {
+
+    transform: scale(1.01);
+    box-shadow: 2px 2px 10px 4px rgba(0, 0, 0, .4);
+
+}
+
+.master-order-info-current-deliveries, .master-order-info-user-uploaded, .master-order-info-manage-client-orders {
+
+    grid-template-rows: .5fr 1.5fr !important;
+    grid-template-columns: none;
+    width: 55%;
+    height: 60%;
+    overflow-y: auto;
+    padding: 10px;
+
+}
+
+.master-order-left-side, .master-order-right-side {
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+
+}
+
+.merchant { /* A sub-class for the master-order-right-side in the manage_client_orders.html in order to add a gap specifically there. */
+
+    gap: 10px;
+
+}
+
+.order-img {
+
+    width: 200px;
+    height: 170px;
+
+}
+
+.see-order-button {
+
+    margin: 4%;
+    background-color: #9CDBF0;
+    cursor: pointer;
+    border-radius: 60px;
+    border: none;
+    border-top: 1px solid rgba(255, 255, 255, .4);
+    border-left: 1px solid rgba(255, 255, 255, .4);
+    transition: .3s ease-in-out;
+    height: 25px;
+
+}
+
+.see-order-button:hover {
+
+    background-color: #A7F5CC;
+
+}
+
+.bold-text-order:hover {
+
+    text-decoration: underline;
+
+}
+
+.no-orders-error {
+
+    font-size: 1.8rem;
+
+}
+
+.all-delivery-buttons {
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    flex-direction: column;
+    gap: 20px;
+
+}
+
+.cancel-order-button {
+
+    background: #FF4742;
+    border: 1px solid #FF4742;
+    border-radius: 6px;
+    box-shadow: rgba(0, 0, 0, 0.1) 1px 2px 4px;
+    box-sizing: border-box;
+    color: #FFFFFF;
+    cursor: pointer;
+    display: inline-block;
+    font-size: 16px;
+    line-height: 16px;
+    min-height: 40px;
+    outline: 0;
+    padding: 12px 14px;
+    text-align: center;
+    text-rendering: geometricprecision;
+    text-transform: none;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+    vertical-align: middle;
+    transition: .4s ease-in-out;
+    text-decoration: none;
+    margin: 25px 0 25px 0;
+
+}
+
+.cancel-order-button:hover, .cancel-order-button:active {
+
+    background-color: initial;
+    background-position: 0 0;
+    color: #FF4742;
+
+}
+
+.cancel-order-button:active {
+
+    opacity: .5;
+
+}
+
+.delivery-details-form, .merchant-comment-form {
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    flex-direction: column;
+
+}
+
+.delivery-details-form {
+
+    gap: 15px;
+
+}
+
+.delivery-change-button {
+
+    appearance: none;
+    min-width: 100px;
+    max-width: 100px;
+    background-color: #2ea44f;
+    border: 1px solid rgba(27, 31, 35, .15);
+    border-radius: 6px;
+    box-shadow: rgba(27, 31, 35, .1) 0 1px 0;
+    box-sizing: border-box;
+    color: #fff;
+    cursor: pointer;
+    display: inline-block;
+    line-height: 20px;
+    padding: 6px 16px;
+    position: relative;
+    text-align: center;
+    text-decoration: none;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+    vertical-align: middle;
+    white-space: nowrap;
+    transition: .2s ease-in-out;
+
+}
+
+.delivery-change-button:focus:not(:focus-visible):not(.focus-visible) {
+
+    box-shadow: none;
+    outline: none;
+
+}
+
+.delivery-change-button:hover {
+
+    background-color: #2c974b;
+
+}
+
+.delivery-change-button:focus {
+
+    box-shadow: rgba(46, 164, 79, .4) 0 0 0 3px;
+    outline: none;
+
+}
+
+.delivery-change-button:disabled {
+
+    background-color: #94d3a2;
+    border-color: rgba(27, 31, 35, .1);
+    color: rgba(255, 255, 255, .8);
+    cursor: default;
+
+}
+
+.delivery-change-button:active {
+
+    background-color: #298e46;
+    box-shadow: rgba(20, 70, 32, .2) 0 1px 0 inset;
+
+}
+
+.tracking-number-input, .text-area-merchant-comment-class, .submit-input, .submit-tracking {
+
+    width: 70%;
+    height: 5%;
+    background: transparent;
+    padding: 1em;
+    margin-bottom: 2em;
+    margin-top: 5%;
+    border: none;
+    border-left: 1px solid rgba(255, 255, 255, .5);
+    border-top: 1px solid rgba(255, 255, 255, .5);
+    border-radius: 5000px;
+    backdrop-filter: blur(5px);
+    box-shadow: 4px 4px 60px rgba(0,0,0,0.2);
+    color: #000;
+    transition: all 0.2s ease-in-out;
+    text-shadow: 1px 1px 4px rgba(0,0,0,0.2);
+    outline: none;
+
+}
+
+.tracking-number-input {
+
+    margin-bottom: 5px;
+    transition: .4s ease-in-out;
+
+}
+
+.text-area-merchant-comment-class {
+
+    height: 15%;
+    transition: .4s ease-in-out;
+
+}
+
+.tracking-number-input:hover, .text-area-merchant-comment-class:hover, .submit-input:hover, .submit-tracking:hover {
+
+    box-shadow: 4px 4px 60px 8px rgba(0,0,0,0.2);
+    text-shadow: 2px 2px 5px rgba(0,0,0,0.2);
+
+}
+
+.tracking-number-input:focus, .text-area-merchant-comment-class:focus, .submit-input:focus, .submit-tracking:focus {
+
+    box-shadow: 5px 5px 60px 9px rgba(0,0,0,0.2);
+
+}
+
+.submit-input {
+
+    height: 23%;
+    cursor: pointer;
+    transition: .4s ease-in-out;
+
+}
+
+.submit-tracking {
+
+    height: 30%;
+    cursor: pointer;
+    transition: .4s ease-in-out;
+    width: 90%;
+    margin-bottom: 5px;
+
+}
+
+.overlay {
+
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(0, 0, 0, 0.7);
+    transition: opacity 500ms;
+    visibility: hidden;
+    opacity: 0;
+    z-index: 3;
+
+}
+
+.overlay:target {
+
+    visibility: visible;
+    opacity: 1;
+
+}
+
+.popup {
+
+    margin: 70px auto;
+    padding: 20px;
+    background: #fff;
+    border-radius: 5px;
+    width: 30%;
+    position: relative;
+    transition: all 5s ease-in-out;
+
+}
+
+.popup h2 {
+
+    margin-top: 0;
+    color: #333;
+    font-family: Tahoma, Arial, sans-serif;
+
+}
+
+.popup .close {
+
+    position: absolute;
+    top: 0px;
+    right: 30px;
+    transition: all 200ms;
+    font-size: 30px;
+    font-weight: bold;
+    text-decoration: none;
+    color: #333;
+
+}
+
+.popup .close:hover {
+
+    color: #06D85F;
+
+}
+
+.popup .content {
+
+    max-height: 30%;
+    overflow: auto;
+
+}
+
+/* Width-based media queries. */
+
+@media (max-width: 500px), (max-height: 400px) { /* Styling for the phones. */
+
+    .order-links {
+
+        flex-direction: column;
+
+    }
+
+    .nav__item {
+
+        font-size: 1.4rem;
+
+    }
+
+    .see-order-button {
+
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+
+    }
+
+    .main-nav-links {
+
+        height: 25%;
+        top: 6%;
+
+    }
+
+    .master-order-info {
+
+        width: 99%;
+        height: 85%;
+
+    }
+
+    .list-of-master-orders {
+
+        position: relative;
+        top: 55px;
+        width: 95%;
+        margin-bottom: 110px;
+
+    }
+
+    .master-order-info-current-deliveries, .master-order-info-user-uploaded {
+
+        width: 75%;
+
+    }
+
+    .master-order-info-manage-client-orders {
+
+        width: 80%;
+        height: 70%;
+
+    }
+
+    .box {
+
+        width: 70%;
+
+    }
+
+    .popup{
+
+        width: 70%;
+
+    }
+
+}
+
+@media (min-width: 501px) and (max-width: 769px) {
+
+    .order-links {
+
+        font-size: 1.4rem;
+        gap: 10px;
+
+    }
+
+    .master-order-info {
+
+        width: 95%;
+        height: 55%;
+
+    }
+
+}
+
+
+@keyframes slowlyAppear {
+
+    0% { opacity: 0; }
+
+
+    100% { opacity: 1; }
+
+}
+
+.hidden {
+
+    display: none;
+
+}
+
+.inactive {
+
+    pointer-events: none;
+    cursor: default;
+    opacity: .5;
+
+}
+
+/* Thanks to Zack Creach for the underlined links <3 */
+
+/* Thanks to Prakash for the popup box <3 */
