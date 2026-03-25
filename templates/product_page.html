@@ -113,59 +113,43 @@
                     {% if product_data[6]: %}
 
                     <div class="carousel-container">
-                    <div class="carousel">
 
-                        {% for i in range(1, product_data[6]|length + 1): %}
+                        <div class="carousel">
 
-                            {% if i == 1: %}
+                          <div class="carousel__items">
 
-                                <input type="radio" id="carousel-1" name="carousel[]" checked> <!-- The difference here is that it's "checked" in this case, it means that this image will be displayed when the user clicks on the product page. -->
+                              <!-- Setting carousel's items as images/ -->
 
-                            {% else: %}
+                              {% for image in product_data[6]: %}
 
-                            <input type="radio" id="carousel-{{ i }}" name="carousel[]">
+                                  <div class="carousel__item">
 
-                            {% endif %}
+                                    <img src="{{ image }}" alt="Product's image">
 
-                        {% endfor %}
+                                  </div>
 
-                        <ul class="carousel__items">
+                              {% endfor %}
 
-                            {% for image in product_data[6]: %}
+                          </div>
 
-                            <li class="carousel__item"><img src="{{ image }}" alt=""></li>
+                            <!-- Buttons for switching between images. -->
+
+                            <button class="carousel__btn prev">‹</button>
+                            <button class="carousel__btn next">›</button>
+
+
+
+                          <div class="carousel__nav">
+
+                            {% for i in range(product_data[6]|length): %}
+
+                              <span class="dot" data-index="{{ i }}"></span> <!-- Storing the index of the dot in the data-* attribute. (So that JS would understand which image it should open). -->
 
                             {% endfor %}
 
-                        </ul>
-                     <div class="carousel__prev">
+                          </div>
+                        </div>
 
-                         {% for i in range(1, product_data[6]|length + 1): %}
-
-                            <label for="carousel-{{ i }}"></label>
-
-                         {% endfor %}
-
-                     </div>
-                     <div class="carousel__next">
-
-                         {% for i in range(1, product_data[6]|length + 1): %}
-
-                            <label for="carousel-{{ i }}"></label>
-
-                         {% endfor %}
-
-                     </div>
-                     <div class="carousel__nav">
-
-                         {% for i in range(1, product_data[6]|length + 1): %}
-
-                            <label for="carousel-{{ i }}"></label>
-
-                         {% endfor %}
-
-                     </div>
-                   </div>
                  </div>
 
 
@@ -389,6 +373,8 @@
     <script src="../static/JS%20Scripts/dark_light_mode.js"></script>
 
 {% endif %}
+
+<script src="../static/JS%20Scripts/product_page_image_slides.js"></script>
 
 </body>
 </html>
