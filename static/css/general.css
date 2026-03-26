@@ -697,3 +697,15 @@ form {
     }
 
 }
+
+/* Styling for devices with small height. */
+
+@media (max-height: 700px) {
+
+    .small-circle-upload-mobile, .small-circle-history-mobile {
+
+            bottom: -6%;
+
+    }
+
+}

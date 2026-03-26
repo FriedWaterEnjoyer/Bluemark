@@ -644,6 +644,16 @@ body.dark {
 
 }
 
+@media (max-height: 700px) {
+
+    .list-of-master-orders:last-child .see-order-button {
+
+        margin-bottom: 30px;
+
+    }
+
+}
+
 
 @keyframes slowlyAppear {
 

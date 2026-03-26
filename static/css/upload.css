@@ -312,7 +312,7 @@ body.dark {
 
 /* Mobile Styling. */
 
-@media (max-width: 769px) { /* For everything at or below tablet's size. */
+@media (max-width: 860px) { /* For everything at or below tablet's size. */
 
     .custum-file-upload {
 
@@ -338,6 +338,24 @@ body.dark {
         width: 90%;
         height: 88%;
         top: 10px;
+
+    }
+
+}
+
+/* Styling for devices with small screen height. */
+
+@media (max-height: 745px) {
+
+    .upload-submit {
+
+        height: 100%;
+
+    }
+
+    .main-upload-form {
+
+        top: 5px;
 
     }
 

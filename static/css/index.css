@@ -748,3 +748,15 @@ body.dark {
     }
 
 }
+
+/* Styling for devices with small screen height: */
+
+@media (max-height: 700px) {
+
+    .category-item {
+
+        display: none;
+
+    }
+
+}

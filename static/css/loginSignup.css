@@ -79,6 +79,20 @@ body, html {
 
 }
 
+.center-div {
+
+    display: flex;
+    position: relative;
+    width: 100%;
+    height: 100%;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    gap: 4%;
+    top: 4%;
+
+}
+
 .sign-in-form {
 
     width: 90%;
@@ -163,7 +177,7 @@ body, html {
 
 .google-register, .account-deletion {
 
-    position: absolute;
+    position: relative;
     justify-content: flex-start;
     bottom: 3%;
     width: 90%;
@@ -171,16 +185,24 @@ body, html {
 
 }
 
-.google-register h3 {
+.google-register {
 
-    position: absolute;
-    top: -20%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
 
 }
 
-.google-register a {
+/* .google-register h3 {
 
     position: absolute;
+    top: 0;
+
+} */
+
+.google-register a {
+
     border: 1px solid #1a1a1a;
     border-radius: 5000px;
     padding: 10px;
@@ -280,6 +302,22 @@ body, html {
     .sign-in-form, .google-register, .log-in-form, .account-deletion, .code-form {
 
         width: 550px;
+
+    }
+
+}
+
+@media (max-height: 700px) {
+
+    .sign-in-form {
+
+        height: 75%;
+
+    }
+
+    .google-register {
+
+        height: 12%;
 
     }
 

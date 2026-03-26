@@ -8,14 +8,6 @@
 
 # TODO: as a sidequest - let the user delete their own reviews.
 
-# TODO: (Closer to the end of the production) - adjust mobile frontend.
-
-# TODO: Pls fix the carousel on the product page. (I.e., when the user clicks on the right arrow while they're on the last image - then it won't skip to the first image).
-
-# TODO: Delete the words "Liked Items" at a certain height on the index page.
-
-# TODO: Pls disable "add to cart" and "and to liked" button after the user clicks either of them.
-
 # TODO: (Closer to the end of the production) - Create fake test accounts using stripe.Account.create, then insert their IDs into the DB. (Check if it's possible to set payouts_enabled, charges_enabled and transfers to True in these accounts).
 
 #---- Imports ----#
@@ -1760,13 +1752,15 @@ def product_page(product_id):
     has_in_cart = session_db.query(in_cart_table).where(in_cart_table.c.user_id == user_cookies).where(in_cart_table.c.product_id == product_id).first()
 
 
-    # Checking if at least one of the queries returns True.
+    # Checking if at least one of the queries returns True. (In case the user's registered).
 
-    if int(user_cookies) == product_data[7]: error_message = "Owner can't add to the cart or write a review on their own product"
+    if user_cookies:
 
-    elif in_cart_amount_user == 120: error_message = "Amount of items in the cart can't exceed 120"
+        if int(user_cookies) == product_data[7]: error_message = "Owner can't add to the cart or write a review on their own product"
 
-    elif has_in_cart: error_message = "You already have this item in the cart"
+        elif in_cart_amount_user == 120: error_message = "Amount of items in the cart can't exceed 120"
+
+        elif has_in_cart: error_message = "You already have this item in the cart"
 
 
     return render_template("product_page.html", night_mode=night_mode, registered=user_cookies, user_data=user_data, has_2fa=has_2fa, product_data=product_data, uploaded_fname=user_data_upload[1], uploaded_lname=user_data_upload[2], uploaded_pfp=user_data_upload[6], error_message=error_message)
@@ -1850,7 +1844,7 @@ def reviews(product_id):
 
         # Checking if it's the owner that's trying to leave a review on their own product.
 
-        owner_id_details = session_db.query(product_table).where(product_table.c.ID == product_table)[7]
+        owner_id_details = session_db.query(product_table).where(product_table.c.ID == product_id).first()[7]
 
         if int(user_cookies) == owner_id_details: return redirect(url_for("reviews", product_id = product_id)) # If it's the owner of the product - redirect them to the reviews page.
 
