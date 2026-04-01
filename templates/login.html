@@ -25,7 +25,7 @@
 
     <div class="small-circle-search">
 
-        <a id="mobile-only-search" href="#">
+        <a id="mobile-only-search" href="{{ url_for('search_mobile') }}">
 
             <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="20px" height="20px" viewBox="0 0 50 50">
 
@@ -52,9 +52,9 @@
             </div>
 
 
-    <form action="" id="search-form">
+    <form action="{{ url_for('search') }}" id="search-form" method="post">
 
-      <input type="search" id="search-bar-input" autofocus required>
+        <input type="search" id="search-bar-input" name="user_search_query" autofocus required>
         <button type="submit" class="submit-button">
 
             <i class="fa fa-search">
@@ -119,9 +119,9 @@
 
             <form action="{{ url_for('login_page') }}" method="post" id="register-form">
 
-                <input class="register-input" type="email" placeholder="Email" name="email-field-register" required>
+                <input class="register-input" type="email" placeholder="Email" name="email-field-register" required autocomplete="on">
 
-                <input class="register-input" type="password" placeholder="Password" name="password-field-register" required>
+                <input class="register-input" type="password" placeholder="Password" name="password-field-register" required autocomplete="on">
 
                 <input type="submit" value="Log In" id="sign-submit">
 

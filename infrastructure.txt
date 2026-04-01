@@ -8,15 +8,7 @@ Man this is fun :D :D :D
 
 :3
 
-after that - cart and payment functionalities,
-
-then the search function,
-
-after that - let the user see what products and videos they've uploaded, as well as their purchase history
-
-
-
-And after that - I think my mega project will be done :D
+the search function
 
 
 Ooooooh boy, I have a lot of work to do :D
@@ -31,6 +23,8 @@ Agreed x3 :3
 
 Agreed x4 :3
 
+Agreed x5 :3
+
 Did a lot of important backend stuff today, went pretty well. It's honestly really fun through and through :d
 
 Another git push, yuipeeeee!
@@ -38,3 +32,7 @@ Another git push, yuipeeeee!
 Now for even more stuff to do! :3
 
 I'm really curious what will come out of it in the end...
+
+では、次のファンクション行こう！
+
+After that - adjust the "Add to liked" functionality (i.e., modify the Liked Items Table).

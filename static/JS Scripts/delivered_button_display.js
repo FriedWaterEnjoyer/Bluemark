@@ -1,17 +1,23 @@
 // The main purpose of this file is to show the rest of the form (i.e., delivery tracking number) once the merchant clicks on the "Delivering" button.
 
-
-let deliveryButton = document.getElementsByClassName("delivering-button")[0]; // Fetching the button using its class name.
-
-let trackingNumberInput = document.getElementsByClassName("tracking-number-input")[0]; // Same with the tracking number input.
-
-let submitTrackingNumber = document.getElementsByClassName("submit-tracking")[0]; // Same with the submit input.
+document.addEventListener("DOMContentLoaded", (event) => {
 
 
-deliveryButton.addEventListener("click", function() {
+    document.querySelectorAll(".delivering-button").forEach(button => { // Querying all the buttons with the class "delivering-button". (Can appear only if order's status is "Processing").
 
-    trackingNumberInput.classList.remove("hidden");
+        button.addEventListener("click", () => { // Adding EventListener "click" to each button.
 
-    submitTrackingNumber.classList.remove("hidden");
+            const parentFormElement = button.closest(".delivery-details-form"); // Looking up the parent element of the button as soon as the user clicks. (In this case it's the form "delivery-details-form").
+
+            // Then removing the "hidden" classes of both the input and submit.
+
+            parentFormElement.querySelector(".tracking-number-input").classList.remove("hidden");
+
+            parentFormElement.querySelector(".submit-tracking").classList.remove("hidden");
+
+        })
+
+    })
+
 
 });

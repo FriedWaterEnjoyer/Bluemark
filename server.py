@@ -8,6 +8,8 @@
 
 # TODO: as a sidequest - let the user delete their own reviews.
 
+# TODO: modify the "Add to liked" Functionality and also crash-test the search function a little bit more pls :3
+
 # TODO: (Closer to the end of the production) - Create fake test accounts using stripe.Account.create, then insert their IDs into the DB. (Check if it's possible to set payouts_enabled, charges_enabled and transfers to True in these accounts).
 
 #---- Imports ----#
@@ -17,7 +19,8 @@ import os
 import json
 from dotenv import load_dotenv
 from flask import Flask, render_template, redirect, request, make_response, url_for, jsonify, session, Response
-from sqlalchemy import Text, Numeric, Integer, BOOLEAN, ARRAY, create_engine, MetaData, Column, Table, LargeBinary, select, func  # For DB interactions.
+from sqlalchemy import Text, Numeric, Integer, BOOLEAN, create_engine, MetaData, Column, Table, LargeBinary, select, func, Computed, Index, case, desc  # For DB interactions.
+from sqlalchemy.dialects.postgresql import TSQUERY, TSVECTOR, to_tsquery, websearch_to_tsquery, ARRAY  # Both of them play huge role in making the search function more efficient. (Basically calculating a search vector, which lets the program search with some context, suggesting products with words that the user hasn't even written).
 from sqlalchemy.orm import sessionmaker
 import argon2 # For hashing passwords.
 from authlib.integrations.flask_client import OAuth # For authorization with Google.
@@ -175,7 +178,6 @@ engine = create_engine(DATABASE_URL)
 
 meta_data_obj = MetaData() # Where all the tables and columns will be stored.
 
-
 # PLS PLS PLS PLS PLS KEEP EVERY SINGLE COLUMN NAME WITHOUT SPACEBARS!!
 
 customer_table = Table(
@@ -211,14 +213,29 @@ product_table = Table(
 
     meta_data_obj,
 
-Column("ID", Integer, primary_key=True, autoincrement=True),
-    Column("Name", Text, nullable=False),
-    Column("Rating", Integer, nullable=False),
-    Column("Price", Numeric, nullable=False),
-    Column("Tags", ARRAY(Text), nullable=False, index=True),
-    Column("Description", Text, nullable=False),
-    Column("Images", ARRAY(Text), nullable=False),
-    Column("OwnerID", Integer, nullable=False, index=True),
+    Column("ID", Integer, primary_key=True, autoincrement=True),
+    Column("name", Text, nullable=False),
+    Column("rating", Integer, nullable=False),
+    Column("price", Numeric, nullable=False),
+    Column("tags", ARRAY(Text), nullable=False),
+    Column("description", Text, nullable=False),
+    Column("images", ARRAY(Text), nullable=False),
+    Column("ownerID", Integer, nullable=False, index=True),
+    Column( # An analog of PostgreSQL's "GENERATED ALWAYS AS" command. The main purpose of this column is to facilitate the search function on a website and make it more efficient. (It doesn't have to be explicitly declared during insert or update - it'll always do it by itself).
+
+        "search_vector",
+
+        TSVECTOR,
+
+        Computed("to_tsvector('english', name || ' ' || description)", persisted=True), # persisted=True ensures that this column will be updated only during an insert or an update.
+
+        nullable=False
+
+    ),
+
+    Index("search_index", "search_vector", postgresql_using="gin"), # Indexing it for better efficiency.
+
+    Index("tags_search_index", "tags", postgresql_using="gin") # Same for the tags.
 
 )
 
@@ -1063,9 +1080,9 @@ def cart_display():
 
     stmt = select( # Querying relative information about the products that the user has in their cart, using product_id and user_id from the in_cart_table.
 
-        product_table.c.Name,
-        product_table.c.Price,
-        product_table.c.Images[1], # Fetching the first image. (I don't know why its index is 1 and not 0).
+        product_table.c.name,
+        product_table.c.price,
+        product_table.c.images[1], # Fetching the first image. (I don't know why its index is 1 and not 0).
         product_table.c.ID,
         in_cart_table.c.quantity,
 
@@ -1289,17 +1306,17 @@ def create_stripe_checkout_session(): # When the user's proceeded to the checkou
 
         # Long story short, same query as it was before in the cart, but with a fancy hat. (I.e., calculating the total price using quantities and prices from the DB).
 
-        product_table.c.Name,
-        product_table.c.Description,
-        product_table.c.Price,
-        product_table.c.Images[1],
+        product_table.c.name,
+        product_table.c.description,
+        product_table.c.price,
+        product_table.c.images[1],
         in_cart_table.c.quantity,
-        product_table.c.OwnerID,
+        product_table.c.ownerID,
 
 
     ).join(in_cart_table, product_table.c.ID == in_cart_table.c.product_id)
 
-    .join(customer_table, product_table.c.OwnerID == customer_table.c.ID)
+    .join(customer_table, product_table.c.ownerID == customer_table.c.ID)
 
     .where(
 
@@ -1506,8 +1523,8 @@ def money_distribution(): # Does exactly what it says - checks if the payment wa
 
         name_and_image_stmt = select(
 
-            product_table.c.Name,
-            product_table.c.Images[1]
+            product_table.c.name,
+            product_table.c.images[1]
 
         ).outerjoin(in_cart_table, product_table.c.ID == in_cart_table.c.product_id).where(
 
@@ -1796,7 +1813,7 @@ def reviews(product_id):
 
         has_2fa = user_data[9]
 
-        is_owner = True if session_db.query(product_table).where(product_table.c.ID == product_id).where(product_table.c.OwnerID == user_cookies).first() else False
+        is_owner = True if session_db.query(product_table).where(product_table.c.ID == product_id).where(product_table.c.ownerID == user_cookies).first() else False
 
         # If the DB query above returned something, then set is_owner to True, since owners shouldn't leave reviews on their own product.
 
@@ -1909,7 +1926,7 @@ def reviews(product_id):
 
             connection.execute(
 
-                product_table.update().where(product_table.c.ID == product_id).values(Rating=new_full_rating)
+                product_table.update().where(product_table.c.ID == product_id).values(rating=new_full_rating)
 
             )
 
@@ -1922,9 +1939,172 @@ def reviews(product_id):
     return render_template("reviews.html", night_mode=night_mode, registered=user_cookies, user_data=user_data, has_2fa=has_2fa, product_data_reviews=users_query_result, product_id=product_id, has_review=has_review, user_comment=user_uploaded_comment, user_rating=user_uploaded_rating, is_owner=is_owner)
 
 
+@app.route("/search", methods=["GET", "POST"])
 def search():
 
-    pass
+    if "temp_user_id" in session: session.clear()
+
+    user_cookies = is_registered()
+
+    full_query = None # Results of the DB search. Will be changed during the POST request.
+
+
+    if user_cookies:
+
+        user_data = id_query(int(user_cookies))
+
+        restrict_access_to_details(user_data)
+
+        has_2fa = user_data[9]
+
+        night_mode_data = user_data[10]
+
+    else:
+
+        user_data = None
+
+        has_2fa = False
+
+        night_mode_data = False
+
+
+    if request.method == "POST":
+
+        user_query = request.form.get("user_search_query")
+
+        user_tags = request.form.getlist("tags")
+
+        user_query_tsvector = websearch_to_tsquery("english", user_query) # Creating a TSVECTOR from user's query. Explicitly using websearch_to_tsquery, since regular to_tsquery is less for the regular search queries of the user and more for the programmatic purposes.
+
+        text_rank = func.ts_rank(product_table.c.search_vector, user_query_tsvector) # Ranking the queries by relevance.
+
+
+        if user_tags[0] == "All": # Simply querying all the relative products (text-based) if the user's set the tag to "All".
+
+            full_query = session_db.query(
+
+                product_table,
+                text_rank.label("text_rank"),
+
+            ).filter(
+
+                (product_table.c.search_vector.op("@@")(user_query_tsvector))
+
+            ).order_by(desc(text_rank)).limit(30).all()
+
+            return render_template("main_search.html", night_mode=night_mode_data, registered=user_cookies, user_data=user_data, has_2fa=has_2fa, search_result=full_query)
+
+
+        overall_tag_score = case( # The point of this function is to check if user's submitted tags overlaps with tags in other products. If they do - then add 2 to their "score" else - add nothing.
+
+            (product_table.c.tags.overlap(user_tags), 2),
+
+            else_=0
+
+        )
+
+        full_query = session_db.query(
+
+            product_table,
+            # Labeling the ranks so that it'll be easier to access the values.
+            text_rank.label("text_rank"),
+            overall_tag_score.label("tag_score"),
+
+        ).filter(
+
+            (product_table.c.search_vector.op("@@")(user_query_tsvector)) | # The @@ syntax - full-text search match operator. The | is equals to or statement.
+
+            (product_table.c.tags.overlap(user_tags))
+
+        ).order_by(desc(text_rank * 0.7 + overall_tag_score * 0.3)).limit(30).all() # Ordering the results of the query in descending order.
+
+
+    return render_template("main_search.html", night_mode=night_mode_data, registered=user_cookies, user_data=user_data, has_2fa=has_2fa, search_result=full_query)
+
+
+@app.route("/search-mobile", methods=["GET", "POST"])
+def search_mobile(): # Since I redirect user to a link instead of showing them the search field (if they're on mobile) - then they'll be redirected to here.
+
+    if "temp_user_id" in session: session.clear()
+
+    user_cookies = is_registered()
+
+    full_query = None # Results of the DB search. Will be changed during the POST request.
+
+
+    if user_cookies:
+
+        user_data = id_query(int(user_cookies))
+
+        restrict_access_to_details(user_data)
+
+        has_2fa = user_data[9]
+
+        night_mode_data = user_data[10]
+
+    else:
+
+        user_data = None
+
+        has_2fa = False
+
+        night_mode_data = False
+
+
+    if request.method == "POST":
+
+        user_query = request.form.get("user_search_query")
+
+        user_tags = request.form.getlist("tags")
+
+        user_query_tsvector = websearch_to_tsquery("english", user_query)
+
+        text_rank = func.ts_rank(product_table.c.search_vector, user_query_tsvector)
+
+
+        if user_tags[0] == "All":
+
+            full_query = session_db.query(
+
+                product_table,
+                text_rank.label("text_rank"),
+
+            ).filter(
+
+                (product_table.c.search_vector.op("@@")(user_query_tsvector))
+
+            ).order_by(desc(text_rank)).limit(30).all()
+
+            return render_template("main_search.html", night_mode=night_mode_data, registered=user_cookies, user_data=user_data, has_2fa=has_2fa, search_result=full_query)
+
+
+        overall_tag_score = case( # The point of this function is to check if user's submitted tags overlaps with tags in other products. If they do - then add 2 to their "score" else - add nothing.
+
+            (product_table.c.tags.overlap(user_tags), 2),
+
+            else_=0
+
+        )
+
+        full_query = session_db.query(
+
+            product_table,
+            # Labeling the ranks so that it'll be easier to access the values.
+            text_rank.label("text_rank"),
+            overall_tag_score.label("tag_score"),
+
+        ).filter(
+
+            (product_table.c.search_vector.op("@@")(user_query_tsvector)) |  # The @@ syntax - full-text search match operator. The | is equals to or statement.
+
+            (product_table.c.tags.overlap(user_tags))
+
+        ).order_by(desc(text_rank * 0.7 + overall_tag_score * 0.3)).limit(30).all()  # Ordering the results of the query in descending order.
+
+        return render_template("main_search.html", night_mode=night_mode_data, registered=user_cookies, user_data=user_data, has_2fa=has_2fa, search_result=full_query)
+
+
+    return render_template("search_mobile_template.html", night_mode=night_mode_data, registered=user_cookies, user_data=user_data, has_2fa=has_2fa)
 
 
 @app.route("/upload", methods=["GET", "POST"])
@@ -1987,14 +2167,14 @@ def upload_item():
         product_descr = request.form.get("product_description")
 
 
-        if not product_descr: product_descr = "No description provided." # If user left the description field empty - then it's an empty string - in that case submitting "No description provided", which will be passed onto the database.
-
-
         product_price = request.form.get("product_price")
 
         all_product_tags = request.form.getlist("all-tags-upload")
 
         all_imgs = request.files.getlist("product_img")[:5] # Cutting the amount of images up to 5. (In case the user's changed the frontend JS and is trying to submit more than that).
+
+        if not product_title or not product_descr or not product_price or not all_product_tags: return jsonify({"redirect": "/upload"}) # Just in case the user's managed to change the frontend and not submit at least one of the required fields.
+
 
         db_upload_images = []
 
@@ -2024,7 +2204,7 @@ def upload_item():
             else: pass # If it doesn't have the right file type or exceeds the file size limit - simply not appending it to the final list.
 
 
-        if not db_upload_images: return redirect("/upload") # If the db_upload_images is empty - then it means that the user's modified the frontend JS, jettisoning the file size controls.
+        if not db_upload_images: return jsonify({"redirect": "/upload"}) # If the db_upload_images is empty - then it means that the user's modified the frontend JS, jettisoning the file size controls.
 
         # In that case - don't commit this to the DB and redirect the user to the upload page.
 
@@ -3011,7 +3191,7 @@ def user_uploaded_products(): # Lets the user see all the products they've uploa
     night_mode_data = user_data[10]
 
 
-    all_user_products = session_db.query(product_table).where(product_table.c.OwnerID == user_cookies).all()
+    all_user_products = session_db.query(product_table).where(product_table.c.ownerID == user_cookies).all()
 
 
     return render_template("user_uploaded_products.html", has_2fa=has_2fa, night_mode=night_mode_data, registered=user_cookies, user_data=user_data, all_orders=all_user_products)

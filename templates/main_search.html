@@ -1,4 +1,3 @@
-<!-- Same as the master_order.html, but the structure's a bit different. Theoretically I could've just kept it all in one file, but it would become way too bloated. -->
 <!DOCTYPE html>
 <html lang="en" xmlns="http://www.w3.org/1999/html">
 <head>
@@ -7,21 +6,18 @@
 
     <link rel="stylesheet" href="../static/css/general.css" type="text/css">
 
-    <link rel="stylesheet" href="../static/css/master_order.css" type="text/css">
+    <link rel="stylesheet" href="../static/css/search.css" type="text/css">
 
     <link rel="shortcut icon" href="../static/images/BluecheckmarkIcon.png" type="image/x-icon">
 
     <title>Bluemark</title>
-
 </head>
 <body>
-
 
     <div class="top-div">
 
         <svg xmlns="http://www.w3.org/2000/svg" width="50px" id="logo" viewBox="0 0 48 48"><defs><style>.cls-1{fill:#82bcf4}.cls-2{fill:#6fabe6}</style></defs><g id="Verification"><path class="cls-1" d="m42.52 29 1.4 6.54-6.37 2-2 6.37L29 42.52 24 47l-5-4.48-6.54 1.4-2.05-6.37-6.37-2L5.48 29 1 24l4.48-5-1.4-6.5c7.29-2.35 6.32-1.88 6.5-2.46l1.92-6L19 5.48 24 1l5 4.48 6.54-1.4 2 6.37 6.37 2.05-1.39 6.5L47 24z"/><path class="cls-2" d="M39 37c0 .11.21 0-1.45.55l-2 6.37-6.55-1.4L24 47l-5-4.48-6.54 1.4-2.05-6.37-6.37-2L5.48 29 1 24l4.48-5-1.4-6.5c7.29-2.35 6.32-1.88 6.5-2.46A27 27 0 0 1 39 37z"/><path d="M39 24a15 15 0 1 1-27.42-8.42C19.91 3.38 39 9.28 39 24z" style="fill:#edebf2"/><path d="M35 28a15 15 0 0 1-2.58 8.42 15 15 0 0 1-20.84-20.84A15 15 0 0 1 35 28z" style="fill:#dad7e5"/><path class="cls-1" d="m32.5 20.68-9.38 9.38a3 3 0 0 1-4.24 0l-3.38-3.38a2.12 2.12 0 0 1 3-3l2.5 2.5c11.37-11.37 7.75-7.74 8.5-8.5a2.12 2.12 0 0 1 3 3z"/><path class="cls-2" d="m31.5 21.68-8.38 8.38a3 3 0 0 1-4.24 0l-3.38-3.38a2.11 2.11 0 0 1-.41-2.41 2.11 2.11 0 0 1 2.41.41l2.5 2.5c11.82-11.82 7.8-7.79 8.66-8.65a2.12 2.12 0 0 1 2.84 3.15z"/></g></svg>
 
-   <!-- This part is only for mobile -->
 
     <div class="small-circle-search">
 
@@ -36,8 +32,6 @@
         </a>
 
     </div>
-
-    <!-- This one is for the rest of gadgets. -->
 
 
                 <div class="small-circle-home"> <!-- Decorative circle right around the SVG. -->
@@ -54,6 +48,7 @@
     <form action="{{ url_for('search') }}" id="search-form" method="post">
 
         <input type="search" id="search-bar-input" name="user_search_query" autofocus required>
+
         <button type="submit" class="submit-button">
 
             <i class="fa fa-search">
@@ -91,7 +86,6 @@
 
         </div>
 
-        <!-- Upload video SVG. -->
 
         <div class="small-circle-history-main">
 
@@ -102,124 +96,69 @@
     </div>
 
 
-    <div class="middle-div">
+    <!-- Main page content. -->
 
-        <div class="main-nav-links">
+    <div class="center-div">
 
-            <ul class="order-links">
+        <div class="full-result-list">
 
-                <li class="nav__item order-link" onclick="window.location.href='https://synovial-wilton-unspilt.ngrok-free.dev/order-status-active'">Current Deliveries<span class="underline underline__grow--center"></span></li>
-                <li class="nav__item order-link" onclick="window.location.href='https://synovial-wilton-unspilt.ngrok-free.dev/order-status-delivered'">Finished Deliveries<span class="underline underline__grow--center"></span></li>
-                <li class="nav__item order-link" onclick="window.location.href='https://synovial-wilton-unspilt.ngrok-free.dev/manage-orders'">Manage Client Orders<span class="underline underline__grow--center"></span></li>
-                <li class="nav__item order-link" onclick="window.location.href='https://synovial-wilton-unspilt.ngrok-free.dev/user-uploaded-products'">Your Products<span class="underline underline__grow--center"></span></li>
+            {% if not search_result: %}
 
-            </ul>
+                <h3 class="error-message">No results found, please check your spelling and keyboard language</h3>
 
-        </div>
+            {% else: %}
 
-        <div class="list-of-master-orders">
+                {% for single_result in search_result: %}
 
-            <h2 class="main-header-order">Products of this order:</h2>
+                    <div class="card">
 
-                {% for one_product_order in all_order_products: %}
+                        <div class="search-product-img">
 
-                <div class="master-order-info-current-deliveries">
-
-
-                    <div class="master-order-left-side">
-
-                        <div class="master-order-first-img">
-
-                            <img src="{{ one_product_order[15] }}" alt="Image of the master order" class="order-img">
+                            <img class="first-img-product" alt="Image of the product - search function" src="{{ single_result[6][0] }}">
 
                         </div>
 
+                        <div class="rest-of-the-card">
 
-                    </div>
+                            <h3 class="product-name search-product-details">{{ single_result[1] }}</h3>
 
+                            <h5 class="search-product-star-rating search-product-details">
 
-                    <div class="master-order-right-side">
+                                {% for j in range(single_result[2]|int): %}
 
-                        <div class="master-order-order-title"><h4>Order Title: <br> {{ one_product_order[16] }}</h4></div>
+                                    {% if night_mode: %}
 
-                        <div class="master-order-delivery-status"><p>Delivery Status: <br> <strong class="bold-text-order">{{ one_product_order[5] }}</strong></p></div>
+                                        ✨
 
-                        <div class="master-order-price"><p>Price/One Unit: <br> <strong class="bold-text-order">${{ one_product_order[10] }}</strong></p></div>
+                                    {% else: %}
 
-                        <div class="master-order-quantity"><p>Quantity: <br> <strong class="bold-text-order">{{ one_product_order[4] }}</strong></p></div>
+                                        ⭐
 
-                        <div class="master-order-deliver-to"><p>Deliver To: <br> <strong class="bold-text-order">{{ one_product_order[6] }}</strong></p></div>
+                                    {% endif %}
 
-                        <!-- Displaying merchant's comment and delivery's tracking number if they exist. -->
-
-
-
-                            <div class="master-order-merchant-comment"><p>Merchant's comment: <br>
-
-                                {% if one_product_order[12]: %}
-
-                                    <strong>{{ one_product_order[12] }}</strong>
-
-                                {% else: %}
-
-                                    <strong>The merchant hasn't left a comment yet.</strong>
-
-                                {% endif %}
-
-                            </p></div>
-
-                            <div class="master-order-delivery-tracking-number"><p>Delivery Tracking Number: <br>
-
-                                {% if one_product_order[13]: %}
-
-                                    <strong>{{ one_product_order[13] }}</strong>
-
-                                {% else: %}
-
-                                    <strong>The merchant hasn't submitted a tracking number yet.</strong>
-
-                                {% endif %}
-
-                            </p></div>
-
-                        {% if one_product_order[5] == "Order Placed" or one_product_order[5] == "Processing": %}
-
-                            <a class="cancel-order-button" href="#popup{{ one_product_order[0] }}">Cancel Order</a>
-
-                        {% endif %}
-
-                        <button class="see-order-button" onclick="window.location.href='https://synovial-wilton-unspilt.ngrok-free.dev/product-page/{{ one_product_order[3] }}'">See Product Details</button>
+                                {% endfor %}
 
 
-                    </div>
+                                {% for k in range(5 - single_result[2]|int): %}
+
+                                    ☆
+
+                                {% endfor %}
 
 
-                </div>
+                            </h5>
 
-            {% if one_product_order[5] == "Order Placed" or one_product_order[5] == "Processing": %}
+                            <p class="search-product-price search-product-details">${{ single_result[3] }}</p>
 
-                <div id="popup{{ one_product_order[0] }}" class="overlay"> <!-- A popup that appears when merchant presses the "Cancel Order" anchor tag. -->
-
-                    <div class="popup">
-
-                        <h2>Cancel Order?</h2>
-
-                        <a class="close" href="#">&times;</a>
-                        <div class="content">
-
-                            <p>The full amount spent on this product (${{ one_product_order[10] * one_product_order[4] }}) will be refunded</p>
-
-                            <a class="cancel-order-button" href="{{ url_for('cancel_and_refund', product_id_refund_process=one_product_order[0], master_order_id_refund=one_product_order[11], customer_refund='True') }}">Cancel Order</a>
+                            <button onclick="window.location.href='https://synovial-wilton-unspilt.ngrok-free.dev/product-page/{{ single_result[0] }}'" class="details-link">See Details</button>
 
                         </div>
 
                     </div>
 
-                </div>
+            {% endfor %}
 
             {% endif %}
-
-                {% endfor %}
 
         </div>
 
@@ -291,7 +230,6 @@
 
 
     </div>
-
 
 {% if night_mode: %} <!-- Importing JavaScript if the user has night_mode turned on. -->
 
