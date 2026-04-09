@@ -109,6 +109,12 @@
 
             <h2>Are you sure you want to delete your account?</h2>
 
+            {% if merchant_error_message: %}
+
+                <p class="error-message">You can't delete this account until you've finished all of your deliveries</p>
+
+            {% endif %}
+
             <form action="{{ url_for('delete_account') }}" method="post" id="delete-form">
 
                 <input class="log-out-button" type="submit" value="Delete Account" onclick="document.getElementById('delete-form').submit(); this.disabled=true;">

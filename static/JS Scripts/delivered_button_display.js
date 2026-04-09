@@ -1,4 +1,5 @@
 // The main purpose of this file is to show the rest of the form (i.e., delivery tracking number) once the merchant clicks on the "Delivering" button.
+// Also to add a class "inactive" every time the user presses one of the delivery buttons.
 
 document.addEventListener("DOMContentLoaded", (event) => {
 
@@ -14,6 +15,16 @@ document.addEventListener("DOMContentLoaded", (event) => {
             parentFormElement.querySelector(".tracking-number-input").classList.remove("hidden");
 
             parentFormElement.querySelector(".submit-tracking").classList.remove("hidden");
+
+        })
+
+    });
+
+    document.querySelectorAll(".delivery-change-button").forEach(button => {
+
+        button.addEventListener("click", () => {
+
+            button.classList.add("inactive");
 
         })
 

@@ -126,7 +126,7 @@
 
                                 <div class="full-text-liked-product">
 
-                                    <button class="heart-button-liked-main"><svg fill="#000000" width="30px" height="30px" viewBox="0 0 32 32" version="1.1" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <title>broken-heart</title> <path d="M23.304 1.591c-2.089-0.004-4.219 0.839-5.893 2.693l2.322 9.057-2.086 0.002 2.205 8.242-7.283-11.754 3.122 0.335-3.056-7.215c-5.121-3.042-12.339-0.432-12.105 6.916 0.275 8.638 11.93 11.519 15.438 20.693 3.705-9.175 15.678-11.502 15.391-20.693-0.16-5.119-4.031-8.27-8.055-8.277v0z"></path> </g></svg></button>
+                                    <button class="heart-button-liked-main" onclick="addToLikedMain(1, 'remove');"><svg fill="#000000" width="30px" height="30px" viewBox="0 0 32 32" version="1.1" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <title>broken-heart</title> <path d="M23.304 1.591c-2.089-0.004-4.219 0.839-5.893 2.693l2.322 9.057-2.086 0.002 2.205 8.242-7.283-11.754 3.122 0.335-3.056-7.215c-5.121-3.042-12.339-0.432-12.105 6.916 0.275 8.638 11.93 11.519 15.438 20.693 3.705-9.175 15.678-11.502 15.391-20.693-0.16-5.119-4.031-8.27-8.055-8.277v0z"></path> </g></svg></button>
 
                                     <a href="{{ url_for('product_page', product_id=1) }}" class="liked-product-name-main" id="liked-product-link"><h4 id="liked-product-header">Cool Product name bro</h4></a>
 
@@ -172,7 +172,7 @@
 
                             <img src="https://placehold.co/150x150" alt="Image of a product">
 
-                            <button class="heart-button"><svg width="30px" height="30px" class="heart-svg" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M1.24264 8.24264L8 15L14.7574 8.24264C15.553 7.44699 16 6.36786 16 5.24264V5.05234C16 2.8143 14.1857 1 11.9477 1C10.7166 1 9.55233 1.55959 8.78331 2.52086L8 3.5L7.21669 2.52086C6.44767 1.55959 5.28338 1 4.05234 1C1.8143 1 0 2.8143 0 5.05234V5.24264C0 6.36786 0.44699 7.44699 1.24264 8.24264Z" fill="#000000"></path> </g></svg></button>
+                            <button class="heart-button" onclick="addToLikedMain(1, 'add');"><svg width="30px" height="30px" class="heart-svg" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M1.24264 8.24264L8 15L14.7574 8.24264C15.553 7.44699 16 6.36786 16 5.24264V5.05234C16 2.8143 14.1857 1 11.9477 1C10.7166 1 9.55233 1.55959 8.78331 2.52086L8 3.5L7.21669 2.52086C6.44767 1.55959 5.28338 1 4.05234 1C1.8143 1 0 2.8143 0 5.05234V5.24264C0 6.36786 0.44699 7.44699 1.24264 8.24264Z" fill="#000000"></path> </g></svg></button>
 
                             <div class="product-text">
 
@@ -229,7 +229,7 @@
 
                             <div class="product-item-mobile">
 
-                                <button class="heart-button-mobile"><svg width="35px" height="35px" class="heart-svg" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M1.24264 8.24264L8 15L14.7574 8.24264C15.553 7.44699 16 6.36786 16 5.24264V5.05234C16 2.8143 14.1857 1 11.9477 1C10.7166 1 9.55233 1.55959 8.78331 2.52086L8 3.5L7.21669 2.52086C6.44767 1.55959 5.28338 1 4.05234 1C1.8143 1 0 2.8143 0 5.05234V5.24264C0 6.36786 0.44699 7.44699 1.24264 8.24264Z" fill="#000000"></path> </g></svg></button>
+                                <button class="heart-button-mobile" onclick="addToLikedMain(1, 'add');"><svg width="35px" height="35px" class="heart-svg" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M1.24264 8.24264L8 15L14.7574 8.24264C15.553 7.44699 16 6.36786 16 5.24264V5.05234C16 2.8143 14.1857 1 11.9477 1C10.7166 1 9.55233 1.55959 8.78331 2.52086L8 3.5L7.21669 2.52086C6.44767 1.55959 5.28338 1 4.05234 1C1.8143 1 0 2.8143 0 5.05234V5.24264C0 6.36786 0.44699 7.44699 1.24264 8.24264Z" fill="#000000"></path> </g></svg></button>
 
                                 <img src="https://placehold.co/150x150" alt="Product display image on mobile." class="product-image-mobile" />
 
@@ -271,7 +271,7 @@
 
                                 <div class="liked-item-mobile">
 
-                                    <button class="heart-button-mobile"><svg fill="#000000" width="35px" height="35px" viewBox="0 0 32 32" version="1.1" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <title>broken-heart</title> <path d="M23.304 1.591c-2.089-0.004-4.219 0.839-5.893 2.693l2.322 9.057-2.086 0.002 2.205 8.242-7.283-11.754 3.122 0.335-3.056-7.215c-5.121-3.042-12.339-0.432-12.105 6.916 0.275 8.638 11.93 11.519 15.438 20.693 3.705-9.175 15.678-11.502 15.391-20.693-0.16-5.119-4.031-8.27-8.055-8.277v0z"></path> </g></svg></button>
+                                    <button class="heart-button-mobile" onclick="addToLikedMain(1, 'remove');"><svg fill="#000000" width="35px" height="35px" viewBox="0 0 32 32" version="1.1" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <title>broken-heart</title> <path d="M23.304 1.591c-2.089-0.004-4.219 0.839-5.893 2.693l2.322 9.057-2.086 0.002 2.205 8.242-7.283-11.754 3.122 0.335-3.056-7.215c-5.121-3.042-12.339-0.432-12.105 6.916 0.275 8.638 11.93 11.519 15.438 20.693 3.705-9.175 15.678-11.502 15.391-20.693-0.16-5.119-4.031-8.27-8.055-8.277v0z"></path> </g></svg></button>
 
                                     <img src="https://placehold.co/150x150" alt="Product display image on mobile." class="product-image-mobile" />
 
@@ -377,6 +377,8 @@
     <script src="../static/JS%20Scripts/dark_light_mode.js"></script>
 
 {% endif %}
+
+    <script src="../static/JS%20Scripts/add_or_remove_liked.js"></script>
 
 </body>
 </html>

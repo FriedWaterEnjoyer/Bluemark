@@ -1,6 +1,7 @@
 # TODO: pls create multiple subdivisions of functions (e.g. PasswordManager, TableCreation, DB_Setup, etc.), the lag is just too much, and one 700+ lines python file is not good too :3
 # Now about 1100+ lines lul.
 # Now about 1700+ lines omegalul
+# ...
 
 # Another TODO: at the end of the production, please categorize JS scripts + css (if possible) into files.
 
@@ -8,7 +9,9 @@
 
 # TODO: as a sidequest - let the user delete their own reviews.
 
-# TODO: modify the "Add to liked" Functionality and also crash-test the search function a little bit more pls :3
+# TODO: After that - complete the sidequest.
+
+# TODO: After that - prepare the endgame >:3 pls
 
 # TODO: (Closer to the end of the production) - Create fake test accounts using stripe.Account.create, then insert their IDs into the DB. (Check if it's possible to set payouts_enabled, charges_enabled and transfers to True in these accounts).
 
@@ -20,7 +23,7 @@ import json
 from dotenv import load_dotenv
 from flask import Flask, render_template, redirect, request, make_response, url_for, jsonify, session, Response
 from sqlalchemy import Text, Numeric, Integer, BOOLEAN, create_engine, MetaData, Column, Table, LargeBinary, select, func, Computed, Index, case, desc  # For DB interactions.
-from sqlalchemy.dialects.postgresql import TSQUERY, TSVECTOR, to_tsquery, websearch_to_tsquery, ARRAY  # Both of them play huge role in making the search function more efficient. (Basically calculating a search vector, which lets the program search with some context, suggesting products with words that the user hasn't even written).
+from sqlalchemy.dialects.postgresql import TSVECTOR, websearch_to_tsquery, ARRAY  # Both of them play huge role in making the search function more efficient. (Basically calculating a search vector, which lets the program search with some context, suggesting products with words that the user hasn't even written).
 from sqlalchemy.orm import sessionmaker
 import argon2 # For hashing passwords.
 from authlib.integrations.flask_client import OAuth # For authorization with Google.
@@ -204,6 +207,8 @@ customer_table = Table(
     Column("Recovery_codes", ARRAY(Text), nullable=True), # When the user connects the 2FA.
     # Change Account Credentials Permission:
     Column("Can_access_credentials", BOOLEAN, nullable=False), # Will be responsible for keeping the user locked from changing their account details unauthorized. (Check change_details function).
+    # The key below will be useful for when the user's deleting their account - since the program will just have to check this column instead of checking entirety of the product_table in order to search for the ownerID that matches current user's ID.
+    Column("Is_a_Merchant", BOOLEAN, nullable=False),
 
 )
 
@@ -327,15 +332,7 @@ liked_items_table = Table(
 
 )
 
-# TODO: let the user search for every item in a certain category in the product_page.
-
 # TODO: for late-stage development - create a seed data for the database using bulk_insert()
-
-# In order to let all the users have a data by default when forking my project.
-
-# I think I'll have like 4 products per category, so that index page and search will function properly.
-
-# Hence, it'll prolly has 3 columns. One-to-many relationship.
 
 
 # Creating all the tables and initiating session.
@@ -597,30 +594,93 @@ def check_recovery_codes(all_recovery_codes: list, user_code_hash) -> bool: # A 
 
 # TODO - query main products here, in order not to query them everytime the user loads the main page.
 
-@app.route("/like/<int:product_id>") # This route is responsible for adding a specific item to the user's "liked" pool.
-def add_to_liked(product_id):
-
-    # TODO: pls modify this :3
+@app.route("/like", methods=["POST"]) # This route is responsible for adding a specific item to the user's "liked" pool.
+def add_to_liked():
 
     user_cookies = is_registered()
 
-    user_data_liked = id_query(int(user_cookies))
+    if not user_cookies: return redirect("/login")
 
-    # If the user's not registered or this item is already in the "liked_items" - then redirect him to the main page.
 
-    if not user_cookies or product_id in user_data_liked[5]: return redirect("/")
+    # Fetching data from the JS.
 
-    # If none of this returns True - then adding an ID of the product to the liked items of the user.
+    data = request.get_json()
 
-    user_data_liked[5].append(product_id)
+    product_id = data["product_id"]
 
-    return redirect("/")
+
+    already_in_liked_check = session_db.query(liked_items_table).where(liked_items_table.c.user_id == user_cookies, liked_items_table.c.product_id == product_id).first()
+
+    # Checking whether an item's already in user's cart (i.e., the user's trying to add an item that's already in their liked one more time). If it is - then doing nothing.
+
+    if already_in_liked_check: pass
+
+    else:
+
+        with engine.connect() as connection:
+
+            connection.execute(
+
+                liked_items_table.insert(), {
+
+                    "user_id": user_cookies,
+
+                    "product_id": product_id,
+
+                }
+
+            )
+
+            connection.commit()
+
+    return jsonify({"status": "success"}), 200 # This return statement is to remove these annoying dim-yellow squiggly lines my creating an explicit return statement <3
+
+
+@app.route("/remove-from-liked", methods=["POST"])
+def remove_from_liked():
+
+
+    user_cookies = is_registered()
+
+    if not user_cookies: return redirect("/login")
+
+
+    # Fetching data from the JS.
+
+    data = request.get_json()
+
+    product_id = data["product_id"]
+
+
+    is_in_liked = session_db.query(liked_items_table).where(liked_items_table.c.user_id == user_cookies, liked_items_table.c.product_id == product_id).first()
+
+    # The statement above checks if the user has this item in their liked items list - if not - then there's nothing to delete in teh first place.
+
+
+    if not is_in_liked: pass
+
+    else:
+
+        with engine.connect() as connection:
+
+            connection.execute(
+
+                liked_items_table.delete().where(liked_items_table.c.user_id == user_cookies, liked_items_table.c.product_id == product_id)
+
+            )
+
+            connection.commit()
+
+
+    return jsonify({"status": "success"}), 200
 
 
 @app.route("/")
 def main_page(): # Speaks for itself.
 
     if "temp_user_id" in session: session.clear()
+
+    # TODO: This function will soon need to query actual items.
 
     has_cookies = is_registered() # Checks user's browser for cookies. The HTML pages will change depending on the content of the variable.
 
@@ -875,6 +935,8 @@ def sign_up_page():
 
                 "Can_access_credentials": False,
 
+                "Is_a_Merchant": False,
+
             })
 
             connection.commit()
@@ -998,6 +1060,8 @@ def authorize_google_register(): # Where the user would consent the data to the 
 
                 "Can_access_credentials": False,
 
+                "Is_a_Merchant": False,
+
             })
 
             connection.commit()
@@ -1112,14 +1176,18 @@ def cart_display():
     return render_template("cart.html", has_2fa=has_2fa, night_mode=night_mode_data, registered=has_cookies, user_data=user_data, user_products=all_in_cart, total=total_price)
 
 
-@app.route("/add-to-cart/<int:product_id>")
-def add_to_cart(product_id):
-
-    # TODO: Add an error system. (Something similar to the checks on the product_page).
+@app.route("/add-to-cart", methods=["POST"])
+def add_to_cart():
 
     has_cookies = is_registered()
 
     if not has_cookies: return redirect("/login")
+
+    # Fetching data from the JSON file (redirect_to_add_to_cart.js).
+
+    data = request.get_json()
+
+    product_id = data["product_id"]
 
 
     full_product_info = session_db.query(product_table).where(product_table.c.ID == product_id).first()
@@ -1291,7 +1359,7 @@ def calculate_price():
         return jsonify({"total": round(new_total_price, 2)})
 
 
-    return None # There really is no reason for this return statement to exist. But my OCD will be mad at so many dim-yellow squiggly lines here because of the "no explicit return statement" warning >:3
+    return jsonify({"success": 400}) # There really is no reason for this return statement to exist. But my OCD will be mad at so many dim-yellow squiggly lines here because of the "no explicit return statement" warning >:3
 
 
 @app.route("/create-checkout-session", methods=["POST"])
@@ -1756,6 +1824,11 @@ def product_page(product_id):
 
     # For now, the error message will be None, since the user didn't do anything wrong.
 
+    is_in_cart = False # A variable, the main purpose of which is to check whether the user has this product in their liked items.
+
+    # On default set to False - if the user's registered - then it might be True.
+
+
     # Querying the data about the product using an ID from the URL.
 
     product_data = session_db.query(product_table).where(product_table.c.ID == product_id).first()
@@ -1773,14 +1846,23 @@ def product_page(product_id):
 
     if user_cookies:
 
-        if int(user_cookies) == product_data[7]: error_message = "Owner can't add to the cart or write a review on their own product"
 
-        elif in_cart_amount_user == 120: error_message = "Amount of items in the cart can't exceed 120"
+        # Querying the liked items table in order to see how the second button will look like. (I.e., will it be "Add to liked" or "Remove from Liked").
+
+        liked_item_check = session_db.query(liked_items_table).where(liked_items_table.c.user_id == user_cookies, liked_items_table.c.product_id == product_id).first()
+
+        if liked_item_check: is_in_cart = True # If the user is registered and does have this item in the cart - then setting the is_in_cart variable to True.
+
+        # Update - decided to reallocate the second elif (120 items limit), since the "Owner can't add to the cart or write a review on their own product" is much more significant problem than the item limit. (Since the elif statements will have a priority.)
+
+        if in_cart_amount_user == 120: error_message = "Amount of items in the cart can't exceed 120"
+
+        elif int(user_cookies) == product_data[7]: error_message = "Owner can't add to the cart or write a review on their own product"
 
         elif has_in_cart: error_message = "You already have this item in the cart"
 
 
-    return render_template("product_page.html", night_mode=night_mode, registered=user_cookies, user_data=user_data, has_2fa=has_2fa, product_data=product_data, uploaded_fname=user_data_upload[1], uploaded_lname=user_data_upload[2], uploaded_pfp=user_data_upload[6], error_message=error_message)
+    return render_template("product_page.html", night_mode=night_mode, registered=user_cookies, user_data=user_data, has_2fa=has_2fa, product_data=product_data, uploaded_fname=user_data_upload[1], uploaded_lname=user_data_upload[2], uploaded_pfp=user_data_upload[6], error_message=error_message, is_in_cart=is_in_cart)
 
 
 @app.route("/reviews/<int:product_id>", methods=["GET", "POST"])
@@ -1849,9 +1931,28 @@ def reviews(product_id):
 
     )
 
+
+    # Querying the Database in order to see all the reviews of deleted users. (They'll be put at the bottom of the list and will have default First and Last names as well as default profile picture).
+
+    stmt_deleted = select( # Will query all the reviews of deleted users.
+
+        reviews_table.c.user_comment,
+        reviews_table.c.user_rating,
+
+    ).where(
+
+        reviews_table.c.product_id == product_id,
+
+        reviews_table.c.user_id == -1 # Equivalent of "Deleted User".
+
+    )
+
+
     with engine.connect() as connection:
 
         users_query_result = connection.execute(stmt).fetchall()
+
+        deleted_users_query_result = connection.execute(stmt_deleted).fetchall()
 
 
 
@@ -1936,7 +2037,7 @@ def reviews(product_id):
         return redirect(url_for("reviews", product_id=product_id))
 
 
-    return render_template("reviews.html", night_mode=night_mode, registered=user_cookies, user_data=user_data, has_2fa=has_2fa, product_data_reviews=users_query_result, product_id=product_id, has_review=has_review, user_comment=user_uploaded_comment, user_rating=user_uploaded_rating, is_owner=is_owner)
+    return render_template("reviews.html", night_mode=night_mode, registered=user_cookies, user_data=user_data, has_2fa=has_2fa, product_data_reviews=users_query_result, product_data_deleted_users_reviews=deleted_users_query_result, product_id=product_id, has_review=has_review, user_comment=user_uploaded_comment, user_rating=user_uploaded_rating, is_owner=is_owner)
 
 
 @app.route("/search", methods=["GET", "POST"])
@@ -1996,6 +2097,8 @@ def search():
 
 
         overall_tag_score = case( # The point of this function is to check if user's submitted tags overlaps with tags in other products. If they do - then add 2 to their "score" else - add nothing.
+
+            # Basically, case() is just an if-else statement for the SQL.
 
             (product_table.c.tags.overlap(user_tags), 2),
 
@@ -2095,7 +2198,7 @@ def search_mobile(): # Since I redirect user to a link instead of showing them t
 
         ).filter(
 
-            (product_table.c.search_vector.op("@@")(user_query_tsvector)) |  # The @@ syntax - full-text search match operator. The | is equals to or statement.
+            (product_table.c.search_vector.op("@@")(user_query_tsvector)) |  # The @@ syntax - full-text search match operator. The | is equals to "or" statement.
 
             (product_table.c.tags.overlap(user_tags))
 
@@ -2212,23 +2315,31 @@ def upload_item():
 
             connection.execute(product_table.insert(), {
 
-                "Name": product_title,
+                "name": product_title,
 
-                "Rating": 0,
+                "rating": 0,
 
-                "Price": float(product_price),
+                "price": float(product_price),
 
-                "Tags": all_product_tags,
+                "tags": all_product_tags,
 
-                "Reviews": [],
+                "reviews": [],
 
-                "Description": product_descr,
+                "description": product_descr,
 
-                "Images": db_upload_images,
+                "images": db_upload_images,
 
-                "OwnerID": user_cookies,
+                "ownerID": user_cookies,
 
             })
+
+
+            connection.execute(
+
+                customer_table.update().where(customer_table.c.ID == user_cookies).values(Is_a_Merchant=True) # Updating user's status as an active merchant.
+
+            )
+
 
             connection.commit()
 
@@ -3020,8 +3131,6 @@ def merchant_item_management(): # This endpoint is useful only for the merchants
 
     all_client_orders = session_db.query(orders_items_table).where(orders_items_table.c.merchant_id == user_cookies).where(orders_items_table.c.item_status != "Delivered").where(orders_items_table.c.item_status != "Refunded").all()
 
-    print(all_client_orders)
-
     return render_template("manage_client_orders.html", has_2fa=has_2fa, night_mode=night_mode_data, registered=user_cookies, user_data=user_data, all_orders=all_client_orders)
 
 
@@ -3324,6 +3433,70 @@ def logout():
         return resp
 
 
+@app.route("/delete-product/<int:product_to_delete>")
+def delete_product(product_to_delete):
+
+    user_cookies = is_registered()
+
+    if not user_cookies: return redirect("/login")
+
+    # Checking the database to see if it's actually the user who's trying to delete their product.
+
+    merchant_check = session_db.query(product_table).where(product_table.c.ID == product_to_delete).first()
+
+    if not merchant_check or int(user_cookies) != merchant_check[7]: return redirect("/user-uploaded-products")  # If it's not the merchant - then redirect the user and don't do anything else.
+
+    # If it is the merchant - then check if there are any active orders with this product.
+
+    active_order_check = session_db.query(orders_items_table).where(orders_items_table.c.product_id == product_to_delete, orders_items_table.c.item_status != "Delivered", orders_items_table.c.item_status != "Refunded").first()
+
+    if active_order_check:
+
+        # If there are active orders with this product - then don't delete the item.
+
+        return redirect("/user-uploaded-products")
+
+    else:  # If that's not the case - then delete the product from the Database (reviews_table and product_table) and replace its ID with -1 in the orders.
+
+        # Querying the Database in order to check if the merchant has any products left for sale.
+
+        at_least_one_more_product_for_sale = session_db.query(product_table).where(product_table.c.ownerID == user_cookies).first()
+
+        with engine.connect() as connection:
+
+            connection.execute(
+
+                orders_items_table.update().where(orders_items_table.c.product_id == product_to_delete).values(product_id=-1)
+
+            )
+
+            connection.execute(
+
+                product_table.delete().where(product_table.c.ID == product_to_delete)
+
+            )
+
+            connection.execute(
+
+                reviews_table.delete().where(reviews_table.c.product_id == product_to_delete)
+
+            )
+
+            # Checking if the merchant has any more items left for sale. If they don't then set the Is_a_Merchant column to False.
+
+            if not at_least_one_more_product_for_sale:
+
+                connection.execute(
+
+                    customer_table.update().where(customer_table.c.ID == user_cookies).values(Is_a_Merchant=False)
+
+                )
+
+            connection.commit()
+
+    return redirect("/user-uploaded-products")
+
+
 @app.route("/delete-account-prompt", methods=["GET", "POST"])
 def delete_account():
 
@@ -3338,9 +3511,102 @@ def delete_account():
 
     night_mode = user_data[10]
 
-    if request.method == "POST": # TODO: delete all the products that are related to the user!
+
+    if request.method == "POST":
+
+        is_a_merchant_column = user_data[16]  # Checking if the user's a merchant.
+
+
+        # If the user is a merchant - check if they have any active orders going on.
+
+        # (Also delete user's data about their liked items and their cart data, since it'll be a dead weight otherwise).
+
+
+        if is_a_merchant_column:
+
+            # Checking the orders_items_table in order to find at least a single row where the delivery is ongoing.
+
+            active_order = session_db.query(orders_items_table).where(orders_items_table.c.merchant_id == user_cookies, orders_items_table.c.item_status != "Delivered", orders_items_table.c.item_status != "Refunded").first()
+
+            # If there's - then refuse the merchant to delete their account until they've either delivered or refunded all of their users.
+
+            if active_order:
+
+                return render_template("delete_prompt.html", night_mode=night_mode, merchant_error_message=True)
+
+            else: # Otherwise - delete all the products that the user's ever uploaded from: Product Table, Liked Items Table and In Cart Table for all the users + Modify the merchant_id column to account_deleted.
+
+                all_merchant_products = session_db.query(product_table).where(product_table.c.ownerID == user_cookies).all()
+
+                all_products_ids = [merchant_product[0] for merchant_product in all_merchant_products]
+
+                # Deleting all merchant's products from Liked List, In Cart Data and Product Table using _in.
+
+                with engine.connect() as connection:
+
+                    connection.execute(
+
+                        liked_items_table.delete().where(liked_items_table.c.product_id.in_(all_products_ids)) # Deleting the item from the Liked Items Table.
+
+                    )
+
+                    connection.execute(
+
+                        in_cart_table.delete().where(in_cart_table.c.product_id.in_(all_products_ids)) # Deleting the item from the In Cart Table.
+
+                    )
+
+                    connection.execute(
+
+                        reviews_table.delete().where(reviews_table.c.product_id.in_(all_products_ids)) # Deleting all the reviews about the item.
+
+                    )
+
+                    connection.execute(
+
+                        product_table.delete().where(product_table.c.ID.in_(all_products_ids)) # Deleting the item itself.
+
+                    )
+
+                    # Changing merchant's IDs in the orders_table.
+
+                    connection.execute(
+
+                        orders_items_table.update().where(orders_items_table.c.merchant_id == user_cookies).values(merchant_id = -1) # Setting the value of -1, which equals to "account_deleted".
+
+                    )
+
+                    connection.commit()
+
+
+        # Deleting the account itself.
+
 
         with engine.connect() as connection:
+
+            # Replacing user's IDs in master orders and orders tables with -1, which is basically equal to a deleted account.
+
+            connection.execute(
+
+                master_orders_table.update().where(master_orders_table.c.buyer_id == user_cookies).values(buyer_id=-1)
+
+            )
+
+            connection.execute(
+
+                orders_items_table.update().where(orders_items_table.c.user_id == user_cookies).values(user_id=-1)
+
+            )
+
+            # Same with the reviews.
+
+            connection.execute(
+
+                reviews_table.update().where(reviews_table.c.user_id == user_cookies).values(user_id=-1)
+
+            )
+
+            # Then deleting the account permanently.
 
             connection.execute(
 
@@ -3358,7 +3624,7 @@ def delete_account():
 
         return resp
 
-    return render_template("delete_prompt.html", night_mode=night_mode)
+    return render_template("delete_prompt.html", night_mode=night_mode, merchant_error_message=False)
 
 
 if __name__ == "__main__":

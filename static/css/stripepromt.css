@@ -65,7 +65,7 @@ body.dark {
 
 }
 
-.stripe-warning {
+.stripe-warning , .error-message {
 
     color: red;
     font-size: 15px;
@@ -138,6 +138,39 @@ body.dark {
     .main-div {
 
         width: 45%;
+
+    }
+
+}
+
+/* Additional adjustments for the mobile frontend. */
+
+@media (max-width: 450px) {
+
+    .main-div {
+
+        flex-wrap: nowrap;
+        height: fit-content;
+
+    }
+
+    .main-div h2 {
+
+        padding: 10px;
+
+    }
+
+    #register-button {
+
+        margin-bottom: 15px;
+
+    }
+
+    /* Mobile Styling for the delete form. */
+
+    .log-out-button {
+
+        margin-bottom: 10px;
 
     }
 

@@ -8,9 +8,6 @@ Man this is fun :D :D :D
 
 :3
 
-the search function
-
-
 Ooooooh boy, I have a lot of work to do :D
 
 Can't complain though, it's really fun :3
@@ -25,6 +22,8 @@ Agreed x4 :3
 
 Agreed x5 :3
 
+Agreed x6 :3
+
 Did a lot of important backend stuff today, went pretty well. It's honestly really fun through and through :d
 
 Another git push, yuipeeeee!
@@ -35,4 +34,4 @@ I'm really curious what will come out of it in the end...
 
 では、次のファンクション行こう！
 
-After that - adjust the "Add to liked" functionality (i.e., modify the Liked Items Table).
+

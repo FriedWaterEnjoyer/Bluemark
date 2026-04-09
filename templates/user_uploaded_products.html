@@ -161,6 +161,8 @@
 
                         </p></div>
 
+                        <a class="delete-product-merchant-button" href="#popup{{ one_order[0] }}">Delete Product</a>
+
                         <button class="see-order-button" onclick="window.location.href='https://synovial-wilton-unspilt.ngrok-free.dev/product-page/{{ one_order[0] }}'">See Full Product</button>
 
 
@@ -168,6 +170,27 @@
 
 
                 </div>
+
+                <!-- A popup for when the user's trying to delete their item. -->
+
+                    <div id="popup{{ one_order[0] }}" class="overlay"> <!-- A popup that appears when merchant presses the "Cancel Order" anchor tag. -->
+
+                        <div class="popup">
+
+                            <h2>Delete the product?</h2>
+
+                            <a class="close" href="#">&times;</a>
+                            <div class="content">
+
+                                <p>Deletion will not go through if someone has an active order with this product!</p>
+
+                                <a class="cancel-order-button" href="{{ url_for('delete_product', product_to_delete=one_order[0]) }}">Delete Product</a>
+
+                            </div>
+
+                        </div>
+
+                    </div>
 
                 {% endfor %}
 
@@ -250,6 +273,8 @@
     <script src="../static/JS%20Scripts/dark_light_mode.js"></script>
 
 {% endif %}
+
+<script src="../static/JS%20Scripts/disable_cancel_order_button.js"></script>
 
 </body>
 </html>

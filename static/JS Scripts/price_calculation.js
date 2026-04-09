@@ -45,7 +45,6 @@ Gets triggered whenever the user's pressing the plus/minus SVGs or the trashcan 
 
         return data["total"] // Returns the new total calculated on the Python backend and the new quantity.
 
-        // Update the DOM here.
 
     } catch (error) {
 

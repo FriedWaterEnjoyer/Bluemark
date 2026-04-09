@@ -240,7 +240,16 @@
 
                         </form>
 
-                        <button class="see-order-button" onclick="window.location.href='https://synovial-wilton-unspilt.ngrok-free.dev/product-page/{{ one_order[3] }}'">See Full Product</button>
+
+                        {% if one_order[0] != -1: %}
+
+                            <button class="see-order-button" onclick="window.location.href='https://synovial-wilton-unspilt.ngrok-free.dev/product-page/{{ one_order[3] }}'">See Full Product</button>
+
+                        {% else: %}
+
+                            <p class="error-message-merchant-deletion">This product was deleted by the merchant</p>
+
+                        {% endif %}
 
 
                     </div>
@@ -351,6 +360,8 @@
 {% endif %}
 
 <script src="../static/JS%20Scripts/delivered_button_display.js"></script>
+
+<script src="../static/JS%20Scripts/disable_cancel_order_button.js"></script>
 
 </body>
 </html>

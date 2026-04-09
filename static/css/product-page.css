@@ -20,7 +20,7 @@ body.dark {
 
     }
 
-    .review-button, .add-to-cart, .add-to-liked, .one-tag a {
+    .review-button, .add-to-cart, .add-to-liked, .one-tag p {
 
         color: #FFFFFF;
 
@@ -324,14 +324,14 @@ body.dark {
 
 }
 
-.one-tag a {
+.one-tag p {
 
     text-decoration: none;
     color: #000;
 
 }
 
-.one-tag a:hover {
+.one-tag p:hover {
 
     text-decoration: underline;
 
@@ -371,11 +371,6 @@ body.dark {
     justify-content: center;
     align-items: center;
     position: relative;
-
-}
-
-.purchase-button-div {
-
     flex-direction: column;
 
 }
@@ -563,11 +558,25 @@ body.dark {
 
 }
 
+.hidden {
+
+    display: none;
+
+}
+
 .error-message {
 
     font-size: 12px;
     color: #F4403D;
     margin: 2px;
+
+}
+
+.liked-success-message, .cart-success-message {
+
+    font-size: 12px;
+    color: #43EB21;
+    margin: 2px
 
 }
 

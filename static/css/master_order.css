@@ -33,14 +33,14 @@ body.dark {
 
     }
 
-    .cancel-order-button {
+    .cancel-order-button, .delete-product-merchant-button {
 
         background: #800300;
         border: 1px solid #800300;
 
     }
 
-    .cancel-order-button:hover, .cancel-order-button:active {
+    .cancel-order-button:hover, .delete-product-merchant-button:hover, .cancel-order-button:active, .delete-product-merchant-button:active {
 
         color: #800300;
         background-color: initial;
@@ -286,6 +286,15 @@ body.dark {
 
 }
 
+.error-message-merchant-deletion {
+
+    color: red;
+    font-size: 15px;
+    margin: 5px;
+    margin-bottom: 20px;
+
+}
+
 .all-delivery-buttons {
 
     display: flex;
@@ -297,7 +306,7 @@ body.dark {
 
 }
 
-.cancel-order-button {
+.cancel-order-button, .delete-product-merchant-button {
 
     background: #FF4742;
     border: 1px solid #FF4742;
@@ -325,7 +334,7 @@ body.dark {
 
 }
 
-.cancel-order-button:hover, .cancel-order-button:active {
+.cancel-order-button:hover, .delete-product-merchant-button:hover, .cancel-order-button:active, .delete-product-merchant-button:active {
 
     background-color: initial;
     background-position: 0 0;
@@ -333,7 +342,7 @@ body.dark {
 
 }
 
-.cancel-order-button:active {
+.cancel-order-button:active, .delete-product-merchant-button:active {
 
     opacity: .5;
 
@@ -586,7 +595,7 @@ body.dark {
     .master-order-info {
 
         width: 99%;
-        height: 85%;
+        height: 90%;
 
     }
 
@@ -602,13 +611,14 @@ body.dark {
     .master-order-info-current-deliveries, .master-order-info-user-uploaded {
 
         width: 75%;
+        height: 90%;
 
     }
 
     .master-order-info-manage-client-orders {
 
         width: 80%;
-        height: 70%;
+        height: 85%;
 
     }
 

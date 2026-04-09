@@ -214,6 +214,58 @@
 
                         {% endfor %}
 
+                        <!-- Section for the reviews of deleted users. -->
+
+                        {% if product_data_deleted_users_reviews: %}
+
+                            {% for i in range(product_data_deleted_users_reviews|length): %}
+
+                                <div class="one-user">
+
+                                    <div class="user-review-pfp-div">
+
+                                        <img src="https://img.icons8.com/?size=100&id=tZuAOUGm9AuS&format=png&color=000000" alt="Reviewer's profile picture" class="review-pfp" />
+
+                                    </div>
+
+                                        <div class="user-comments">
+
+                                            <h5 class="user-review-heading">Deleted User<br>
+
+                                                {% for j in range(product_data_deleted_users_reviews[i][1]|int): %}
+
+                                                    {% if night_mode: %}
+
+                                                        ✨
+
+                                                    {% else: %}
+
+                                                        ⭐
+
+                                                    {% endif %}
+
+                                                {% endfor %}
+
+                                                {% for k in range(5 - product_data_deleted_users_reviews[i][1]|int): %} <!-- This part runs 5 - 'user's rating' times. E.g., if the user's left, say, 1 star, then an empty star will be shown 4 times, thus, showing the correct amount of stars in the end. -->
+
+                                                    ☆
+
+                                                {% endfor %}
+
+
+                                            </h5>
+
+
+                                            <p class="user-review-comment">{{ product_data_deleted_users_reviews[i][0] }}</p>
+
+                                        </div>
+
+                                </div>
+
+                            {% endfor %}
+
+                        {% endif %}
+
                     </div>
 
                 </div>
