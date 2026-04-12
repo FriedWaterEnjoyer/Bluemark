@@ -209,7 +209,7 @@
 
                             <p>The full amount spent on this product (${{ one_product_order[10] * one_product_order[4] }}) will be refunded</p>
 
-                            <a class="cancel-order-button" href="{{ url_for('cancel_and_refund', product_id_refund_process=one_product_order[0], master_order_id_refund=one_product_order[11], customer_refund='True') }}">Cancel Order</a>
+                            <a class="cancel-order-button main-cancel-order" href="{{ url_for('cancel_and_refund', product_id_refund_process=one_product_order[0], master_order_id_refund=one_product_order[11], customer_refund='True') }}">Cancel Order</a>
 
                         </div>
 

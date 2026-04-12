@@ -34,4 +34,12 @@ I'm really curious what will come out of it in the end...
 
 では、次のファンクション行こう！
 
+After the review deletion part is done - prepare the engame:
 
+    - Firstly, I need to learn how to create fake Stripe accounts that allow for the transaction of funds.
+
+    There is - create this fake account but DO NOT let the user add products from this user in their cart, since the transfer part will not go through.
+
+    That way, I can still create fake products that refer to an already existing user, but the problem with the transfer part not going through will be omitted.
+
+    Modify the add_to_cart API (check for that specific ID of 1), and product_page, in order to output an error to the user.

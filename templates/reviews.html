@@ -146,6 +146,8 @@
 
                                 <input type="submit" value="Edit Review" class="submit-review" onclick="document.getElementsByClassName('review-form')[0].submit(); this.disabled=true;">
 
+                                <a class="delete-review-button" href="{{ url_for('delete_review', product_id=user_review_product_id) }}">Delete Review</a>
+
                             {% else: %}
 
                                 <label for="text-area-review-upload">Brief review here:</label>
@@ -163,6 +165,16 @@
                 {% endif %}
 
                     <div class="text-reviews-div">
+
+                        {% if not product_data_reviews: %}
+
+                        <div class="no-reviews-div">
+
+                            <h2 class="no-reviews-text">No reviews found on this product</h2>
+
+                        </div>
+
+                        {% else: %}
 
                         {% for i in range(product_data_reviews|length): %}
 
@@ -213,6 +225,8 @@
                             </div>
 
                         {% endfor %}
+
+                        {% endif %}
 
                         <!-- Section for the reviews of deleted users. -->
 
@@ -360,6 +374,8 @@
     </script>
 
 {% endif %}
+
+<script src="../static/JS%20Scripts/disable_delete_review_button.js"></script>
 
 </body>
 </html>

@@ -1,0 +1,76 @@
+body {
+
+    padding: 0px !important; /* Since it'd cause a bug, where body's padding is 16px. */
+
+}
+
+.center-div {
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    width: 100vw;
+
+}
+
+.content {
+  width: 100%;
+  max-width: 600px;
+  text-align: center;
+  color: #fafafa;
+  border: 2px solid #fafafa;
+  border-radius: 8px;
+  padding: 20px;
+}
+.content h1 {
+  font-size: 150px;
+}
+.content h2 {
+  font-size: 24px;
+}
+.content p {
+  margin: 16px 0;
+}
+.content button {
+  padding: 0.5em 1em;
+  color: #fafafa;
+  border: 2px solid #fafafa;
+  border-radius: 8px;
+  background: none;
+  outline: none;
+  transition: 0.3s ease;
+  cursor: pointer;
+  margin: 5px;
+}
+.content .fill,
+.content button:hover {
+  background-color: #fafafa;
+  color: #000428;
+}
+.content .fill:hover {
+  background-color: #ccc;
+  border-color: #ccc;
+}
+@media screen and (max-width: 500px) {
+
+  body {
+    padding: 16px;
+  }
+  .content h1 {
+    font-size: 100px;
+  }
+  .content h2 {
+    font-size: 20px;
+  }
+  .content p {
+    font-size: 14.5px;
+  }
+  .content .btns {
+    display: flex;
+    flex-direction: column;
+  }
+
+}
+
+/* Thanks to ArsenTech for the design <3 */

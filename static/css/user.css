@@ -37,6 +37,29 @@ body.dark {
 
 }
 
+/* Scrollbar Styling. (For Chrome and Safari) */
+
+::-webkit-scrollbar { /* Need to set this property before modifying the rest. */
+
+    background: transparent;
+    width: 10px;
+
+}
+
+::-webkit-scrollbar-track {
+
+    background-color: transparent;
+
+}
+
+::-webkit-scrollbar-thumb {
+
+    background-color: rgba(105, 120, 213);
+    height: 10px;
+    border-radius: 10px;
+
+}
+
 /* Animations */
 
 /* For the Day-Night modes switcher. */

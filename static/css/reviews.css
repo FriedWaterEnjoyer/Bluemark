@@ -29,6 +29,27 @@ body.dark {
 
     }
 
+    .delete-review-button {
+
+        background: #800300;
+        border: 1px solid #800300;
+
+    }
+
+    .delete-review-button:hover, .delete-review-button:active {
+
+        color: #800300;
+        background-color: initial;
+        background-position: 0 0;
+
+    }
+
+    .no-reviews-text {
+
+        color: #FFFFFF;
+
+    }
+
 }
 
 /* Styling for when the owner's accessing reviews on their own product. */
@@ -109,6 +130,8 @@ body.disable-rating {
     border: 1px solid rgba(255, 255, 255, .7);
     border-radius: 10px;
     animation: slowlyAppear 1.2s ease-in-out forwards;
+    overflow-y: auto;
+    overflow-x: hidden
 
 }
 
@@ -165,23 +188,23 @@ body.disable-rating {
 }
 .rating label:nth-of-type(1):after {
   -webkit-animation-delay: 1.15s;
-          animation-delay: 1.15s; /* 0.25s */
+          animation-delay: 1.15s;
 }
 .rating label:nth-of-type(2):after {
   -webkit-animation-delay: 1.10s;
-          animation-delay: 1.10s; /* 0.2s */
+          animation-delay: 1.10s;
 }
 .rating label:nth-of-type(3):after {
   -webkit-animation-delay: 1.05s;
-          animation-delay: 1.05s; /* 0.15s */
+          animation-delay: 1.05s;
 }
 .rating label:nth-of-type(4):after {
   -webkit-animation-delay: 1s;
-          animation-delay: 1s; /* 0.1s */
+          animation-delay: 1s;
 }
 .rating label:nth-of-type(5):after {
   -webkit-animation-delay: .9s;
-          animation-delay: .9s; /* 0.05s */
+          animation-delay: .9s;
 }
 .rating label:after {
   transition: all .4s ease-out;
@@ -250,6 +273,48 @@ body.disable-rating {
 
 }
 
+.delete-review-button {
+
+    background: #FF4742;
+    border: 1px solid #FF4742;
+    border-radius: 6px;
+    box-shadow: rgba(0, 0, 0, 0.1) 1px 2px 4px;
+    box-sizing: border-box;
+    color: #FFFFFF;
+    cursor: pointer;
+    display: inline-block;
+    font-size: 16px;
+    line-height: 16px;
+    min-height: 40px;
+    outline: 0;
+    padding: 12px 14px;
+    text-align: center;
+    text-rendering: geometricprecision;
+    text-transform: none;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+    vertical-align: middle;
+    transition: .4s ease-in-out;
+    text-decoration: none;
+    margin: 25px 0 25px 0;
+
+}
+
+.delete-review-button:hover {
+
+    background-color: initial;
+    background-position: 0 0;
+    color: #FF4742;
+
+}
+
+.delete-review-button:active {
+
+    opacity: .5;
+
+}
+
 .text-reviews-div {
 
     display: flex;
@@ -263,6 +328,13 @@ body.disable-rating {
     border: 1px solid rgba(255, 255, 255, .7);
     border-radius: 10px;
     animation: slowlyAppear 1.2s ease-in-out forwards;
+
+}
+
+.no-reviews-div {
+
+    width: 100%;
+    text-align: center;
 
 }
 
@@ -341,5 +413,13 @@ body.disable-rating {
 .hidden {
 
     display: none;
+
+}
+
+.inactive {
+
+    pointer-events: none;
+    cursor: default;
+    opacity: .5;
 
 }

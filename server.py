@@ -7,11 +7,9 @@
 
 # I'll prolly do it closer to the end of the production, for now I want to have everything in one file.
 
-# TODO: as a sidequest - let the user delete their own reviews.
-
-# TODO: After that - complete the sidequest.
-
 # TODO: After that - prepare the endgame >:3 pls
+
+# TODO: create a fake account using infrastructure.txt :3
 
 # TODO: (Closer to the end of the production) - Create fake test accounts using stripe.Account.create, then insert their IDs into the DB. (Check if it's possible to set payouts_enabled, charges_enabled and transfers to True in these accounts).
 
@@ -1275,12 +1273,22 @@ def calculate_price():
 
     type_of_action = data["action"]
 
-    # TODO: Create another query in order to check if this item is in the user's cart. If it's not - then it's highly likely that the user's changed the frontend values - do nothing with them in this case.
 
 
     prev_total_price = session_db.query(func.sum(in_cart_table.c.single_item_price * in_cart_table.c.quantity)).where(in_cart_table.c.user_id == user_cookies).first()[0] or 0.0 # Query the previous price from the DB. (Since the frontend one is too risky and insecure).
 
     quantity_of_the_item = session_db.query(in_cart_table).where(in_cart_table.c.product_id == id_of_the_item).where(in_cart_table.c.user_id == user_cookies).first()[3] # Querying the quantity of an individual item.
+
+
+    # Querying the Database in order to check if the user has this item in their cart.
+
+    # If they don't - then it likely means that they've changed the frontend - do nothing in this case
+
+    item_check = session_db.query(in_cart_table).where(in_cart_table.c.user_id == user_cookies, in_cart_table.c.product_id == id_of_the_item).first()
+
+    if not item_check:
+
+        return jsonify({"total": prev_total_price})
 
 
     if quantity_of_the_item == 3 and type_of_action == "plus" or quantity_of_the_item == 1 and type_of_action == "minus": return jsonify({"total": prev_total_price})
@@ -1358,8 +1366,12 @@ def calculate_price():
 
         return jsonify({"total": round(new_total_price, 2)})
 
+    else:
 
-    return jsonify({"success": 400}) # There really is no reason for this return statement to exist. But my OCD will be mad at so many dim-yellow squiggly lines here because of the "no explicit return statement" warning >:3
+        pass # Do nothing if none of these actions were passed into the JS function, meaning that the user's likely changed the frontend.
+
+
+    return jsonify({"total": prev_total_price}) # There really is no reason for this return statement to exist. But my OCD will be mad at so many dim-yellow squiggly lines here because of the "no explicit return statement" warning >:3
 
 
 @app.route("/create-checkout-session", methods=["POST"])
@@ -1833,6 +1845,8 @@ def product_page(product_id):
 
     product_data = session_db.query(product_table).where(product_table.c.ID == product_id).first()
 
+    if not product_data: return render_template("404_page.html", night_mode=night_mode) # If the product is None - then redirect the user to a 404 page, as in this case, the product with this ID either never existed or was deleted by the merchant.
+
     # Querying the data about the user who uploaded the product.
 
     user_data_upload = session_db.query(customer_table).where(product_data[7] == customer_table.c.ID).first()
@@ -1872,7 +1886,7 @@ def reviews(product_id):
 
     has_review = False # The main function of this variable is to detect whether the user's written a review before. Depending on that, the frontend will change.
 
-    user_uploaded_comment, user_uploaded_rating = None, None # Will be filled with text if the user's left a comment before, otherwise will stay None.
+    user_uploaded_comment, user_uploaded_rating, user_review_id, user_review_product_id = None, None, None, None # Will be filled with text if the user's left a comment before, otherwise will stay None.
 
     is_owner = False # A "flag" that will determine whether the user that's trying to access this page is an owner of the product.
 
@@ -1901,6 +1915,11 @@ def reviews(product_id):
 
         # If the user that's trying to access this page isn't an owner - then no changes made to the is_owner variable.
 
+    # Checking if this product even exists - if it doesn't then redirect the user to a 404 page, since even the product doesn't exist.
+
+    check_if_product_exists = session_db.query(product_table).where(product_table.c.ID == product_id).first()
+
+    if not check_if_product_exists: return render_template("404_page.html", night_mode=night_mode)
 
     possible_user_review = session_db.query(reviews_table).where(reviews_table.c.product_id == product_id).where(reviews_table.c.user_id == user_cookies).first() # Trying to fetch the data about whether the user already has a review on this specific product.
 
@@ -1912,6 +1931,8 @@ def reviews(product_id):
         user_uploaded_comment = possible_user_review[3]
 
         user_uploaded_rating = possible_user_review[4]
+
+        user_review_product_id = possible_user_review[2]
 
 
 
@@ -1962,9 +1983,11 @@ def reviews(product_id):
 
         # Checking if it's the owner that's trying to leave a review on their own product.
 
-        owner_id_details = session_db.query(product_table).where(product_table.c.ID == product_id).first()[7]
+        owner_id_details = session_db.query(product_table).where(product_table.c.ID == product_id).first()
 
-        if int(user_cookies) == owner_id_details: return redirect(url_for("reviews", product_id = product_id)) # If it's the owner of the product - redirect them to the reviews page.
+        if not owner_id_details: return render_template("404_page.html", night_mode=night_mode)
+
+        if int(user_cookies) == owner_id_details[7]: return redirect(url_for("reviews", product_id = product_id)) # If it's the owner of the product - redirect them to the reviews page.
 
 
         new_user_rating = request.form["rating"]
@@ -2018,6 +2041,7 @@ def reviews(product_id):
         if prev_stars:
 
             for single_star in prev_stars:
+
                 total_star += single_star[4]  # Getting the total amount of stars prior to the user's review.
 
 
@@ -2037,7 +2061,84 @@ def reviews(product_id):
         return redirect(url_for("reviews", product_id=product_id))
 
 
-    return render_template("reviews.html", night_mode=night_mode, registered=user_cookies, user_data=user_data, has_2fa=has_2fa, product_data_reviews=users_query_result, product_data_deleted_users_reviews=deleted_users_query_result, product_id=product_id, has_review=has_review, user_comment=user_uploaded_comment, user_rating=user_uploaded_rating, is_owner=is_owner)
+    return render_template("reviews.html", night_mode=night_mode, registered=user_cookies, user_data=user_data, has_2fa=has_2fa, product_data_reviews=users_query_result, product_data_deleted_users_reviews=deleted_users_query_result, product_id=product_id, has_review=has_review, user_comment=user_uploaded_comment, user_rating=user_uploaded_rating, is_owner=is_owner, user_review_product_id=user_review_product_id)
+
+
+@app.route("/delete-review/<int:product_id>")
+def delete_review(product_id):
+
+    user_cookies = is_registered()
+
+    if not user_cookies: return redirect("/login")
+
+    # Firstly - checking if the user has a review on this product.
+
+    user_review_check = session_db.query(reviews_table).where(reviews_table.c.user_id == user_cookies, reviews_table.c.product_id == product_id).first()
+
+    # If they don't have it - then simply redirect them to the review page they were on before.
+
+    if not user_review_check: pass
+
+    else:
+
+        # If they do - then extract their rating, calculate a new rating for the product - then permanently delete their review.
+
+        user_rating_review = int(user_review_check[4])
+
+
+        prev_stars = session_db.query(reviews_table).where(reviews_table.c.product_id == product_id).all()
+
+        all_reviews = len(prev_stars)
+
+        total_star = 0
+
+        if prev_stars: # This "if" statement is here just in case, since this check is not really needed here, but it doesn't break the flow and can be a good bug-preventer in case of an unpredicted situation.
+
+            for single_star in prev_stars:
+
+                total_star += single_star[4]
+
+
+        # Then the new formula will be: total sum of remaining ratings // total number of remaining reviews.
+
+        # If one of those variables is equal to 0 - then set the rating to 0, since, most likely, this was the only review there.
+
+        total_star -= user_rating_review
+
+        all_reviews -= 1 # Accounting for the one user review.
+
+        new_full_rating = 0
+
+
+        if not total_star or not all_reviews: # This is done in order to not divide anything by 0.
+
+            pass
+
+        else:
+
+            new_full_rating = total_star // all_reviews
+
+
+        with engine.connect() as connection:
+
+            connection.execute(
+
+                product_table.update().where(product_table.c.ID == product_id).values(rating=new_full_rating)
+
+            )
+
+            # Deleting the review itself.
+
+            connection.execute(
+
+                reviews_table.delete().where(reviews_table.c.user_id == user_cookies, reviews_table.c.product_id == product_id)
+
+            )
+
+            connection.commit()
+
+
+    return redirect(url_for("reviews", product_id=product_id))
 
 
 @app.route("/search", methods=["GET", "POST"])
@@ -3606,7 +3707,19 @@ def delete_account():
 
             )
 
-            # Then deleting the account permanently.
+            # Then deleting the account and its details permanently.
+
+            connection.execute(
+
+                liked_items_table.delete().where(liked_items_table.c.user_id == user_cookies)
+
+            )
+
+            connection.execute(
+
+                in_cart_table.delete().where(in_cart_table.c.user_id == user_cookies)
+
+            )
 
             connection.execute(
 

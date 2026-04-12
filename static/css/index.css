@@ -349,6 +349,13 @@ body.dark {
 
     }
 
+    .product-rating {
+
+        position: relative;
+        bottom: 55%;
+
+    }
+
     .heart-button-liked-main {
 
         position: absolute !important;
@@ -525,7 +532,7 @@ body.dark {
 
     .product-card img {
 
-        height:; /* That... actually fixes the problem :D */
+        height: 50%;
 
     }
 
@@ -758,5 +765,13 @@ body.dark {
         display: none;
 
     }
+
+}
+
+.inactive {
+
+    pointer-events: none;
+    cursor: default;
+    opacity: .5;
 
 }

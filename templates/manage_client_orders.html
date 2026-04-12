@@ -269,7 +269,7 @@
 
                         <p>All funds that the customer's spent on this product (${{ one_order[10] * one_order[4] }}) will be taken from your Stripe account and used to refund the user</p>
 
-                        <a class="cancel-order-button" href="{{ url_for('cancel_and_refund', product_id_refund_process=one_order[0], master_order_id_refund=one_order[11], customer_refund='False') }}">Cancel Order</a>
+                        <a class="cancel-order-button main-cancel-order" href="{{ url_for('cancel_and_refund', product_id_refund_process=one_order[0], master_order_id_refund=one_order[11], customer_refund='False') }}">Cancel Order</a>
 
                     </div>
 
