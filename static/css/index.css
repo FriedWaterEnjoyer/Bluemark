@@ -15,7 +15,7 @@ body.dark {
 
     }
 
-    .link-to-product h3, .link-to-product-mobile, .liked-cluster h2 {
+    .link-to-product, .link-to-product-mobile, .liked-cluster h2, .product-name-mobile {
 
         color: #FFFFFF;
 
@@ -37,7 +37,7 @@ body.dark {
     .products-row, .liked-cluster {
 
         background-color: #20255d;
-        box-shadow: #1b1d33;
+        box-shadow: 2px 2px 16px #1b1d33;
 
     }
 
@@ -47,7 +47,7 @@ body.dark {
 
     }
 
-    .liked-product-name-main h4, .liked-product-descr-main, .liked-product-price, .liked-product-rating, .see-details-liked, .product-price-mobile, .product-rating-mobile, .details-button-mobile {
+    .liked-product-name-main, .liked-product-descr-main, .liked-product-price, .liked-product-rating, .see-details-liked, .product-price-mobile, .product-rating-mobile, .details-button-mobile {
 
         color: #FFFFFF;
 
@@ -142,7 +142,7 @@ body.dark {
         display: flex;
         justify-content: space-around;
         flex-wrap: wrap;
-        align-items: center;
+        align-items: flex-start;
         flex-direction: row;
         width: 400px;
         height: 100%;
@@ -159,7 +159,6 @@ body.dark {
     .all-products {
 
         display: grid;
-        gap: 30px;
         width: 100%;
         height: 100%;
         animation: slowlyAppear 1.3s ease-out forwards;
@@ -238,6 +237,13 @@ body.dark {
 
     }
 
+    .full-text-liked-product {
+
+        display: grid;
+        grid-template-rows: 1fr .5fr .5fr;
+
+    }
+
     .liked-item-card:hover {
 
         transform: scale(1.02);
@@ -245,39 +251,38 @@ body.dark {
 
     }
 
+    .liked-item-img-div {
+
+        max-width: 172px;
+        max-height: 100%;
+
+    }
+
     .liked-item-card img {
 
         height: 100%;
         border-radius: 15px 0 0 15px;
+        width: 100%;
+        object-fit: cover;
 
     }
 
     .liked-product-name-main {
 
-        margin: 5px;
-        text-align: center;
-
-    }
-
-    .full-text-liked-product h4, .full-text-liked-product a {
-
-        display: block;
-        position: relative;
         color: black;
         text-decoration: none;
-        top: 5px;
-        right: 3px;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
-        max-width: 178px;
-        margin: 10px;
+        max-width: 175px;
+        margin: 5px;
         text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
 
     }
 
-    .full-text-liked-product h4:hover, .full-text-liked-product a:hover {
+    .liked-product-name-main:hover {
 
+        cursor: pointer;
         text-decoration: underline;
 
     }
@@ -285,8 +290,6 @@ body.dark {
     .liked-product-descr-main {
 
         display: -webkit-box;
-        position: relative;
-        right: -3px;
         text-overflow: ellipsis;
         -webkit-line-clamp: 2;
         line-clamp: 2;
@@ -298,20 +301,23 @@ body.dark {
 
     }
 
+    .liked-product-full-main-text-div {
+
+        display: flex;
+        flex-direction: column;
+        text-align: center;
+
+    }
+
     .price-rating-details-liked {
 
         display: flex;
-        flex-direction: row;
-        font-size: 13px;
-        height: 70px;
+        justify-content: space-between;
 
     }
 
     .price-rating-details-liked button {
 
-        position: relative;
-        bottom: -45px;
-        right: 15px;
         background-color: #9CDBF0;
         cursor: pointer;
         border-radius: 60px;
@@ -330,29 +336,23 @@ body.dark {
 
     }
 
+    .product-rating-div-main {
+
+        display: flex;
+        justify-content: center;
+        align-items: center;
+
+    }
+
+    .liked-div-rating {
+
+        margin: 5px;
+
+    }
+
     .liked-product-price {
 
-        position: relative;
-        bottom: -36px;
-        right: -25px;
-        height: 23px;
-
-    }
-
-    .liked-product-rating {
-
-        position: relative;
-        bottom: 5px;
-        right: -15px;
-        width: 60px;
-        height: 25px;
-
-    }
-
-    .product-rating {
-
-        position: relative;
-        bottom: 55%;
+        margin: 0;
 
     }
 
@@ -384,12 +384,13 @@ body.dark {
 
     .product-card {
 
-        display: flex;
-        justify-content: flex-start;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
         align-items: center;
         position: relative;
         background-color: rgba(255, 255, 255, .5);
-        width: 450px;
+        width: 550px;
+        max-width: 550px;
         height: 95%;
         margin: 6px;
         border-radius: 15px;
@@ -409,10 +410,31 @@ body.dark {
 
     }
 
-    .product-card img {
+    .product-img-div {
 
-        border-radius: 15px 0 0 15px;
+        width: 100%;
         height: 100%;
+        overflow: hidden;
+
+    }
+
+    .product-img-main {
+
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+        border-right: 1px solid white;
+        border-radius: 15px 0 0 15px;
+
+    }
+
+    .main-product-description-div {
+
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
 
     }
 
@@ -426,17 +448,17 @@ body.dark {
     .link-to-product:hover {
 
         text-decoration: underline;
+        cursor: pointer;
 
     }
 
     .product-text {
 
         display: grid;
-        margin-top: 30px;
-        margin-left: 5px;
-        grid-template-rows: 1fr 1.4fr 1fr;
-        width: 70%;
-        height: 100%;
+        grid-template-rows: 1fr auto auto;
+        padding: 5px;
+        min-width: 0;
+        min-height: 0;
 
     }
 
@@ -447,7 +469,7 @@ body.dark {
 
     }
 
-    .heart-button, .heart-button-liked {
+    .heart-button {
 
         display: flex;
         position: absolute;
@@ -464,7 +486,7 @@ body.dark {
 
     }
 
-    .heart-button:hover, .heart-button-liked:hover {
+    .heart-button:hover {
 
         background-color: gray;
 
@@ -474,16 +496,19 @@ body.dark {
 
         display: flex;
         justify-content: space-between;
+        flex-shrink: 0;
+        margin-top: auto;
+
+    }
+
+    .product-price {
+
+        margin: 0;
 
     }
 
     .details-link {
 
-        position: relative;
-        width: 81px;
-        bottom: -7px;
-        right: .5px;
-        top: 15px;
         background-color: #9CDBF0;
         cursor: pointer;
         border-radius: 60px;
@@ -509,7 +534,8 @@ body.dark {
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
-        max-width: 100%;
+        margin: 5px;
+        width: 235px;
 
     }
 
@@ -522,7 +548,6 @@ body.dark {
       -webkit-box-orient: vertical;
       overflow: hidden;
       max-height: 45px;
-      max-width: 249px;
 
     }
 
@@ -600,10 +625,8 @@ body.dark {
 
     .product-item-mobile, .liked-item-mobile { /* For individual items. */
 
-        display: flex;
-        justify-content: center;
-        align-items: flex-start;
-        flex-direction: column;
+        display: grid;
+        grid-template-rows: 1fr .5fr .5fr;
         position: relative;
         background-color: rgba(255, 255, 255, .6);
         border-radius: 15px;
@@ -629,14 +652,24 @@ body.dark {
 
     }
 
+    .product-img-mobile-name-div {
+
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        text-align: center;
+
+    }
+
     /* Heart button. */
 
     .heart-button-mobile {
 
         display: flex;
         position: absolute;
-        top: 5px;
-        right: 5px;
+        top: 1px;
+        right: 1px;
         justify-content: center;
         align-items: center;
         width: 30px;
@@ -658,22 +691,34 @@ body.dark {
 
     .product-image-mobile {
 
-        position: relative;
-        left: 20%;
-        width: fit-content;
-        border-radius: 15px;
-        height: 50%;
+        max-width: 112px;
+        border-radius: 20px;
+        max-height: 63px;
         margin-top: 3px;
+
+    }
+
+    /* Product's rating. */
+
+    .product-mobile-rating-div {
+
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+
+    }
+
+    .product-rating-mobile {
+
+        margin: 5px;
 
     }
 
     /* Product's name and a link to it. */
 
-    .product-name-mobile, .link-to-product-mobile {
+    .product-name-mobile {
 
-        display: block;
-        position: relative;
-        top: -4px;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
@@ -686,32 +731,22 @@ body.dark {
 
         text-decoration: none;
         color: black;
-        max-height: 19px;
 
     }
 
-    /* Price + Rating */
+    /* Price. */
 
-    .product-price-mobile, .product-rating-mobile {
+    .product-mobile-price-details-button {
 
-        margin: 0;
-        font-size: 13px;
+        display: flex;
+        justify-content: space-between;
+        width: 100%;
 
     }
 
     .product-price-mobile {
 
-        position: relative;
-        bottom: -16px;
-        left: 3px;
-
-    }
-
-    .product-rating-mobile {
-
-        position: absolute;
-        right: 28%;
-        top: 115px;
+        margin: 0;
 
     }
 
@@ -719,12 +754,9 @@ body.dark {
 
     .details-button-mobile {
 
-        position: relative;
-        right: -57px;
-        bottom: 5px;
         padding: 0;
-        width: 80px;
-        font-size: 14px;
+        width: 70px;
+        height: 23px;
         background-color: #9CDBF0;
         cursor: pointer;
         border-radius: 60px;

@@ -255,6 +255,7 @@ body.dark {
     text-shadow: 1px 1px 4px rgba(0,0,0,0.2);
     outline: none;
     cursor: pointer;
+    transition: .4s ease-in-out;
 
 }
 
@@ -526,5 +527,13 @@ body.dark {
 .hidden {
 
     display: none;
+
+}
+
+.inactive {
+
+    pointer-events: none;
+    cursor: default;
+    opacity: .5;
 
 }

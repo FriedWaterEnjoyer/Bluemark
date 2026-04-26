@@ -109,7 +109,7 @@
 
             <p class="stripe-warning">(Pay extra attention to the "Personal Details" section!)</p>
 
-            <a href="{{ url_for('stripe_registration') }}"><button id="register-button">Register using Stripe</button></a>
+            <button id="register-button" onclick="this.classList.add('inactive'); window.location.href='{{ url_for('stripe_registration') }}'">Register using Stripe</button>
 
         </div>
 

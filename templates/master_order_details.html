@@ -188,8 +188,15 @@
 
                         {% endif %}
 
-                        <button class="see-order-button" onclick="window.location.href='https://synovial-wilton-unspilt.ngrok-free.dev/product-page/{{ one_product_order[3] }}'">See Product Details</button>
+                        {% if one_product_order[3] != -1: %}
 
+                            <button class="see-order-button" onclick="window.location.href='https://synovial-wilton-unspilt.ngrok-free.dev/product-page/{{ one_product_order[3] }}'">See Full Product</button>
+
+                        {% else: %}
+
+                            <p class="error-message-merchant-deletion">This product was deleted by the merchant</p>
+
+                        {% endif %}
 
                     </div>
 

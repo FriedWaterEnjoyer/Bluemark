@@ -152,7 +152,7 @@
 
                                 <label for="text-area-review-upload">Brief review here:</label>
 
-                                <textarea cols="30" id="text-area-review-upload" class="text-area-review" placeholder="Maximum 150 chars." maxlength="150" name="user-comment-review" required></textarea>
+                                <textarea cols="30" id="text-area-review-upload" class="text-area-review" placeholder="Maximum 600 chars." maxlength="600" name="user-comment-review" required></textarea>
 
                                 <input type="submit" value="Upload Review" class="submit-review" onclick="document.getElementsByClassName('review-form')[0].submit(); this.disabled=true;">
 
@@ -166,7 +166,7 @@
 
                     <div class="text-reviews-div">
 
-                        {% if not product_data_reviews: %}
+                        {% if not product_data_reviews and not product_data_deleted_users_reviews: %}
 
                         <div class="no-reviews-div">
 

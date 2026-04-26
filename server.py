@@ -7,12 +7,6 @@
 
 # I'll prolly do it closer to the end of the production, for now I want to have everything in one file.
 
-# TODO: After that - prepare the endgame >:3 pls
-
-# TODO: create a fake account using infrastructure.txt :3
-
-# TODO: (Closer to the end of the production) - Create fake test accounts using stripe.Account.create, then insert their IDs into the DB. (Check if it's possible to set payouts_enabled, charges_enabled and transfers to True in these accounts).
-
 #---- Imports ----#
 
 
@@ -21,7 +15,7 @@ import json
 from dotenv import load_dotenv
 from flask import Flask, render_template, redirect, request, make_response, url_for, jsonify, session, Response
 from sqlalchemy import Text, Numeric, Integer, BOOLEAN, create_engine, MetaData, Column, Table, LargeBinary, select, func, Computed, Index, case, desc  # For DB interactions.
-from sqlalchemy.dialects.postgresql import TSVECTOR, websearch_to_tsquery, ARRAY  # Both of them play huge role in making the search function more efficient. (Basically calculating a search vector, which lets the program search with some context, suggesting products with words that the user hasn't even written).
+from sqlalchemy.dialects.postgresql import TSVECTOR, websearch_to_tsquery, ARRAY  # All of them play huge role in making the search function more efficient. (Basically calculating a search vector, which lets the program search with some context, suggesting products with words that the user hasn't even written).
 from sqlalchemy.orm import sessionmaker
 import argon2 # For hashing passwords.
 from authlib.integrations.flask_client import OAuth # For authorization with Google.
@@ -45,6 +39,8 @@ import string # Also a part of recovery code generation.
 # RIP email verification + forgot password features :( too expensive for my project...
 # Because I want this project to feel like it was made by a professional company, I'll have to use services like Mailgun, Mailjet, etc. The problem is that I'll have to own a DNS domain, which... costs money :(
 from decimal import Decimal, ROUND_HALF_UP # For working with the prices and quantities. (Used in calculate_price API).
+# For fake data creation.
+from fake_account_creation import CreateFakeUserAndProducts
 
 
 # !!!!!! Important information !!!!!!
@@ -330,8 +326,6 @@ liked_items_table = Table(
 
 )
 
-# TODO: for late-stage development - create a seed data for the database using bulk_insert()
-
 
 # Creating all the tables and initiating session.
 
@@ -341,7 +335,15 @@ Session_db = sessionmaker(bind=engine)
 
 session_db = Session_db()
 
-# session_db.bulk_insert_mappings() !!!!!!!!!!!!!!!!!
+
+#---- Fake Data Creation Setup ----#
+
+
+# Initializing the class and calling the function creation.
+
+create_fake_engine = CreateFakeUserAndProducts()
+
+create_fake_engine.create_user_bulk_insert_products(session=session_db, engine=engine, customer_table=customer_table, product_table=product_table)
 
 
 #---- Important Functions ----#
@@ -590,8 +592,6 @@ def check_recovery_codes(all_recovery_codes: list, user_code_hash) -> bool: # A 
 #---- Website Functionality ----#
 
 
-# TODO - query main products here, in order not to query them everytime the user loads the main page.
-
 @app.route("/like", methods=["POST"]) # This route is responsible for adding a specific item to the user's "liked" pool.
 def add_to_liked():
 
@@ -678,9 +678,17 @@ def main_page(): # Speaks for itself.
 
     if "temp_user_id" in session: session.clear()
 
-    # TODO: This function will soon need to query actual items.
-
     has_cookies = is_registered() # Checks user's browser for cookies. The HTML pages will change depending on the content of the variable.
+
+    # Plan for the liked item fetch:
+
+    # - Build a list of all the product_ids using user_id.
+
+    # - Use select() to immediately query: ID of the product, First image of the product, Name of the product, Description of the product, Up-to-date rating, Price of the product.
+
+    user_liked_products = [] # Default value, since the has_cookies variable might be empty.
+
+    main_page_products = session_db.query(product_table).order_by(product_table.c.ID.asc()).limit(18).all()
 
     if has_cookies:
 
@@ -691,6 +699,34 @@ def main_page(): # Speaks for itself.
         has_2fa = user_data[9]
 
         night_mode_data = user_data[10]
+
+        # If the user does have a cookie - then change the value of the user_liked_products to the up-to-date value.
+
+
+        # Firstly - build up the list of all the liked items.
+
+        all_liked_products_ids = session_db.execute(select(liked_items_table.c.product_id).where(liked_items_table.c.user_id == has_cookies)).scalars().all()
+
+        # .scalars(); in this case, filters out all the unnecessary data like ID and user_id and only returns a list of all the products that are in user's liked.
+
+        # Essentially, scalar(-s) are for values from a specific row/column - outputs a list, rather than a whole row.
+
+        # Secondly - query all the relative information about the liked products.
+
+        user_liked_products_data = select(
+
+            product_table.c.ID,
+            product_table.c.name,
+            product_table.c.images[1],
+            product_table.c.description,
+            product_table.c.rating,
+            product_table.c.price,
+
+        ).where(product_table.c.ID.in_(all_liked_products_ids))
+
+        with engine.connect() as connection:
+
+            user_liked_products = connection.execute(user_liked_products_data).all()
 
     else:
 
@@ -708,9 +744,9 @@ def main_page(): # Speaks for itself.
 
                            user_data=user_data,
 
-                           liked_products=["B","B","B","B"],
+                           liked_products=user_liked_products,
 
-                           in_cart_products=["B","B","B","B","B","B"],
+                           main_page_products=main_page_products,
 
                             has_2fa=has_2fa,
 
@@ -778,7 +814,7 @@ def login_page():
 
                     return redirect("/login-2fa")
 
-            except argon2.exceptions.VerifyMismatchError:
+            except (argon2.exceptions.VerifyMismatchError, argon2.exceptions.InvalidHashError): # Checking for both, since the user can try to log in to a Google-registered account using a password, therefore, the program will compare an argon2 hash to a regular string, giving an InvalidHashError error.
 
                 incorrect_login = True # First breaking point: if the .verify function raises a VerifyMismatchError, i.e., if a user with this email was found in the database, but the password and the hash of the password didn't match.
 
@@ -1144,7 +1180,7 @@ def cart_display():
 
         product_table.c.name,
         product_table.c.price,
-        product_table.c.images[1], # Fetching the first image. (I don't know why its index is 1 and not 0).
+        product_table.c.images[1], # Fetching the first image. (With an index of 1, since SQL arrays are 1-indexed, unlike Python's 0-indexed).
         product_table.c.ID,
         in_cart_table.c.quantity,
 
@@ -1202,7 +1238,7 @@ def add_to_cart():
 
     if previous_user_amount + 1 >= 21: pass
 
-    elif owner_id == has_cookies: pass
+    elif owner_id == has_cookies or owner_id == 1: pass # User ID equal to 1 - a test account, that's meant for displaying all the products.
 
     # These two checks above are just in case stuff, since the user can still modify the HTML and send POST request to this API.
 
@@ -1562,7 +1598,7 @@ def money_distribution(): # Does exactly what it says - checks if the payment wa
 
         total_order_price = session_payment["amount"]
 
-        customer_full_shipping_address = f"{customer_provided_address.get("country")} {customer_provided_address["state"] if customer_provided_address["state"] else ""} {customer_provided_address.get("city")} {customer_provided_address.get("line1")} {customer_provided_address["line2"] if customer_provided_address.get("line2") else ""} {customer_provided_address.get("postal_code")}".replace("  ", " ")
+        customer_full_shipping_address = f"{customer_provided_address["country"]} {customer_provided_address["state"] if customer_provided_address["state"] else ""} {customer_provided_address["city"]} {customer_provided_address["line1"]} {customer_provided_address["line2"] if customer_provided_address["line2"] else ""} {customer_provided_address["postal_code"]}".replace("  ", " ")
 
         # In the gigantic line of code above I fetch the entire user-provided address, and then glue it into one string. And then reduce any double spaces.
 
@@ -1577,55 +1613,45 @@ def money_distribution(): # Does exactly what it says - checks if the payment wa
 
         # Fetching data form the Database, using user's ID from the metadata. (Organizing it conveniently).
 
-        order_query = session_db.query(in_cart_table).where(in_cart_table.c.user_id == metadata_checkout_session["buyer_id"]).all()
+        order_query = select(
 
-        # Fetching all the products IDs, as well as the price and quantity for each item, and seller's DB IDs. (Unnecessary columns are marked with an underscore).
+            in_cart_table.c.product_id,
+            in_cart_table.c.quantity,
+            in_cart_table.c.single_item_price,
+            in_cart_table.c.seller_db_id,
+            in_cart_table.c.seller_stripe_id,
+            product_table.c.name,
+            product_table.c.images[1],
+
+        ).outerjoin(
+
+            product_table, in_cart_table.c.product_id == product_table.c.ID
+
+        ).where(in_cart_table.c.user_id == metadata_checkout_session["buyer_id"])
 
 
-        (
+        with engine.connect() as connection:
 
-            _,
-            _,
-            all_order_product_ids,
-            all_order_product_quantity,
-            all_order_items_price,
-            all_order_sellers_db_ids,
-            _,
+            order_query = connection.execute(order_query).fetchall()
 
-        ) = zip(*order_query) # The asterisk transforms rows into columns, making it easier to grab whole data of columns, thus, "looping" through the query once.
 
         # Querying the first image of the product in user's order, as it'll be the image of the master_order.
 
-        first_product_img = session_db.query(product_table).where(product_table.c.ID == order_query[0][2]).first()[6][0]
-
-
-        # Querying the names and the first pictures of every product that's in the order. (Because it'll be a lot more convenient to display them when the user checks )
-
-        name_and_image_stmt = select(
-
-            product_table.c.name,
-            product_table.c.images[1]
-
-        ).outerjoin(in_cart_table, product_table.c.ID == in_cart_table.c.product_id).where(
-
-            in_cart_table.c.user_id == metadata_checkout_session["buyer_id"]
-
-        )
-
+        first_product_img = session_db.query(product_table).where(product_table.c.ID == order_query[0][0]).first()[6][0]
 
         # Looping through the DB query.
 
         for single_order in order_query:
 
-            if single_order[6] not in seller_hash:
+            if single_order[4] not in seller_hash:
 
-                seller_hash[single_order[6]] = [to_cents(single_order[4] * single_order[3]), single_order[5]] # Multiplying the price of a single item by its quantity (index 3).
+                seller_hash[single_order[4]] = [to_cents(single_order[2] * single_order[1]), single_order[3]] # Multiplying the price of a single item by its quantity (index 3).
 
                 # Creating a list for every single iteration if the key isn't in the hash.
 
                 # This list will contain: 1 - the total amount of money that the user has to pay for the product (i.e., amount * quantity); 2 - merchant's Database ID. (Necessary to fill the transfer_id in the DB, which, in turn, will be useful in case of a refund).
 
-            else: seller_hash[single_order[6]][0] += to_cents(single_order[4] * single_order[3])
+            else: seller_hash[single_order[4]][0] += to_cents(single_order[2] * single_order[1])
 
 
         # In the end I'll have a hashmap with all the sellers IDs and the total amount of money that will be sent to them, using user's money as the source of the transaction.
@@ -1667,18 +1693,6 @@ def money_distribution(): # Does exactly what it says - checks if the payment wa
 
         with engine.connect() as connection:
 
-            # Executing previously declared name_and_image_stmt.
-
-            result_name_and_image = connection.execute(
-
-                name_and_image_stmt
-
-            ).fetchall()
-
-
-            product_order_name, product_order_first_img = zip(*result_name_and_image)
-
-
             # Creating the master order. (An "umbrella-order", which will contain all the products the user's ordered).
 
             result = connection.execute(
@@ -1710,11 +1724,11 @@ def money_distribution(): # Does exactly what it says - checks if the payment wa
 
                 "user_id": metadata_checkout_session["buyer_id"],
 
-                "merchant_id": seller_id,
+                "merchant_id": order_item[3],
 
-                "product_id": product_id,
+                "product_id": order_item[0],
 
-                "quantity": quantity,
+                "quantity": order_item[1],
 
                 "item_status": "Order Placed",
 
@@ -1726,37 +1740,23 @@ def money_distribution(): # Does exactly what it says - checks if the payment wa
 
                 "total_order_price": total_order_price/100, # Same as "total_price" in the master order.
 
-                "single_item_price": single_item_price,
+                "single_item_price": order_item[2],
 
                 "master_order_id": new_master_order_id,
 
                 "payment_intent_id": payment_intent_id,
 
-                "first_img_product": product_first_img,
+                "first_img_product": order_item[6],
 
-                "product_name": product_name,
+                "product_name": order_item[5],
 
-                "transfer_id": transfer_ids.get(seller_id), # Finding the corresponding value of the transfer ID, using merchant's database ID.
+                "transfer_id": transfer_ids.get(order_item[3]), # Finding the corresponding value of the transfer ID, using merchant's database ID.
                     
                 "refund_id": "",
 
             }
 
-            for seller_id, product_id, quantity, single_item_price, product_name, product_first_img in zip( # Using zip() function in order to avoid using "for j in range" loops.
-
-                all_order_sellers_db_ids,
-
-                all_order_product_ids,
-
-                all_order_product_quantity,
-
-                all_order_items_price,
-
-                product_order_name,
-
-                product_order_first_img
-
-                )
+            for order_item in order_query
 
             ]
 
@@ -1802,8 +1802,10 @@ def successful_payment_page(): # Redirects the user after the payment is complet
 
     address_dict = session_payed["collected_information"]["shipping_details"]["address"]
 
+    address_formatted = f"{address_dict["country"]} {address_dict["state"] if address_dict["state"] else ""} {address_dict["city"]} {address_dict["line1"]} {address_dict["line2"] if address_dict["line2"] else ""} {address_dict["postal_code"]}".replace("  ", " ")
 
-    return render_template("success_stripe.html", address_details=address_dict, full_name=session_payed["customer_details"]["name"], phone_number=session_payed["customer_details"]["phone"], customer_email=session_payed["customer_details"]["email"], total=session_payed["amount_total"]/100, night_mode=night_mode_data)
+
+    return render_template("success_stripe.html", address_details=address_formatted, full_name=session_payed["customer_details"]["name"], phone_number=session_payed["customer_details"]["phone"], customer_email=session_payed["customer_details"]["email"], total=session_payed["amount_total"]/100, night_mode=night_mode_data)
 
 
 @app.route("/product-page/<int:product_id>")
@@ -1874,6 +1876,12 @@ def product_page(product_id):
         elif int(user_cookies) == product_data[7]: error_message = "Owner can't add to the cart or write a review on their own product"
 
         elif has_in_cart: error_message = "You already have this item in the cart"
+
+    else:
+
+        error_message = "You must register in order to add items to your cart"
+
+    if product_data[7] == 1: error_message = "You can't buy items from a test account" # Always checks whether the owner is a test account (even when the user isn't registered); if it is - then it immediately displays this to the user.
 
 
     return render_template("product_page.html", night_mode=night_mode, registered=user_cookies, user_data=user_data, has_2fa=has_2fa, product_data=product_data, uploaded_fname=user_data_upload[1], uploaded_lname=user_data_upload[2], uploaded_pfp=user_data_upload[6], error_message=error_message, is_in_cart=is_in_cart)
@@ -1992,8 +2000,9 @@ def reviews(product_id):
 
         new_user_rating = request.form["rating"]
 
-        new_user_comment = request.form["user-comment-review"]
+        new_user_comment = request.form.get("user-comment-review")[:600] # Cutting it at that index, since a malicious user can bypass the 600 characters restriction easily.
 
+        if not new_user_comment: return redirect(url_for("reviews", product_id=product_id))
 
         if has_review: # If the user's editing an already existing review.
 
@@ -2366,10 +2375,9 @@ def upload_item():
     if request.method == "POST": # If the user's completed the form and uploaded all the necessary data.
 
 
-        product_title = request.form.get("product_name")
+        product_title = request.form.get("product_name")[:300]
 
-        product_descr = request.form.get("product_description")
-
+        product_descr = request.form.get("product_description")[:3000]
 
         product_price = request.form.get("product_price")
 
@@ -3327,7 +3335,10 @@ def submit_comment(order_id_comment):
 
         # Getting merchant's comment, then querying the database, then committing merchant's comment (the customer will be able to see it on their end in master_order_product_details).
 
-        merchant_comment_input = request.form.get("merchant-comment")
+        merchant_comment_input = request.form.get("merchant-comment")[:600]
+
+        if not merchant_comment_input: return redirect("/manage-orders")
+
 
         with engine.connect() as connection:
 
@@ -3364,7 +3375,10 @@ def submit_delivery_tracking_number(order_id_delivery_tracking):
 
         # Plus changing the item status to "Delivering".
 
-        tracking_number_input = request.form.get("tracking-number")
+        tracking_number_input = request.form.get("tracking-number")[:60]
+
+        if not tracking_number_input: return redirect("/manage-orders")
+
 
         with engine.connect() as connection:
 
@@ -3491,7 +3505,7 @@ def cancel_and_refund(product_id_refund_process, master_order_id_refund, custome
 
         # Checking whether all the items are refunded in the master order.
 
-        if all(master_order_product[5] == "Refunded" for master_order_product in master_order_all_item_statuses):
+        if all(master_order_product[5] == "Refunded" or master_order_product[5] == "Delivered" for master_order_product in master_order_all_item_statuses):
 
             with engine.connect() as connection:
 

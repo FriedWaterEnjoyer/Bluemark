@@ -34,12 +34,16 @@ I'm really curious what will come out of it in the end...
 
 では、次のファンクション行こう！
 
-After the review deletion part is done - prepare the engame:
+Well, this awesome half-a-year journey is now coming to an end...
 
-    - Firstly, I need to learn how to create fake Stripe accounts that allow for the transaction of funds.
+I've learned A LOT of things - built up my experience in both the frontend and the backend, integrated multiple services into one, and, in the end, made a product that I can be proud of. (Besides the times when I had to use A.I. >>>>>:( )
 
-    There is - create this fake account but DO NOT let the user add products from this user in their cart, since the transfer part will not go through.
+It's been really difficult, and, at times, seemed impossible. But, sometimes because of my sheer stubbornness and discipline, I've always come out on top, regardless of how hard it was.
 
-    That way, I can still create fake products that refer to an already existing user, but the problem with the transfer part not going through will be omitted.
+That's not to say that it was tedious to do - completely the opposite :3
 
-    Modify the add_to_cart API (check for that specific ID of 1), and product_page, in order to output an error to the user.
+It's been a blast creating something original, something of my own, never seen before.
+
+I will always hold this project close to my heart, not only because it truly made me a full-stack webdev, but also because it was so much fun to make <3
+
+Man I love life...

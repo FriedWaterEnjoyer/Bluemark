@@ -104,6 +104,15 @@ body.dark {
 
 }
 
+.no-products-div {
+
+    display: flex;
+    width: 100%;
+    align-items: center;
+    justify-content: center;
+
+}
+
 /* Individual card styling. */
 
 .card {
@@ -287,7 +296,7 @@ body.dark {
 
 /* Mobile styling */
 
-@media(max-width: 425px) {
+@media(max-width: 550px) {
 
     .full-content {
 
@@ -325,7 +334,7 @@ body.dark {
 
 /* Tablet Styling (mostly just the width adjustments). */
 
-@media(min-width: 426px) and (max-width: 769px) { /* !!!!!!!!!! */
+@media(min-width: 551px) and (max-width: 970px) { /* !!!!!!!!!! */
 
     .full-content {
 
@@ -343,7 +352,7 @@ body.dark {
 
 /* For everything above the tablet but below the standard notebook screen. (Mostly just the width adjustment on the image). */
 
-@media(min-width: 769px) and (max-width: 1024px) {
+@media(min-width: 971px) and (max-width: 1024px) {
 
     .card img {
 

@@ -118,35 +118,64 @@
 
                         <h2>Your Liked Items:</h2>
 
-                        {% for num in liked_products: %}
+                        {% for liked_product in liked_products: %}
 
                             <div class="liked-item-card">
 
-                                <img src="https://placehold.co/550x550" alt="Some cool liked image" />
+                                <div class="liked-item-img-div">
 
-                                <div class="full-text-liked-product">
+                                    <img src="{{ liked_product[2] }}" alt="Some cool liked image" />
 
-                                    <button class="heart-button-liked-main" onclick="addToLikedMain(1, 'remove');"><svg fill="#000000" width="30px" height="30px" viewBox="0 0 32 32" version="1.1" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <title>broken-heart</title> <path d="M23.304 1.591c-2.089-0.004-4.219 0.839-5.893 2.693l2.322 9.057-2.086 0.002 2.205 8.242-7.283-11.754 3.122 0.335-3.056-7.215c-5.121-3.042-12.339-0.432-12.105 6.916 0.275 8.638 11.93 11.519 15.438 20.693 3.705-9.175 15.678-11.502 15.391-20.693-0.16-5.119-4.031-8.27-8.055-8.277v0z"></path> </g></svg></button>
+                                </div>
 
-                                    <a href="{{ url_for('product_page', product_id=1) }}" class="liked-product-name-main" id="liked-product-link"><h4 id="liked-product-header">Cool Product name bro</h4></a>
+                                <div class="liked-item-centering-div">
 
-                                    <p class="liked-product-descr-main">Some cool description that can also go to the second row yuipee</p>
+                                    <div class="full-text-liked-product">
 
-                                    <div class="price-rating-details-liked">
+                                        <div class="liked-product-full-main-text-div">
 
-                                        <p class="liked-product-price">$149.99</p>
+                                            <h4 class="liked-product-name-main" onclick="window.location.href='{{ url_for('product_page', product_id=liked_product[0]) }}'">{{ liked_product[1] }}</h4>
 
-                                        {% if night_mode: %}
+                                            <p class="liked-product-descr-main">{{ liked_product[3] }}</p>
 
-                                            <p class="liked-product-rating">✨✨✨☆☆</p>
+                                        </div>
 
-                                        {% else: %}
+                                        <div class="product-rating-div-main liked-div-rating">
 
-                                            <p class="liked-product-rating">⭐⭐☆☆☆</p>
+                                            <p class="product-rating">
 
-                                        {% endif %}
+                                                {% for j in range(liked_product[4]|int): %}
 
-                                        <button class="see-details-liked" onclick="window.location.href='https://synovial-wilton-unspilt.ngrok-free.dev/product-page/1'">See Details</button>
+                                                    {% if night_mode: %}
+
+                                                        ✨
+
+                                                    {% else: %}
+
+                                                        ⭐
+
+                                                    {% endif %}
+
+                                                {% endfor %}
+
+
+                                                {% for k in range(5 - liked_product[4]|int): %}
+
+                                                    ☆
+
+                                                {% endfor %}
+
+                                            </p>
+
+                                        </div>
+
+                                        <div class="price-rating-details-liked">
+
+                                            <p class="liked-product-price">${{ liked_product[5] }}</p>
+
+                                            <button class="see-details-liked" onclick="window.location.href='{{ url_for('product_page', product_id=liked_product[0]) }}'">See Details</button>
+
+                                        </div>
 
                                     </div>
 
@@ -164,37 +193,81 @@
 
                 {% for i in range(3): %}
 
+                    {% if loop.index == 1: %}
+
+                        {% set main_products_to_show = main_page_products[:6] %}
+
+                    {% elif loop.index == 2: %}
+
+                        {% set main_products_to_show = main_page_products[6:12] %}
+
+                    {% else: %}
+
+                        {% set main_products_to_show = main_page_products[12:] %}
+
+                    {% endif %}
+
                     <div class="products-row" id="product-row-animation-{{ i }}">
 
-                        {% for product in in_cart_products: %}
+                        {% for main_product in main_products_to_show: %}
 
                         <div class="product-card">
 
-                            <img src="https://placehold.co/150x150" alt="Image of a product">
+                            <div class="product-img-div">
 
-                            <button class="heart-button" onclick="addToLikedMain(1, 'add');"><svg width="30px" height="30px" class="heart-svg" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M1.24264 8.24264L8 15L14.7574 8.24264C15.553 7.44699 16 6.36786 16 5.24264V5.05234C16 2.8143 14.1857 1 11.9477 1C10.7166 1 9.55233 1.55959 8.78331 2.52086L8 3.5L7.21669 2.52086C6.44767 1.55959 5.28338 1 4.05234 1C1.8143 1 0 2.8143 0 5.05234V5.24264C0 6.36786 0.44699 7.44699 1.24264 8.24264Z" fill="#000000"></path> </g></svg></button>
+                                <img src="{{ main_product[6][0] }}" alt="Image of a product" class="product-img-main">
+
+                            </div>
+
+                            {% if registered: %} <!-- Locking the "Add to liked" if the user's not registered. -->
+
+                                <button class="heart-button" onclick="addToLikedMain({{ main_product[0] }}, 'add');"><svg width="30px" height="30px" class="heart-svg" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M1.24264 8.24264L8 15L14.7574 8.24264C15.553 7.44699 16 6.36786 16 5.24264V5.05234C16 2.8143 14.1857 1 11.9477 1C10.7166 1 9.55233 1.55959 8.78331 2.52086L8 3.5L7.21669 2.52086C6.44767 1.55959 5.28338 1 4.05234 1C1.8143 1 0 2.8143 0 5.05234V5.24264C0 6.36786 0.44699 7.44699 1.24264 8.24264Z" fill="#000000"></path> </g></svg></button>
+
+                            {% endif %}
 
                             <div class="product-text">
 
-                                <a href="{{ url_for('product_page', product_id=1) }}" class="link-to-product"><h3>Some random text yuipeee</h3></a>
+                                <div class="main-product-description-div">
 
-                                <p class="product-descr">Some random description that can go to the second line yuipee a a a</p>
+                                    <h3 onclick="window.location.href='{{ url_for('product_page', product_id=main_product[0]) }}'" class="link-to-product">{{ main_product[1] }}</h3>
+
+                                    <p class="product-descr">{{ main_product[5] }}</p>
+
+                                </div>
+
+                                <div class="product-rating-div-main">
+
+                                    <p class="product-rating">
+
+                                        {% for j in range(main_product[2]|int): %}
+
+                                            {% if night_mode: %}
+
+                                                ✨
+
+                                            {% else: %}
+
+                                                ⭐
+
+                                            {% endif %}
+
+                                        {% endfor %}
+
+                                    {% for k in range(5 - main_product[2]|int): %}
+
+                                        ☆
+
+                                    {% endfor %}
+
+                                    </p>
+
+                                </div>
 
                                 <div class="product-price-details">
 
-                                    <p class="product-price">$149.99</p>
+                                    <p class="product-price">${{ main_product[3] }}</p>
 
-                                    {% if night_mode: %}
-
-                                        <p class="product-rating">✨✨✨☆☆</p>
-
-                                    {% else: %}
-
-                                        <p class="product-rating">⭐⭐☆☆☆</p>
-
-                                    {% endif %}
-
-                                    <button onclick="window.location.href='https://synovial-wilton-unspilt.ngrok-free.dev/product-page/1'" class="details-link">See Details</button>
+                                    <button onclick="window.location.href='{{ url_for('product_page', product_id=main_product[0]) }}'" class="details-link">See Details</button>
 
                                 </div>
 
@@ -225,29 +298,59 @@
 
                     <div class="full-product-mobile">
 
-                        {% for da_product in in_cart_products: %}
+                        {% set main_page_products_row = main_page_products[:9] if loop.index == 1 else main_page_products[9:] %}
+
+                        {% for main_product_mobile in main_page_products_row: %}
 
                             <div class="product-item-mobile">
 
-                                <button class="heart-button-mobile" onclick="addToLikedMain(1, 'add');"><svg width="35px" height="35px" class="heart-svg" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M1.24264 8.24264L8 15L14.7574 8.24264C15.553 7.44699 16 6.36786 16 5.24264V5.05234C16 2.8143 14.1857 1 11.9477 1C10.7166 1 9.55233 1.55959 8.78331 2.52086L8 3.5L7.21669 2.52086C6.44767 1.55959 5.28338 1 4.05234 1C1.8143 1 0 2.8143 0 5.05234V5.24264C0 6.36786 0.44699 7.44699 1.24264 8.24264Z" fill="#000000"></path> </g></svg></button>
+                                {% if registered: %}
 
-                                <img src="https://placehold.co/150x150" alt="Product display image on mobile." class="product-image-mobile" />
-
-                                <h5 class="product-name-mobile"><a href="{{ url_for('product_page', product_id=1) }}" class="link-to-product-mobile">Some cool product name</a></h5>
-
-                                <p class="product-price-mobile">$250.00</p>
-
-                                {% if night_mode: %}
-
-                                    <p class="product-rating-mobile">✨✨✨☆☆</p>
-
-                                {% else: %}
-
-                                    <p class="product-rating-mobile">⭐⭐☆☆☆</p>
+                                    <button class="heart-button-mobile" onclick="addToLikedMain({{ main_product_mobile[0] }}, 'add');"><svg width="35px" height="35px" class="heart-svg" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M1.24264 8.24264L8 15L14.7574 8.24264C15.553 7.44699 16 6.36786 16 5.24264V5.05234C16 2.8143 14.1857 1 11.9477 1C10.7166 1 9.55233 1.55959 8.78331 2.52086L8 3.5L7.21669 2.52086C6.44767 1.55959 5.28338 1 4.05234 1C1.8143 1 0 2.8143 0 5.05234V5.24264C0 6.36786 0.44699 7.44699 1.24264 8.24264Z" fill="#000000"></path> </g></svg></button>
 
                                 {% endif %}
 
-                                <button class="details-button-mobile" onclick="window.location.href='https://synovial-wilton-unspilt.ngrok-free.dev/product-page/1'">See Details</button>
+                                <div class="product-img-mobile-name-div">
+
+                                    <img src="{{ main_product_mobile[6][0] }}" alt="Product display image on mobile." class="product-image-mobile" />
+
+                                    <h5 class="product-name-mobile" onclick="window.location.href='{{ url_for('product_page', product_id=main_product_mobile[0]) }}'">{{ main_product_mobile[1] }}</h5>
+
+                                </div>
+
+                                <div class="product-mobile-rating-div">
+
+                                    <p class="product-rating-mobile">{% for j in range(main_product_mobile[2]|int): %}
+
+                                        {% if night_mode: %}
+
+                                            ✨
+
+                                        {% else: %}
+
+                                            ⭐
+
+                                        {% endif %}
+
+                                    {% endfor %}
+
+                                    {% for k in range(5 - main_product_mobile[2]|int): %}
+
+                                        ☆
+
+                                    {% endfor %}
+
+                                    </p>
+
+                                </div>
+
+                                <div class="product-mobile-price-details-button">
+
+                                    <p class="product-price-mobile">${{ main_product_mobile[3] }}</p>
+
+                                    <button class="details-button-mobile" onclick="window.location.href='{{ url_for('product_page', product_id=main_product_mobile[0]) }}'">See Details</button>
+
+                                </div>
 
                             </div>
 
@@ -269,29 +372,51 @@
 
                             {% for liked_item_mobile in liked_products: %}
 
-                                <div class="liked-item-mobile">
+                            <div class="liked-item-mobile">
 
-                                    <button class="heart-button-mobile" onclick="addToLikedMain(1, 'remove');"><svg fill="#000000" width="35px" height="35px" viewBox="0 0 32 32" version="1.1" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <title>broken-heart</title> <path d="M23.304 1.591c-2.089-0.004-4.219 0.839-5.893 2.693l2.322 9.057-2.086 0.002 2.205 8.242-7.283-11.754 3.122 0.335-3.056-7.215c-5.121-3.042-12.339-0.432-12.105 6.916 0.275 8.638 11.93 11.519 15.438 20.693 3.705-9.175 15.678-11.502 15.391-20.693-0.16-5.119-4.031-8.27-8.055-8.277v0z"></path> </g></svg></button>
+                                <div class="product-img-mobile-name-div">
 
-                                    <img src="https://placehold.co/150x150" alt="Product display image on mobile." class="product-image-mobile" />
+                                    <img src="{{ liked_item_mobile[2] }}" alt="Product display image on mobile." class="product-image-mobile" />
 
-                                    <a href="{{ url_for('product_page', product_id=1) }}" class="link-to-product-mobile"><h5 class="product-name-mobile">Some cool product name</h5></a>
-
-                                    <p class="product-price-mobile">$250.00</p>
-
-                                    {% if night_mode: %}
-
-                                        <p class="product-rating-mobile">✨✨✨☆☆</p>
-
-                                    {% else: %}
-
-                                        <p class="product-rating-mobile">⭐⭐☆☆☆</p>
-
-                                    {% endif %}
-
-                                    <button class="details-button-mobile" onclick="window.location.href='https://synovial-wilton-unspilt.ngrok-free.dev/product-page/1'">See Details</button>
+                                    <h5 class="product-name-mobile" onclick="window.location.href='{{ url_for('product_page', product_id=liked_item_mobile[0]) }}'">{{ liked_item_mobile[1] }}</h5>
 
                                 </div>
+
+                                <div class="product-mobile-rating-div">
+
+                                    <p class="product-rating-mobile">{% for j in range(liked_item_mobile[4]|int): %}
+
+                                        {% if night_mode: %}
+
+                                            ✨
+
+                                        {% else: %}
+
+                                            ⭐
+
+                                        {% endif %}
+
+                                    {% endfor %}
+
+                                    {% for k in range(5 - liked_item_mobile[4]|int): %}
+
+                                        ☆
+
+                                    {% endfor %}
+
+                                    </p>
+
+                                </div>
+
+                                <div class="product-mobile-price-details-button">
+
+                                    <p class="product-price-mobile">${{ liked_item_mobile[5] }}</p>
+
+                                    <button class="details-button-mobile" onclick="window.location.href='{{ url_for('product_page', product_id=liked_item_mobile[0]) }}'">See Details</button>
+
+                                </div>
+
+                            </div>
 
                             {% endfor %}
 

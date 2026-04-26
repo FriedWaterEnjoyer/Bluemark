@@ -444,7 +444,8 @@ body.dark {
 
 .carousel__item img {
 
-  width: 100%;
+  max-width: 590px;
+  max-height: 390px;
   display: block;
 
 }

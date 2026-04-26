@@ -387,6 +387,12 @@ body.disable-rating {
 
 }
 
+.user-review-comment {
+
+    overflow-wrap: anywhere;
+
+}
+
 @media (max-width: 375px) { /* For the small screens. */
 
     .rating {
