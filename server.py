@@ -1,12 +1,3 @@
-# TODO: pls create multiple subdivisions of functions (e.g. PasswordManager, TableCreation, DB_Setup, etc.), the lag is just too much, and one 700+ lines python file is not good too :3
-# Now about 1100+ lines lul.
-# Now about 1700+ lines omegalul
-# ...
-
-# Another TODO: at the end of the production, please categorize JS scripts + css (if possible) into files.
-
-# I'll prolly do it closer to the end of the production, for now I want to have everything in one file.
-
 #---- Imports ----#
 
 
@@ -2852,7 +2843,7 @@ def generate_recovery(): # Will be responsible for generating 2FA recovery codes
 
     hash_and_commit_recovery_codes(all_users_codes, int(user_cookie))
 
-    return render_template("recovery_codes.html", all_recovery_codes=all_users_codes, night_mode = user_data[10])
+    return render_template("recovery_codes.html", all_recovery_codes=all_users_codes, night_mode=user_data[10])
 
 
 @app.route("/reset-2fa/<from_login>", methods=["GET", "POST"]) # from_login is a boolean that indicates whether the user came from the login page. (The differences being: how I fetch user's ID, and what I do after resetting their 2FA settings.)
@@ -2940,6 +2931,8 @@ def reauthorization_page(): # Will be responsible for checking user's credential
 
     has_2fa = user_data[9]
 
+    night_mode = user_data[10]
+
     if user_hash_password == "google": # In case the user's registered with Google.
 
         if has_2fa: return redirect("/reauthorize-2fa")
@@ -2978,10 +2971,10 @@ def reauthorization_page(): # Will be responsible for checking user's credential
 
         except argon2.exceptions.VerifyMismatchError:
 
-            return render_template("reauthorization_credentials.html", login_info=True)
+            return render_template("reauthorization_credentials.html", login_info=True, night_mode=night_mode)
 
 
-    return render_template("reauthorization_credentials.html", login_info=False)
+    return render_template("reauthorization_credentials.html", login_info=False, night_mode=night_mode)
 
 
 @app.route("/reauthorize-2fa", methods=["GET", "POST"])

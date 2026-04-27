@@ -1,5 +1,4 @@
 <!-- Same as the master_order.html, but the structure's a bit different. Theoretically I could've just kept it all in one file, but it would become way too bloated. -->
-<!-- TODO: Same as in reviews.html - if the merchant's left a comment before - then send it to the frontend and display it there. -->
 <!DOCTYPE html>
 <html lang="en" xmlns="http://www.w3.org/1999/html">
 <head>
@@ -345,15 +344,15 @@
 
 {% if night_mode: %} <!-- Importing JavaScript if the user has night_mode turned on. -->
 
-    <script src="../static/JS%20Scripts/dark_light_mode.js"></script>
+    <script src="../static/JS%20Scripts/general%20scripts/dark_light_mode.js"></script>
 
 {% endif %}
 
-<script src="../static/JS%20Scripts/delivered_button_display.js"></script>
+<script src="../static/JS%20Scripts/disable%20buttons%20functionality/delivered_button_display.js"></script>
 
-<script src="../static/JS%20Scripts/disable_cancel_order_button.js"></script>
+<script src="../static/JS%20Scripts/disable%20buttons%20functionality/disable_cancel_order_button.js"></script>
 
-<script src="../static/JS%20Scripts/disable_submit_comment_order_status.js"></script>
+<script src="../static/JS%20Scripts/disable%20buttons%20functionality/disable_submit_comment_order_status.js"></script>
 
 </body>
 </html>

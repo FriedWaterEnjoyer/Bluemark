@@ -4,13 +4,13 @@
 
 body.dark {
 
-    .code-form {
+    .code-form, .log-in-form {
 
         background-color: rgba(0, 0, 0, .5);
 
     }
 
-    #sign-submit, .code-form h2, .register-input, .sign-in-form h2 {
+    #sign-submit, .code-form h2, .register-input, .sign-in-form h2, .log-in-form h2{
 
         color: #FFFFFF;
 
